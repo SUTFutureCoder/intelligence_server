@@ -1,0 +1,14 @@
+2014-12-06 00:07:30 /tmp/gateway.store.cache.php updated and reload workers
+2014-12-06 00:16:53 /tmp/gateway.store.cache.php updated and reload workers
+2014-12-06 00:16:54 /tmp/gateway.store.cache.php updated and reload workers
+2014-12-06 00:16:55 /tmp/gateway.store.cache.php updated and reload workers
+2014-12-06 00:56:19 /tmp/gateway.store.cache.php updated and reload workers
+2014-12-06 00:56:30 /tmp/gateway.store.cache.php updated and reload workers
+2014-12-06 00:58:35 /tmp/gateway.store.cache.php updated and reload workers
+2014-12-06 00:58:36 /tmp/gateway.store.cache.php updated and reload workers
+2014-12-06 01:29:26 /tmp/gateway.store.cache.php updated and reload workers
+2014-12-06 01:29:33 /tmp/gateway.store.cache.php updated and reload workers
+2014-12-06 01:34:54 /tmp/gateway.store.cache.php updated and reload workers
+2014-12-06 01:35:00 Worker[BusinessWorker]:WORKER EXIT UNEXPECTED  E_WARNING file_get_contents(/var/run/workerman-chat.pid): failed to open stream: No such file or directory in /var/www/html/WSPDM/websocket/workerman/Core/Lib/Checker.php on line 276
+2014-12-06 01:35:01 Worker[FileMonitor]:terminal closed and reset workers fd
+2014-12-06 01:42:01 /tmp/gateway.store.cache.php updated and reload workers

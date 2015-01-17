@@ -1,0 +1,11 @@
+2014-11-30 21:14:52 Server:Workerman is starting ...
+2014-11-30 21:14:53 Server:[1A
+[KWorkerman start success ...[0m
+2014-11-30 21:15:14 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-30 21:16:16 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-30 21:16:17 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-30 21:19:44 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-30 21:19:45 /tmp/group.store.cache.php updated and reload workers
+2014-11-30 21:23:25 Worker[BusinessWorker]:WORKER EXIT UNEXPECTED  E_WARNING file_get_contents(/var/run/workerman-chat.pid): failed to open stream: No such file or directory in /var/www/html/WSPDM/websocket/workerman/Core/Lib/Checker.php on line 276
+2014-11-30 21:23:26 Worker[FileMonitor]:terminal closed and reset workers fd
+2014-11-30 21:27:20 /tmp/gateway.store.cache.php updated and reload workers

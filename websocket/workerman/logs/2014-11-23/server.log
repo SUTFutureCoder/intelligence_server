@@ -1,0 +1,69 @@
+2014-11-23 00:00:50 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 00:02:54 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 00:03:04 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 00:03:05 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 00:05:37 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 00:05:38 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 00:05:39 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 00:05:40 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 00:05:41 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 00:07:01 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 00:07:02 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 00:07:04 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 00:19:33 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 00:19:34 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 00:19:36 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 00:19:37 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 00:22:10 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 00:22:17 Worker[BusinessWorker]:WORKER EXIT UNEXPECTED  E_WARNING file_get_contents(/var/run/workerman-chat.pid): failed to open stream: No such file or directory in /var/www/html/WSPDM/websocket/workerman/Core/Lib/Checker.php on line 276
+2014-11-23 00:22:17 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 00:22:17 Worker[FileMonitor]:terminal closed and reset workers fd
+2014-11-23 19:20:10 Server:Workerman is starting ...
+2014-11-23 19:20:10 Server:[1A
+[KWorkerman start success ...[0m
+2014-11-23 19:20:18 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 19:20:21 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 19:20:22 /tmp/group.store.cache.php updated and reload workers
+2014-11-23 19:20:33 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 19:20:34 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 19:23:49 Worker[BusinessWorker]:WORKER EXIT UNEXPECTED  E_NOTICE Undefined index: key in /var/www/html/WSPDM/websocket/applications/Chat/Event.php on line 170
+2014-11-23 19:23:49 Worker[FileMonitor]:terminal closed and reset workers fd
+2014-11-23 19:24:16 Server:Workerman is shutting down
+2014-11-23 19:24:16 Server:Workerman stoped
+2014-11-23 19:24:16 Server:Workerman is starting ...
+2014-11-23 19:24:16 Server:[1A
+[KWorkerman start success ...[0m
+2014-11-23 19:24:22 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 19:24:30 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 19:31:18 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 19:31:19 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 19:31:21 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 19:31:47 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 21:14:47 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 21:14:48 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 21:14:49 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 21:14:58 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 21:15:01 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 21:15:02 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 21:15:46 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 21:15:48 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 21:15:49 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 21:34:23 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 21:34:25 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 21:34:41 Worker[FileMonitor]:terminal closed and reset workers fd
+2014-11-23 22:30:32 Server:Workerman is starting ...
+2014-11-23 22:30:33 Server:[1A
+[KWorkerman start success ...[0m
+2014-11-23 22:30:38 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 22:30:49 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 22:30:50 /tmp/group.store.cache.php updated and reload workers
+2014-11-23 22:40:26 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 22:40:28 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 22:46:12 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 22:46:13 /tmp/group.store.cache.php updated and reload workers
+2014-11-23 22:51:48 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 23:00:39 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 23:00:40 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 23:01:02 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 23:55:16 /tmp/gateway.store.cache.php updated and reload workers
+2014-11-23 23:55:17 /tmp/group.store.cache.php updated and reload workers
