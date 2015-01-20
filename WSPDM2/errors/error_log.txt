@@ -1,0 +1,16 @@
+[29-Aug-2014 09:45:57 Asia/Chongqing] PHP Fatal error:  Uncaught exception 'PHPExcel_Reader_Exception' with message 'Could not open uploads/person_list/沈阳工业大学网络管理中心工程部招新表-林星辰-2014-08-29_09-12-1631.xlsx for reading! File does not exist.' in /var/www/html/nws_v2/main/application/libraries/PHPExcel/Reader/Excel2007.php:82
+Stack trace:
+#0 /var/www/html/nws_v2/main/application/controllers/person_add_by_excel.php(149): PHPExcel_Reader_Excel2007->canRead('uploads/person_...')
+#1 [internal function]: Person_add_by_excel->UploadExcelDefault()
+#2 /var/www/html/nws_v2/main/system/core/CodeIgniter.php(359): call_user_func_array(Array, Array)
+#3 /var/www/html/nws_v2/main/index.php(202): require_once('/var/www/html/n...')
+#4 {main}
+  thrown in /var/www/html/nws_v2/main/application/libraries/PHPExcel/Reader/Excel2007.php on line 82
+[29-Aug-2014 09:47:08 Asia/Chongqing] PHP Fatal error:  Uncaught exception 'PHPExcel_Reader_Exception' with message 'Could not open uploads/person_list/沈阳工业大学网络管理中心工程部招新表-林星辰-2014-08-29_09-12-1632.xlsx for reading! File does not exist.' in /var/www/html/nws_v2/main/application/libraries/PHPExcel/Reader/Excel2007.php:82
+Stack trace:
+#0 /var/www/html/nws_v2/main/application/controllers/person_add_by_excel.php(149): PHPExcel_Reader_Excel2007->canRead('uploads/person_...')
+#1 [internal function]: Person_add_by_excel->UploadExcelDefault()
+#2 /var/www/html/nws_v2/main/system/core/CodeIgniter.php(359): call_user_func_array(Array, Array)
+#3 /var/www/html/nws_v2/main/index.php(202): require_once('/var/www/html/n...')
+#4 {main}
+  thrown in /var/www/html/nws_v2/main/application/libraries/PHPExcel/Reader/Excel2007.php on line 82
