@@ -23,7 +23,7 @@ class Database{
             //构建数据库连接DSN
             switch ($db_type){
                 case 'MySQL':
-                    $driver = 'mysql:host=' . $host;
+                    $driver = 'mysql:host=' . $host . ';charset=utf8';
                     break;
                 case 'MSSQL':
                     $driver = 'mssql:host=' . $host;
@@ -83,6 +83,7 @@ class Database{
                 return $result;
             }
         }
+        
         if ($PDO){
             return self::$_db;        
         } else {
@@ -185,11 +186,97 @@ class Database{
      *  exec($sql, $last_insert_id = 0) 
      *  @Parameter: 
      *  $sql         sql语句
-     *  $record           是否返回记录行数和时间
+     *  $record           是否返回影响记录行数和时间
+     *  $last_insert_id   动态生成的主键值
      *  @Return: 
      *  $data['sql'] sql语句
      *  $data['rows'] 影响行数
      *  $data['time'] 消耗时间
      *  $data['data'] 取出数据
     */ 
+    public function exec($sql, $record = 0, $last_insert_id = 0){
+        if (!self::$_db){
+            self::$_db = self::connect();
+        }
+        
+        $data = array();
+        
+        try {            
+            if ($record){
+                $data['sql'] = $sql;
+                $time_potin_a = microtime(TRUE);
+            }
+            
+            
+            $row = self::$_db->exec($sql);
+            
+            if ($last_insert_id){
+                $data['last_id'] = self::$_db->lastInsertId();
+            }
+            
+            while ($row = $result->fetch()){
+                $data['data'][] = $row; 
+            }
+            
+            if ($record){
+                //记录返回记录数
+                $data['rows'] = $row;
+                $time_potin_b = microtime(TRUE);
+                $data['time'] = number_format($time_potin_b - $time_potin_a, '8');
+            }
+            
+            return $data;        
+        } catch (Exception $ex) {
+            return $ex->getMessage();
+        }     
+    }
+    
+    
+    /**    
+     *  @Purpose:    
+     *  分页取数据语句   
+     *  @Method Name:
+     *  page($db_name, $table_name, $offset, $limit, $record = 1) 
+     *  @Parameter: 
+     *  $db_name          数据库名
+     *  $talbe_name       表名
+     *  $offset           偏移量
+     *  $limit            取数据数量
+     *  $record           记录模式（默认打开）
+     *  @Return: 
+     *  $data['sql'] sql语句
+     *  $data['rows'] 影响行数
+     *  $data['time'] 消耗时间
+     *  $data['data'] 取出数据
+    */ 
+    
+    public function page($db_name, $table_name, $offset = 0, $limit = 30, $record = 1){
+        if (!self::$_db){
+            self::$_db = self::connect();
+        }
+        
+        $data = array(); 
+        $data['data'] = array();
+        if ($record){
+            $data['sql'] = "SELECT * FROM $db_name.$table_name";
+            $time_potin_a = microtime(TRUE);
+        }
+            
+        $stmt = self::$_db->prepare("SELECT * FROM $db_name.$table_name", array(PDO::ATTR_CURSOR => PDO::CURSOR_SCROLL));
+        
+        if ($stmt->execute()){
+            for ($row = $stmt->fetch(PDO::FETCH_ASSOC, PDO::FETCH_ORI_REL, $offset); $row !== false && $limit-- > 0; $row = $stmt->fetch(PDO::FETCH_ASSOC)){
+                $data['data'][] = $row;
+            }
+            if ($record){
+                //记录返回记录数
+                $data['rows'] = count($data['data']);
+                $time_potin_b = microtime(TRUE);
+                $data['time'] = number_format($time_potin_b - $time_potin_a, '8');
+            }            
+            return $data;
+        } else {
+            return 0;
+        }
+    }
 }

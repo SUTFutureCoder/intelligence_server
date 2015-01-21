@@ -72,7 +72,7 @@
         <div class="panel panel-info">
             <div class="panel-heading">WSPDM</div>
             <div class="panel-body">
-                <p><a href="https://github.com/SUTFutureCoder/WSPDM" target="_blank" >项目主页</a></p>
+                <p><a href="https://github.com/SUTFutureCoder/intelligence_server/tree/master/WSPDM2" target="_blank" >项目主页</a></p>
                 <p><a href="https://github.com/SUTFutureCoder/WSPDM/wiki/" target="_blank" >wiki</a></p>
             </div>
         </div>          

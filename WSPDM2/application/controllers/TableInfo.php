@@ -7,8 +7,8 @@ if (!defined('BASEPATH'))
  * 
  * 
  *
- * @copyright  版权所有(C) 2014-2014 沈阳工业大学ACM实验室 沈阳工业大学网络管理中心 *Chen
- * @license    http://www.gnu.org/licenses/gpl-3.0.txt   GPL3.0 License
+ * @copyright  版权所有(C) 2014-2015 沈阳工业大学ACM实验室 沈阳工业大学网络管理中心 *Chen
+ * @license    http://www.gnu.org/licenses/gpl-2.0.txt   GPL2.0 License
  * @version    2.0
  * @link       http://acm.sut.edu.cn/
  * @since      File available since Release 2.0
@@ -22,15 +22,22 @@ class TableInfo extends CI_Controller{
         $this->load->library('session');
         $this->load->library('secure');
         $this->load->library('database');
-        $this->load->model('tableinfo_model');
+        $this->load->model('sql_lib');
         
-        $conn = $this->database->dbConnect($this->session->userdata('db_username'), $this->session->userdata('db_password'));
+        $data = array();
         
-        $data = $this->tableinfo_model->getTableData($conn, $this->input->get('db', TRUE), $this->input->get('t', TRUE), 0, 30);
+        $data['start'] = 0;
+        $data['end'] = 30;        
         $data['table'] = htmlentities($this->input->get('t', TRUE), ENT_QUOTES);
         $data['database'] = htmlentities($this->input->get('db', TRUE), ENT_QUOTES);
-        $data['start'] = 0;
-        $data['end'] = 29;
+        
+        //获取浏览数据
+        $data = array_merge($data, $this->sql_lib->getTableData($data['database'], $data['table'], $data['start'], $data['end']));
+        
+        $data = array_merge($data, $this->sql_lib->getColData($data['database'], $data['table']));
+        
+        
+        
         
         $this->load->view('TableInfoView', array('data' => $data,
                             'user_key' => $this->secure->CreateUserKey($this->session->userdata('db_username'), $this->session->userdata('db_password')),

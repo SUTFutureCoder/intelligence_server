@@ -14,7 +14,7 @@
 | path to your installation.
 |
 */
-$config['base_url']	= 'http://localhost/intelligence_server/WSPDM/';
+$config['base_url']	= 'http://localhost/intelligence_server/WSPDM2/';
 
 /*
 |--------------------------------------------------------------------------

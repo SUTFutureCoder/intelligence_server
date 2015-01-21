@@ -32,7 +32,16 @@
         
         //connect();
         //function connect(){
-            ws = new WebSocket("ws://"+document.domain+":8080/");   
+        
+//        try {
+        ws = new WebSocket("ws://"+document.domain+":8080/");
+            
+//        } catch (e){
+//            while (1 != ws.readyState){
+//                ws = new WebSocket("ws://"+document.domain+":8080/");
+//            }
+//        }
+        
         //}
         
         
@@ -54,7 +63,9 @@
         }       
           // 当socket连接打开时，输入用户名
           ws.onopen = function() {  
-              ping_interval = setInterval("getping()",1000);
+              ping_interval = setInterval("getping()",1000);   
+              $("#db_username, #db_password, #db_type, #db_host, #db_port, .btn").removeAttr("disabled");
+//              console.log(ws.readyState);
               //ws.send(JSON.stringify({"type":"noajax","name":name}));
           };
           
@@ -83,7 +94,9 @@
                         
           };
           ws.onclose = function() {
-              console.log("服务端关闭了连接"); 
+                console.log("服务端关闭了连接");                
+                $("#db_username, #db_password, #db_type, #db_host, #db_port, .btn").attr("disabled", "disabled");
+                alert("和服务器断开连接");
               //clearInterval(ping_interval);
               //reconnect_interval = setInterval("reconnect()",1000);              
           };
@@ -126,30 +139,30 @@
 <body>
     <div class="col-sm-8 col-sm-offset-2">
         <form action="<?= base_url("index.php/index/PassCheck")?>" class="form-signin" role="form" method="post">
-        <h2 class="form-signin-heading">欢迎使用WSPDM</h2>
+        <h2 class="form-signin-heading">欢迎使用WSPDM2</h2>
         <br/>
         <div class="form-group">            
-        <input type="text" name="db_username" id="db_username" class="form-control" placeholder="数据库账号" required="" autofocus="">
-        <input type="password" name="db_password" id="db_password" class="form-control" placeholder="数据库密码" required="">            
-        <select class="form-control" name="db_type" id="db_type">
-            <option>MySQL</option>    
-            <option>Oracle</option>    
-            <option>MS SQL Server</option>    
-            <option>MSSQL</option>    
-            <option>ODBC</option>    
-            <option>IBM</option>    
-            <option>cubrid</option>    
-            <option>firebird</option>    
-            <option>INFORMIX</option>    
-            <option>4D</option>    
-            <option>PostgreSQL</option>    
-        </select>
+            <input type="text" name="db_username" id="db_username" class="form-control" placeholder="数据库账号" disabled="disabled" required="" autofocus="">
+            <input type="password" name="db_password" id="db_password" class="form-control" placeholder="数据库密码" disabled="disabled" required="">            
+            <select class="form-control" name="db_type" id="db_type" disabled="disabled">
+                <option>MySQL</option>    
+                <option>Oracle</option>    
+                <option>MS SQL Server</option>    
+                <option>MSSQL</option>    
+                <option>ODBC</option>    
+                <option>IBM</option>    
+                <option>cubrid</option>    
+                <option>firebird</option>    
+                <option>INFORMIX</option>    
+                <option>4D</option>    
+                <option>PostgreSQL</option>    
+            </select>
         <hr>
-        <input type="text" name="db_host" id="db_host" class="form-control" placeholder="数据库地址（选填）">
-        <input type="text" name="db_port" id="db_port" class="form-control" placeholder="数据库端口（选填）">             
+        <input type="text" name="db_host" id="db_host" disabled="disabled" class="form-control" placeholder="数据库地址（选填）">
+        <input type="text" name="db_port" id="db_port" disabled="disabled" class="form-control" placeholder="数据库端口（选填）">             
         </div>
         <br/>
-        <button type="submit"  class="btn btn-lg btn-primary btn-block">登录数据库</button>
+        <button type="submit" disabled="disabled"  class="btn btn-lg btn-primary btn-block">登录数据库</button>
         </form>
     </div>
     <div class="footer">
