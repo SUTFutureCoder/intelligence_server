@@ -118,7 +118,7 @@
                     <button type="button" class="btn btn-default" onclick="sql_button(' HAVING BY ', 1)">HAVING</button>
                     <div class="checkbox">
                         <label>
-                            <input type="checkbox"> memcache缓存查询结果
+                            <input type="checkbox" id="memcache"> memcache缓存查询结果
                         </label>
                     </div>
                     <button type="button" class="btn btn-primary btn-lg btn-block" onclick="launch_sql()">执行</button>
@@ -265,7 +265,6 @@
                             $("#sql_result").append("<br/><table class=\"table table-hover table-bordered\" id=\"sql_data_view\">");
                             $("#sql_data_view").append("<thead><tr><th>#</th>");
                             
-                            alert(data[4]['sql'].substr(0, 6));
                             if (data[4]['sql'].substr(0, 6) != 'SELECT' && data[4]['sql'].substr(0, 6) != 'select'){
                                 sql = data[4]['sql'];
                                 col = data[4]['rows'];
@@ -335,10 +334,12 @@
                             for (i = 0; i < td_num; i++){
                                 $("#data_view tbody tr:last-child").append("<td></td>");
                             }
-                            $.each(data[4]['data'][0], function(col_name, value){
+                            $.each(data[4]['data']['data'][0], function(col_name, value){
                                 col_num = $("#data_view_" + col_name).prevAll().length;
                                 $("#data_view tbody tr:last-child td:nth-of-type(" + (1 + col_num) + ")").html(value);
-                            });                 
+                            });  
+                            
+                            $("#insert_list")[0].reset();
                             break;
                             
                         case 'SearchData':
@@ -346,7 +347,7 @@
                             $("#search_result").append("<br/><table class=\"table table-hover table-bordered\" id=\"search_data_view\">");
                             $("#search_data_view").append("<thead><tr><th>#</th>");
                             //取出字段
-                            $.each(data[4]['cols'], function (col_name){
+                            $.each(data[4]['cols'], function (i, col_name){
                                 $("#search_data_view thead tr").append("<th>" + col_name + "</th>");
                             });
                             $("#search_data_view").append("</thead><tbody>");                        
@@ -460,11 +461,19 @@
         
         //执行SQL语句
         function launch_sql(){
+            switch ($("#memcache").val()){
+                case 'on':
+                    memcache = 1;
+                    break;
+                case 'off':
+                    memcache = 0;
+                    break;
+            }
             var data = new Array();
             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
             data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/ExecSQL';
             data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
-            data['data'] += '"sql" : "' + $("#sql_area").val() + '", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
+            data['data'] += '"sql" : "' + $("#sql_area").val() + '", "memcache" : "' + memcache + '", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
             parent.IframeSend(data);
         }
         
@@ -474,7 +483,7 @@
             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
             data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/DeleCol';
             data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
-            data['data'] += '"col_name" : "' + col_name + '", "database" : "<?= $data['database'] ?>", "table" : "<?= $data['table']?>"}';
+            data['data'] += '"col_name" : "' + col_name + '", "database" : "<?= $data['database'] ?>", "table" : "<?= $data['table']?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
             parent.IframeSend(data);
         }
         
@@ -493,7 +502,7 @@
                 }
                 data['data'] += '"' + field.name + '":"' + field.value + '"';
             })
-            data['data'] += '}}';
+            data['data'] += '}, "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
             parent.IframeSend(data, 'group');
         }
         
@@ -534,7 +543,7 @@
                 }
                 n++;
             })                     
-            data['data'] += '}}';
+            data['data'] += '},"db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
             parent.IframeSend(data);
             
             col_name = form_data = select =  null;

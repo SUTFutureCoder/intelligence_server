@@ -21,7 +21,6 @@ class TableInfo extends CI_Controller{
     public function index(){
         $this->load->library('session');
         $this->load->library('secure');
-        $this->load->library('database');
         $this->load->model('sql_lib');
         
         $data = array();
@@ -32,12 +31,16 @@ class TableInfo extends CI_Controller{
         $data['database'] = htmlentities($this->input->get('db', TRUE), ENT_QUOTES);
         
         //获取浏览数据
-        $data = array_merge($data, $this->sql_lib->getTableData($data['database'], $data['table'], $data['start'], $data['end']));
+        $data = array_merge($data, $this->sql_lib->getTableData($data['database'], 
+                $data['table'], 
+                $data['start'], 
+                $data['end']));
         
         $data = array_merge($data, $this->sql_lib->getColData($data['database'], $data['table']));
         
         $this->load->view('TableInfoView', array('data' => $data,
-                            'user_key' => $this->secure->CreateUserKey($this->session->userdata('db_username'), $this->session->userdata('db_password')),
+                            'user_key' => $this->secure->CreateUserKey($this->session->userdata('db_username'),
+                                    $this->session->userdata('db_password')),
                             'user_name' => $this->session->userdata('db_username'),
                             'db_type' => $this->session->userdata('db_type'),
                             'db_host' => $this->session->userdata('db_host'),
@@ -54,6 +57,7 @@ class TableInfo extends CI_Controller{
      *  POST user_key 用户密钥
      *  POST src      目标地址
      *  POST sql      SQL指令
+     *  POST memcache 使用缓存
      *  POST db_type  数据库类型
      *  POST db_host  数据库地址
      *  POST db_port  数据库端口
@@ -92,7 +96,13 @@ class TableInfo extends CI_Controller{
         switch (substr($sql, 0, 6)){
             case 'SELECT':
             case 'select':
-                $data = $this->sql_lib->execSQL($query = 1, $this->input->post('sql', TRUE), $this->input->post('db_type', TRUE), $db['user_name'], $db['password'], $this->input->post('db_host', TRUE), $this->input->post('db_port', TRUE));
+                $data = $this->sql_lib->execSQL($query = 1, $this->input->post('sql', TRUE), 
+                        $this->input->post('db_type', TRUE), 
+                        $db['user_name'], 
+                        $db['password'], 
+                        $this->input->post('db_host', TRUE),
+                        $this->input->post('db_port', TRUE), 
+                        $this->input->post('memcache', TRUE));
 
                 if (is_string($data)){
                     $this->data->Out('iframe', $this->input->post('src', TRUE), 0, 'SQL语句出错,出错信息:' . $data);
@@ -107,7 +117,12 @@ class TableInfo extends CI_Controller{
                 break;
                 
             default :
-                $data = $this->sql_lib->execSQL($query = 0, $this->input->post('sql', TRUE), $this->input->post('db_type', TRUE), $db['user_name'], $db['password'], $this->input->post('db_host', TRUE), $this->input->post('db_port', TRUE));
+                $data = $this->sql_lib->execSQL($query = 0, $this->input->post('sql', TRUE), 
+                        $this->input->post('db_type', TRUE), 
+                        $db['user_name'], 
+                        $db['password'], 
+                        $this->input->post('db_host', TRUE), 
+                        $this->input->post('db_port', TRUE));
                 if (is_string($data)){
                     $this->data->Out('iframe', $this->input->post('src', TRUE), 0, 'SQL语句出错,出错信息:' . $data);
                 }
@@ -131,6 +146,10 @@ class TableInfo extends CI_Controller{
      *  POST database 操作数据库
      *  POST table      表名
      *  POST array data 插入数据（key => value）
+     *  POST db_type  数据库类型
+     *  POST db_host  数据库地址
+     *  POST db_port  数据库端口
+     * 
      *  @Return: 
      *  状态码|说明
      *      data
@@ -139,8 +158,8 @@ class TableInfo extends CI_Controller{
     */ 
     public function InsertData(){
         $this->load->library('secure');
-        $this->load->library('database');
         $this->load->library('data');
+        $this->load->model('sql_lib');
         
         $db = array();
         if ($this->input->post('user_name', TRUE) && $this->input->post('user_key', TRUE)){
@@ -152,57 +171,28 @@ class TableInfo extends CI_Controller{
             $this->data->Out('iframe', $this->input->post('src', TRUE), -2, '未检测到密钥');
         }        
         
-        //连接数据库
-        $conn = $this->database->dbConnect($db['user_name'], $db['password']);
-        
-        //过滤数据库名
-        $database = mysqli_real_escape_string($conn, $this->input->post('database', TRUE));
-        
-        //过滤表名
-        $table = mysqli_real_escape_string($conn, $this->input->post('table', TRUE));
-        
-        //连接数据库，非记录模式
-        $sql = 'USE ' . $database;
-        $this->database->execSQL($conn, $sql, 0);
+        if (!$this->input->post('db_type', TRUE) || !$db['user_name'] || 
+                null == $this->input->post('database', TRUE) || 
+                null == $this->input->post('table', TRUE) ||
+                null == $this->input->post('data', TRUE)){
+            $this->data->Out('iframe', $this->input->post('src', TRUE), -3, 'SQL信息缺失，请重新登录');
+        }
         
         //取出post进的数据
         $post_data = $this->input->post('data', TRUE);
         
-        $sql = "INSERT INTO $table (";
-        $sql_value = 'VALUES (';        
-        $sql_result = "SELECT * FROM $table WHERE ";
-        $i = 0;
-        $r = 0;
-        foreach ($post_data as $key => $value){
-            if ($i){
-                $sql .= ', ';
-                $sql_value .= ', ';
-            }
-            
-            $sql .= "$key";
-            if ('on' == $value){
-                $value = 1;
-            }
-            $sql_value .= "'$value'";
-            
-            if ($value){   
-                if ($r){
-                    $sql_result .= ' AND ';
-                }
-                $sql_result .= " $key = '$value' ";
-                ++$r;
-            }
-            ++$i;
+        $data = $this->sql_lib->insertData($this->input->post('database', TRUE), 
+                $this->input->post('table', TRUE),
+                $post_data,
+                $this->input->post('db_type', TRUE),
+                $db['user_name'],
+                $db['password'],
+                $this->input->post('db_host', TRUE),
+                $this->input->post('db_port', TRUE));
+        
+        if (is_string($data)){
+            $this->data->Out('iframe', $this->input->post('src', TRUE), 0, 'SQL语句出错,出错信息:' . $data);
         }
-        
-        $sql .= ") " . $sql_value . '); ';
-        
-        $sql_result .= ' LIMIT 1';
-        //执行SQL语句，为记录模式
-        $data = $this->database->execSQL($conn, $sql, 1);   
-        
-        $data['data'] = $this->database->execSQL($conn, $sql_result, 0, 1);
-//        $data['data'] = $sql_result;
         
         $this->data->Out('iframe', $this->input->post('src', TRUE), 1, 'InsertData', $data);
                
@@ -222,6 +212,9 @@ class TableInfo extends CI_Controller{
      *  POST database 操作数据库
      *  POST table      表名
      *  POST array data 搜索数据（key => value）
+     *  POST db_type  数据库类型
+     *  POST db_host  数据库地址
+     *  POST db_port  数据库端口
      *  @Return: 
      *  状态码|说明
      *      data
@@ -230,8 +223,8 @@ class TableInfo extends CI_Controller{
     */ 
     public function SearchData(){
         $this->load->library('secure');
-        $this->load->library('database');
         $this->load->library('data');
+        $this->load->model('sql_lib');
         
         $db = array();
         if ($this->input->post('user_name', TRUE) && $this->input->post('user_key', TRUE)){
@@ -243,99 +236,33 @@ class TableInfo extends CI_Controller{
             $this->data->Out('iframe', $this->input->post('src', TRUE), -2, '未检测到密钥');
         }        
         
-        //连接数据库
-        $conn = $this->database->dbConnect($db['user_name'], $db['password']);
-        
-        //过滤数据库名
-        $database = mysqli_real_escape_string($conn, $this->input->post('database', TRUE));
-        
-        //过滤表名
-        $table = mysqli_real_escape_string($conn, $this->input->post('table', TRUE));
-        
-        //连接数据库，非记录模式
-        $sql = 'USE ' . $database;
-        $this->database->execSQL($conn, $sql, 0);
+        if (!$this->input->post('db_type', TRUE) || !$db['user_name'] || 
+                null == $this->input->post('database', TRUE) || 
+                null == $this->input->post('table', TRUE) ||
+                null == $this->input->post('data', TRUE)){
+            $this->data->Out('iframe', $this->input->post('src', TRUE), -3, 'SQL信息缺失，请重新登录');
+        }
         
         //取出post进的数据
         $post_data = $this->input->post('data', TRUE);
         
-        //初始化搜索字段和命令存储数组
-        $search = array();
+        $data = $this->sql_lib->searchData($this->input->post('database', TRUE),
+                $this->input->post('table', TRUE),
+                $post_data,
+                $this->input->post('db_type', TRUE),
+                $db['user_name'],
+                $db['password'],
+                $this->input->post('db_host', TRUE),
+                $this->input->post('db_port', TRUE));
         
-        
-        
-        $sql_search = "SELECT * FROM $table WHERE ";
-        
-        //初始化计数器
-        $i = 0;
-        foreach ($post_data as $post_data_item){
-            $col = mysqli_real_escape_string($conn, $post_data_item['col']);
-            $cmd = mysqli_real_escape_string($conn, $post_data_item['cmd']);
-            $val = mysqli_real_escape_string($conn, $post_data_item['val']);
-            if ($i != 0){
-                $sql_search .= ' AND ';
+        if (is_string($data)){
+            $this->data->Out('iframe', $this->input->post('src', TRUE), 0, 'SQL语句出错,出错信息:' . $data);
+        }      
+        if (isset($data['data'])){
+            foreach ($data['data'][0] as $key => $value){  
+                $data['cols'][] = $key;   
             }
-
-            switch ($cmd){
-                case 'BETWEEN':
-                case 'NOT BETWEEN':
-                    $val = explode(',', $val, 2);
-                    $sql_search .= $col . ' ' . $cmd . ' "' . $val[0] . '" AND "' . $val[1] . '"';
-                    break;
-                
-                case 'LIKE %...%':
-                    $sql_search .= $col . ' LIKE "%' . $val . '%" ';
-                    break;
-                
-                case 'IN (...)':
-                    $val = explode(',', $val);
-                    $sql_search .= $col . ' IN(';
-                    //计数器
-                    $in = 0;
-                    foreach ($val as $in_item){
-                        if ($in){
-                            $sql_search .= ', ';
-                        }
-                        $sql_search .= "'" . $in_item . "'";
-                        ++$in;
-                    }
-                    $sql_search .= ') ';
-                    break;
-                    
-                case 'NOT IN (...)':
-                    $val = explode(',', $val);
-                    $sql_search .= $col . ' NOT IN(';
-                    //计数器
-                    $in = 0;
-                    foreach ($val as $in_item){
-                        if ($in){
-                            $sql_search .= ', ';
-                        }
-                        $sql_search .= "'" . $in_item . "'";
-                        ++$in;
-                    }
-                    $sql_search .= ') ';
-                    break;
-                
-                case "= ''":
-                case "!= ''":
-                case 'IS NULL':
-                case 'IS NOT NULL':
-                    $sql_search .= $col . ' ' . $cmd . ' ';
-                    break;
-                
-                default :
-                    $sql_search .= $col .  ' ' . $cmd . ' "' . $val . '" ';
-                    break;
-            }
-            ++$i;
         }
-        
-        //执行SQL语句，为记录模式
-        $data = $this->database->execSQL($conn, $sql_search, 1);   
-        
-        $data['data'] = $this->database->execSQL($conn, $sql_search, 0, 1);
-//        $data['data'] = $sql_result;
         
         $this->data->Out('iframe', $this->input->post('src', TRUE), 1, 'SearchData', $data);
                
@@ -355,6 +282,9 @@ class TableInfo extends CI_Controller{
      *  POST database 操作数据库
      *  POST table    操作表
      *  POST col_name   列名
+     *  POST db_type  数据库类型
+     *  POST db_host  数据库地址
+     *  POST db_port  数据库端口
      * 
      *  @Return: 
      *  状态码|说明
@@ -364,8 +294,8 @@ class TableInfo extends CI_Controller{
     */ 
     public function DeleCol(){
         $this->load->library('secure');
-        $this->load->library('database');
         $this->load->library('data');
+        $this->load->model('sql_lib');
         
         $db = array();
         if ($this->input->post('user_name', TRUE) && $this->input->post('user_key', TRUE)){
@@ -377,25 +307,29 @@ class TableInfo extends CI_Controller{
             $this->data->Out('iframe', $this->input->post('src', TRUE), -2, '未检测到密钥');
         }
         
-        //连接数据库
-        $conn = $this->database->dbConnect($db['user_name'], $db['password']);
-        
-        //过滤数据库名
-        $database = mysqli_real_escape_string($conn, $this->input->post('database', TRUE));
-        $table = mysqli_real_escape_string($conn, $this->input->post('table', TRUE));
-        //过滤表名
-        $col_name = mysqli_real_escape_string($conn, $this->input->post('col_name', TRUE));
-
-        //连接数据库，非记录模式
-        $sql = 'USE ' . $database;
-        $this->database->execSQL($conn, $sql, 0);
-        
+        if (!$this->input->post('db_type', TRUE) || !$db['user_name'] || 
+                null == $this->input->post('database', TRUE) || 
+                null == $this->input->post('table', TRUE) || 
+                null == $this->input->post('col_name', TRUE)){
+            $this->data->Out('iframe', $this->input->post('src', TRUE), -3, 'SQL信息缺失，请重新登录');
+        }
+                
         //执行SQL语句，为记录模式
         //ALTER TABLE `activity` DROP `act_section`
-        $sql = 'ALTER TABLE ' . $table . ' DROP COLUMN ' . $col_name . ' ';
-        $data = $this->database->execSQL($conn, $sql, 1);
-        $data['col_name'] = $col_name;
+        $data = $this->sql_lib->deleCol($this->input->post('database', TRUE), 
+                $this->input->post('table', TRUE), 
+                $this->input->post('col_name', TRUE), 
+                $this->input->post('db_type', TRUE), 
+                $db['user_name'],
+                $db['password'],
+                $this->input->post('db_host', TRUE),
+                $this->input->post('db_port', TRUE));
+                
+        if (is_string($data)){
+            $this->data->Out('iframe', $this->input->post('src', TRUE), 0, 'SQL语句出错,出错信息:' . $data);
+        }
         
+        $data['col_name'] = $this->input->post('col_name', TRUE);
         $this->data->Out('iframe', $this->input->post('src', TRUE), 1, 'DeleCol', $data);
                
     }    

@@ -137,20 +137,33 @@ class Database{
      *  @Method Name:
      *  query($sql, $record = 1) 
      *  @Parameter: 
-     *  $sql         sql语句
-     *  $record           是否返回记录行数和时间
+     *  $sql        sql语句
+     *  $record     是否返回记录行数和时间
+     *  $memcache   是否缓存
      *  @Return: 
      *  $data['sql'] sql语句
      *  $data['rows'] 影响行数
      *  $data['time'] 消耗时间
      *  $data['data'] 取出数据
     */   
-    public function query($sql, $record = 1){
+    public function query($sql, $record = 1, $memcache = 0){
         if (!self::$_db){
             self::$_db = self::connect();
         }
         
         $data = array();
+        
+        if ($memcache){
+            if ($memcache_obj = memcache_connect('127.0.0.1', 11211)){
+                $key = md5($sql);
+                $time_potin_a = microtime(TRUE);
+                if ($data = $memcache_obj->get($key)){
+                    $time_potin_b = microtime(TRUE);
+                    $data['time'] = number_format($time_potin_b - $time_potin_a, '8') . '[memcache]';
+                    return $data;
+                }
+            }
+        }
         
         try {
             
@@ -178,6 +191,10 @@ class Database{
                 $data['rows'] = $result->rowCount();
                 $time_potin_b = microtime(TRUE);
                 $data['time'] = number_format($time_potin_b - $time_potin_a, '8');
+            }
+            
+            if ($memcache){
+                $memcache_obj->add($key, $data);
             }
             
             return $data;        

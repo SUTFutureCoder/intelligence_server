@@ -169,7 +169,7 @@ class Sql_lib extends CI_Model{
     }
     
     //执行命令
-    public function execSQL($query, $sql, $db_type, $db_username, $db_password, $db_host, $db_port){
+    public function execSQL($query, $sql, $db_type, $db_username, $db_password, $db_host, $db_port, $memcache = 0){
         if (!self::$_ci){
             self::$_ci =& get_instance();
             self::$_ci->load->library('database');
@@ -179,10 +179,156 @@ class Sql_lib extends CI_Model{
         
         if ($query){
             //SELECT
-            return self::$_ci->database->query($sql, 1);
+            return self::$_ci->database->query($sql, 1, $memcache);
         } else {
             return self::$_ci->database->exec($sql, 1);
         }
+    }
+    
+    //删除列
+    public function deleCol($database, $table, $col_name, $db_type, $db_username, $db_password, $db_host, $db_port){
+        if (!self::$_ci){
+            self::$_ci =& get_instance();
+            self::$_ci->load->library('database');
+        }
         
+        self::$_ci->database->connect(0, $db_type, $db_username, $db_password, $db_host, $db_port);
+        
+        $sql = 'ALTER TABLE ' . $database . '.' . $table . ' DROP COLUMN ' . $col_name . ' ';
+        return self::$_ci->database->exec($sql, 1);
+    }
+    
+    //增加元组
+    public function insertData($database, $table, $post_data, $db_type, $db_username, $db_password, $db_host, $db_port){
+        if (!self::$_ci){
+            self::$_ci =& get_instance();
+            self::$_ci->load->library('database');
+        }
+        
+        if (!self::$_db){
+            self::$_db = self::$_ci->database->connect(1, $db_type, $db_username, $db_password, $db_host, $db_port);
+        }
+        
+        
+        $sql = "INSERT INTO $database.$table (";
+        $sql_value = 'VALUES (';        
+        $sql_result = "SELECT * FROM $database.$table WHERE ";
+        $i = 0;
+        $r = 0;
+        foreach ($post_data as $key => $value){
+            if ($i){
+                $sql .= ', ';
+                $sql_value .= ', ';
+            }
+            
+            $sql .= "$key";
+            if ('on' == $value){
+                $value = 1;
+            }
+            $sql_value .= self::$_db->quote($value);
+            
+            if ($value){   
+                if ($r){
+                    $sql_result .= ' AND ';
+                }
+                $sql_result .= " $key = " . self::$_db->quote($value) . " ";
+                ++$r;
+            }
+            ++$i;
+        }
+        
+        $sql .= ") " . $sql_value . '); ';
+        
+        $sql_result .= ' LIMIT 1';
+        
+        $data = $this->database->exec($sql, 1);
+        $data['data'] = $this->database->query($sql_result, 0);
+        
+        return $data;
+    }
+    
+    //搜索
+    public function searchData($database, $table, $post_data, $db_type, $db_username, $db_password, $db_host, $db_port){
+        if (!self::$_ci){
+            self::$_ci =& get_instance();
+            self::$_ci->load->library('database');
+        }
+        
+        if (!self::$_db){
+            self::$_db = self::$_ci->database->connect(1, $db_type, $db_username, $db_password, $db_host, $db_port);
+        }
+        
+        //初始化搜索字段和命令存储数组
+        $search = array();
+        
+        $sql_search = "SELECT * FROM $database.$table WHERE ";
+        
+        //初始化计数器
+        $i = 0;
+        foreach ($post_data as $post_data_item){
+            $col = $post_data_item['col'];
+            $cmd = $post_data_item['cmd'];
+            $val = $post_data_item['val'];
+            if ($i != 0){
+                $sql_search .= ' AND ';
+            }
+
+            switch ($cmd){
+                case 'BETWEEN':
+                case 'NOT BETWEEN':
+                    $val = explode(',', $val, 2);
+                    $sql_search .= $col . ' ' . $cmd . ' ' . self::$_db->quote($val[0]) . ' AND ' . self::$_db->quote($val[1]) . '';
+                    break;
+                
+                case 'LIKE %...%':
+                    $sql_search .= $col . ' LIKE "%' . $val . '%" ';
+                    break;
+                
+                case 'IN (...)':
+                    $val = explode(',', $val);
+                    $sql_search .= $col . ' IN(';
+                    //计数器
+                    $in = 0;
+                    foreach ($val as $in_item){
+                        if ($in){
+                            $sql_search .= ', ';
+                        }
+                        $sql_search .= " " . self::$_db->quote($in_item) . " ";
+                        ++$in;
+                    }
+                    $sql_search .= ') ';
+                    break;
+                    
+                case 'NOT IN (...)':
+                    $val = explode(',', $val);
+                    $sql_search .= $col . ' NOT IN(';
+                    //计数器
+                    $in = 0;
+                    foreach ($val as $in_item){
+                        if ($in){
+                            $sql_search .= ', ';
+                        }
+                        $sql_search .= " " . self::$_db->quote($in_item) . " ";
+                        ++$in;
+                    }
+                    $sql_search .= ') ';
+                    break;
+                
+                case "= ''":
+                case "!= ''":
+                case 'IS NULL':
+                case 'IS NOT NULL':
+                    $sql_search .= $col . ' ' . $cmd . ' ';
+                    break;
+                
+                default :
+                    $sql_search .= $col .  ' ' . $cmd . ' ' . self::$_db->quote($val) . ' ';
+                    break;
+            }
+            ++$i;
+        }
+        
+        
+        return  $this->database->query($sql_search, 1);
     }
 }
