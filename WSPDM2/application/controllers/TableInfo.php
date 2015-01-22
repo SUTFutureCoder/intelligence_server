@@ -36,12 +36,12 @@ class TableInfo extends CI_Controller{
         
         $data = array_merge($data, $this->sql_lib->getColData($data['database'], $data['table']));
         
-        
-        
-        
         $this->load->view('TableInfoView', array('data' => $data,
                             'user_key' => $this->secure->CreateUserKey($this->session->userdata('db_username'), $this->session->userdata('db_password')),
-                            'user_name' => $this->session->userdata('db_username')));
+                            'user_name' => $this->session->userdata('db_username'),
+                            'db_type' => $this->session->userdata('db_type'),
+                            'db_host' => $this->session->userdata('db_host'),
+                            'db_port' => $this->session->userdata('db_port')));
     } 
        
     /**    
@@ -53,21 +53,24 @@ class TableInfo extends CI_Controller{
      *  POST user_name 数据库用户名
      *  POST user_key 用户密钥
      *  POST src      目标地址
-     *  POST database 操作数据库
      *  POST sql      SQL指令
+     *  POST db_type  数据库类型
+     *  POST db_host  数据库地址
+     *  POST db_port  数据库端口
      *  
      *  @Return: 
      *  状态码|说明
-     *      data
+     *      1|data
+     *      0|错误信息
      * 
      *  
     */ 
     public function ExecSQL(){
         $this->load->library('secure');
-        $this->load->library('database');
         $this->load->library('data');
+        $this->load->model('sql_lib');
         
-        $db = array();
+        $data = array();
         if ($this->input->post('user_name', TRUE) && $this->input->post('user_key', TRUE)){
             $db = $this->secure->CheckUserKey($this->input->post('user_key', TRUE));
             if ($this->input->post('user_name', TRUE) != $db['user_name']){
@@ -77,24 +80,40 @@ class TableInfo extends CI_Controller{
             $this->data->Out('iframe', $this->input->post('src', TRUE), -2, '未检测到密钥');
         }
         
-        if (!$this->input->post('sql', TRUE)){
-            $this->data->Out('iframe', $this->input->post('src', TRUE), -3, 'SQL命令不能为空');
+        if (!$sql = trim($this->input->post('sql'), TRUE)){
+            $this->data->Out('iframe', $this->input->post('src', TRUE), -3, 'SQL命令不能为空', 'sql_area');
         }
         
-        //连接数据库
-        $conn = $this->database->dbConnect($db['user_name'], $db['password']);
+        if (!$this->input->post('db_type', TRUE) || !$db['user_name']){
+            $this->data->Out('iframe', $this->input->post('src', TRUE), -4, 'SQL信息缺失，请重新登录');
+        }
         
-        //过滤数据库名
-        $database = mysqli_real_escape_string($conn, $this->input->post('database', TRUE));
         
-        //连接数据库，非记录模式
-        $sql = 'USE ' . $database;
-        $this->database->execSQL($conn, $sql, 0);
-        
-        //执行SQL语句，为记录模式
-        $sql = $this->input->post('sql', TRUE);
-        $data = $this->database->execSQL($conn, $sql, 1);
-        
+        switch (substr($sql, 0, 6)){
+            case 'SELECT':
+            case 'select':
+                $data = $this->sql_lib->execSQL($query = 1, $this->input->post('sql', TRUE), $this->input->post('db_type', TRUE), $db['user_name'], $db['password'], $this->input->post('db_host', TRUE), $this->input->post('db_port', TRUE));
+
+                if (is_string($data)){
+                    $this->data->Out('iframe', $this->input->post('src', TRUE), 0, 'SQL语句出错,出错信息:' . $data);
+                }
+
+                foreach ($data['data'] as $key => $value){
+                    foreach ($value as $col_name => $col_value){
+                        $data['cols'][] = $col_name;
+                    }
+                    break;
+                }
+                break;
+                
+            default :
+                $data = $this->sql_lib->execSQL($query = 0, $this->input->post('sql', TRUE), $this->input->post('db_type', TRUE), $db['user_name'], $db['password'], $this->input->post('db_host', TRUE), $this->input->post('db_port', TRUE));
+                if (is_string($data)){
+                    $this->data->Out('iframe', $this->input->post('src', TRUE), 0, 'SQL语句出错,出错信息:' . $data);
+                }
+                break;
+        } 
+            
         $this->data->Out('iframe', $this->input->post('src', TRUE), 1, 'ExecSQL', $data);
                
     }
@@ -546,6 +565,47 @@ class TableInfo extends CI_Controller{
         
         $this->data->Out('iframe', $this->input->post('src', TRUE), 1, 'RenameTable', $data);
                
+    }
+    
+    /**    
+     *  @Purpose:    
+     *  广播刷新表（表数据已被更改）   
+     *  @Method Name:
+     *  B_ReFreshTable()
+     *  @Parameter: 
+     *  POST user_name 数据库用户名
+     *  POST user_key 用户密钥
+     *  POST src      目标地址
+     *  POST sql      其他用户执行的sql指令
+     *  POST col      其他用户执行的sql指令影响的行数
+     * 
+     *  @Return: 
+     *  状态码|说明
+     *      data
+     * 
+     *  
+    */ 
+    public function B_ReFreshTable(){
+        $this->load->library('secure');
+        $this->load->library('database');
+        $this->load->library('data');
+        
+        $db = array();
+        if ($this->input->post('user_name', TRUE) && $this->input->post('user_key', TRUE)){
+            $db = $this->secure->CheckUserKey($this->input->post('user_key', TRUE));
+            if ($this->input->post('user_name', TRUE) != $db['user_name']){
+                return 0;
+            }
+        } else {
+            return 0;
+        }
+        
+        $data = array();
+        $data['sql'] = $this->input->post('sql', TRUE);
+        $data['col'] = $this->input->post('col', TRUE);
+        $data['user_name'] = $this->input->post('user_name', TRUE);
+        
+        $this->data->Out('group', $this->input->post('src', TRUE), 1, 'B_ReFreshTable' ,  $data);
     }
     
     /**    

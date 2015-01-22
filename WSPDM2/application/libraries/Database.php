@@ -160,7 +160,14 @@ class Database{
             }
             
             $result = self::$_db->query($sql);
-            $result->setFetchMode(PDO::FETCH_ASSOC);
+            if (FALSE === $result){
+                $error = array();
+                $error = self::$_db->errorInfo();
+                return $error[2];
+            } else {
+                $result->setFetchMode(PDO::FETCH_ASSOC);
+            }
+            
             
             while ($row = $result->fetch()){
                 $data['data'][] = $row; 
@@ -174,7 +181,7 @@ class Database{
             }
             
             return $data;        
-        } catch (Exception $ex) {
+        } catch (PDOException $ex) {
             return $ex->getMessage();
         }            
     }
@@ -210,13 +217,15 @@ class Database{
             
             $row = self::$_db->exec($sql);
             
+            if (FALSE === $row){
+                $error = array();
+                $error = self::$_db->errorInfo();
+                return $error[2];
+            } 
+            
             if ($last_insert_id){
                 $data['last_id'] = self::$_db->lastInsertId();
-            }
-            
-            while ($row = $result->fetch()){
-                $data['data'][] = $row; 
-            }
+            }     
             
             if ($record){
                 //记录返回记录数

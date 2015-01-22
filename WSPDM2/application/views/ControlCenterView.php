@@ -32,7 +32,7 @@ var ws, ping, name = 'null', user_list={};
     
     // 当socket连接打开时，输入用户名
     ws.onopen = function() {         
-        ws.send('{"type":"login","name":"DBA", "group":"desktop"}');
+        ws.send('{"type":"login","name":"DBA", "group":"WSPDM2"}');
         setInterval("getping()",1000);
     };
 

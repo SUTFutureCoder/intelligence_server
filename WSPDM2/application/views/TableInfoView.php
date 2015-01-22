@@ -41,7 +41,7 @@
                         
                     <?php foreach($data['data'] as $key => $value): ?>                    
                         <tr>
-                            <td class="col-sm-1"><?= $key ?></td>
+                            <td class="col-sm-1"><?= $key + 1 ?></td>
                             <?php foreach($value as $table_name => $table_value): ?>   
                                 <td><?=$table_value?></td>
                             <?php endforeach; ?>
@@ -59,9 +59,9 @@
                             <th>#</th>
                             <th>操作</th>
                             <th>名字</th>
-                            <th>类型</th>
-                            <th>长度</th>
+                            <th>类型长度</th>
                             <th>字符集</th>
+                            <th>注释</th>
                         </tr>
                     </thead>
                     <tbody>                        
@@ -70,10 +70,22 @@
                         <tr id="struct_view_col_<?=$col_name?>">
                             <td><?= ++$i ?></td>
                             <td><a onclick="dele_col_name('<?=$col_name?>')" style="color:red">删除</a></td>
-                            <td><?= $col_name ?></td>
-                            <td><?= $data['cols'][$col_name]['type']?></td>
-                            <td><?= $data['cols'][$col_name]['length']?></td>
+                            <td><?= $col_name ?>
+                            <?php if ('UNI' == $data['cols'][$col_name]['key']): ?>
+                                <span class="label label-primary">唯</span>
+                            <?php elseif ('PRI' == $data['cols'][$col_name]['key']): ?>
+                                <span class="label label-danger">主</span>
+                            <?php endif;?>
+                            <?php if ('auto_increment' == $data['cols'][$col_name]['auto']): ?>
+                                <span class="label label-success">增</span>
+                            <?php endif;?>
+                            <?php if ('YES' == $data['cols'][$col_name]['nullable']): ?>
+                                <span class="label label-default">空</span>
+                            <?php endif;?>
+                            </td>
+                            <td><?= $data['cols'][$col_name]['type_length']?></td>
                             <td><?= $data['cols'][$col_name]['charset']?></td>
+                            <td><?= $data['cols'][$col_name]['comment']?></td>
                         </tr>
                     <?php endforeach; ?>
                     </tbody>
@@ -84,18 +96,23 @@
                 <div class="col-sm-8">
                     <textarea class="form-control" rows="5" id="sql_area"></textarea>
                     <br/>
-                    <button type="button" class="btn btn-default" onclick="sql_button('SELECT * FROM <?= $data['table'] ?> WHERE ', 0)">SELECT *</button>
                     <button type="button" class="btn btn-default" onclick="sql_button('SELECT ', 0)">SELECT</button>
+                    <button type="button" class="btn btn-default" onclick="sql_button('SELECT * FROM <?= $data['database']?>.<?= $data['table'] ?> WHERE ', 0)">SELECT *</button>
                     <button type="button" class="btn btn-default" onclick="sql_button('UPDATE ', 0)">UPDATE</button>
-                    <button type="button" class="btn btn-default" onclick="sql_button('INSERT INTO ', 0)">INSERT</button>
-                    <button type="button" class="btn btn-warning" onclick="sql_button('DELETE ', 0)">DELETE</button>
+                    <button type="button" class="btn btn-default" onclick="sql_button('INSERT INTO <?= $data['database']?>.<?= $data['table'] ?> ', 0)">INSERT</button>
+                    <button type="button" class="btn btn-warning" onclick="sql_button('DELETE FROM <?= $data['database']?>.<?= $data['table'] ?> ', 0)">DELETE</button>
                     <button type="button" class="btn btn-danger" onclick="sql_button('DROP ', 0)">DROP</button>
                     <br/>
-                    <br/>
+                    <br/>                    
                     <button type="button" class="btn btn-default" onclick="sql_button(' FROM ', 1)">FROM</button>
+                    <button type="button" class="btn btn-danger" onclick="sql_button(' <?= $data['database']?>.<?= $data['table'] ?> ', 1)">DATABASE.TABLE</button>
                     <button type="button" class="btn btn-default" onclick="sql_button(' WHERE ', 1)">WHERE</button>
+                    <button type="button" class="btn btn-default" onclick="sql_button(' SET ', 1)">SET</button>
+                    <button type="button" class="btn btn-default" onclick="sql_button(' VALUES ', 1)">VALUES</button>
                     <button type="button" class="btn btn-default" onclick="sql_button(' AND ', 1)">AND</button>
                     <button type="button" class="btn btn-default" onclick="sql_button(' OR ', 1)">OR</button>
+                    <br/>
+                    <br/> 
                     <button type="button" class="btn btn-default" onclick="sql_button(' ORDER BY ', 1)">ORDER BY</button>
                     <button type="button" class="btn btn-default" onclick="sql_button(' GROUP BY ', 1)">GROUP BY</button>
                     <button type="button" class="btn btn-default" onclick="sql_button(' HAVING BY ', 1)">HAVING</button>
@@ -128,13 +145,29 @@
                         <form role="form" id="insert_list">
                         <?php foreach ($data['cols'] as $col_name => $col_type): ?> 
                         <tr id="insert_<?= $col_name ?>">
-                            <td><?= $col_name ?></td>
-                            <td><?= $data['cols'][$col_name]['length'] ?></td>
+                            <td><?= $col_name ?>
+                            <?php if ('UNI' == $data['cols'][$col_name]['key']): ?>
+                                <span class="label label-primary">唯</span>
+                            <?php elseif ('PRI' == $data['cols'][$col_name]['key']): ?>
+                                <span class="label label-danger">主</span>
+                            <?php endif;?>
+                            <?php if ('auto_increment' == $data['cols'][$col_name]['auto']): ?>
+                                <span class="label label-success">增</span>
+                            <?php endif;?>
+                            <?php if ('YES' == $data['cols'][$col_name]['nullable']): ?>
+                                <span class="label label-default">空</span>
+                            <?php endif;?>                                
+                            <?php if ($data['cols'][$col_name]['comment']): ?>
+                                [<?= $data['cols'][$col_name]['comment']?>]
+                            <?php endif;?>
+                            
+                            </td>
+                            <td><?= $data['cols'][$col_name]['type_length'] ?></td>
                             <td>
                                 <div class="form-group">
-                                    <?php if (1 == $data['cols'][$col_name]['type']): ?>
+                                    <?php if ('tinyint' == $data['cols'][$col_name]['type'] || 'int(1)' == $data['cols'][$col_name]['type_length']): ?>
                                         <input type="checkbox" name="<?= $col_name ?>" class="form-control cbx" id="insert_<?= $col_name ?>_val">
-                                    <?php elseif (253 == $data['cols'][$col_name]['type']): ?>
+                                    <?php elseif ('text' == $data['cols'][$col_name]['type'] || $data['cols'][$col_name]['length'] >= 25): ?>
                                         <textarea class="form-control" name="<?= $col_name ?>" rows="3" id="insert_<?= $col_name ?>_val"></textarea>
                                     <?php else: ?>
                                         <input type="text" class="form-control" name="<?= $col_name ?>" id="insert_<?= $col_name ?>_val">
@@ -231,22 +264,37 @@
                             $("#sql_result").html("");
                             $("#sql_result").append("<br/><table class=\"table table-hover table-bordered\" id=\"sql_data_view\">");
                             $("#sql_data_view").append("<thead><tr><th>#</th>");
-                            //取出字段
-                            $.each(data[4]['cols'], function (col_name){
-                                $("#sql_data_view thead tr").append("<th>" + col_name + "</th>");
-                            });
-                            $("#sql_data_view").append("</thead><tbody>");                        
-                            //取出数据
-                            $.each(data[4]['data'], function (i, data_item){
-    //                            console.log(data_item);
-                                $("#sql_data_view tbody").append("<tr id=" + i + "><td>" + i + "</td></tr>");
-                                $.each(data_item, function (m, data_item_val){
-    //                                console.log(data_item_val);
-                                    $("#sql_data_view tbody #" + i).append("<td>" + data_item_val + "</td>");
-                                })   
-                            })
-                            $("#sql_data_view").append("</tbody></table>");    
-                            break;
+                            
+                            alert(data[4]['sql'].substr(0, 6));
+                            if (data[4]['sql'].substr(0, 6) != 'SELECT' && data[4]['sql'].substr(0, 6) != 'select'){
+                                sql = data[4]['sql'];
+                                col = data[4]['rows'];
+
+                                var data = new Array();
+                                data['src'] = location.href.slice((location.href.lastIndexOf("/")));
+                                data['group'] = 'WSPDM2';
+                                data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/B_ReFreshTable';
+                                data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "sql" : "' + sql + '", "col" : "' + col + '"}';
+                                parent.IframeSend(data, 'group');    
+                                break;
+                            } else {
+                                //取出字段
+                                $.each(data[4]['cols'], function (col_id, col_name){
+                                    $("#sql_data_view thead tr").append("<th>" + col_name + "</th>");
+                                });
+                                $("#sql_data_view").append("</thead><tbody>");                        
+                                //取出数据
+                                $.each(data[4]['data'], function (i, data_item){
+        //                            console.log(data_item);
+                                    $("#sql_data_view tbody").append("<tr id=" + i + "><td>" + i + "</td></tr>");
+                                    $.each(data_item, function (m, data_item_val){
+        //                                console.log(data_item_val);
+                                        $("#sql_data_view tbody #" + i).append("<td>" + data_item_val + "</td>");
+                                    })   
+                                })
+                                $("#sql_data_view").append("</tbody></table>");
+                            }
+                            break;    
 
                         case 'DeleCol':
                             var col_id = $("#struct_view_col_" + data[4]['col_name']).prevAll().length;
@@ -265,7 +313,7 @@
 
                             var data = new Array();
                             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
-                            data['group'] = 'desktop';
+                            data['group'] = 'WSPDM2';
                             data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/B_DeleCol';
                             data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "col_name" : "' + col_name + '"}';
                             parent.IframeSend(data, 'group');                      
@@ -318,7 +366,7 @@
                             alert('删除成功');
                             var data = new Array();
                             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
-                            data['group'] = 'desktop';
+                            data['group'] = 'WSPDM2';
                             data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/B_DeleTable';
                             data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "table" : "<?= $data['table'] ?>", "database" : "<?= $data['database'] ?>"}';
                             parent.IframeSend(data, 'group');    
@@ -328,7 +376,7 @@
                             alert('清除成功');
                             var data = new Array();
                             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
-                            data['group'] = 'desktop';
+                            data['group'] = 'WSPDM2';
                             data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/B_TruncateTable';
                             data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "table" : "<?= $data['table'] ?>", "database" : "<?= $data['database'] ?>"}';
                             parent.IframeSend(data, 'group');    
@@ -338,7 +386,7 @@
                             alert('修改成功');
                             var data_rename = new Array();
                             data_rename['src'] = location.href.slice((location.href.lastIndexOf("/")));
-                            data_rename['group'] = 'desktop';
+                            data_rename['group'] = 'WSPDM2';
                             data_rename['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/B_RenameTable';
                             data_rename['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "database" : "<?= $data['database'] ?>", "old_table_name" : "' + data[4]['old_table_name'] + '", "new_table_name" : "' + data[4]['new_table_name'] + '"}';
                             parent.IframeSend(data_rename, 'group');    
@@ -350,7 +398,15 @@
                     });              
                 } else {
                 //广播接收
-                    switch (data[3]){                        
+                    switch (data[3]){  
+                        case 'B_ReFreshTable':
+                            if ('<?= $user_name ?>' != data[4]['user_name']){
+                                $("#alert").removeClass("alert-success");
+                                $("#alert").addClass("alert-danger");
+                                $("#alert").append("<br/>警告！数据由其他用户发生更改！<br/>使用SQL语句" + data[4]['sql'] + "<br/>影响行数" + data[4]['col'] + "<br/><br/><button type=\"button\" class=\"btn btn-success\" onclick=\" window.location.href='" + location.href + "'\">重新加载以消除脏数据</button>");
+                            }
+                            break;
+                            
                         case 'B_DeleCol':
                             if ($("#struct_view_col_" + data[4]).length){
                                 var col_id = $("#struct_view_col_" + data[4]).prevAll().length;
@@ -408,7 +464,7 @@
             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
             data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/ExecSQL';
             data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
-            data['data'] += '"sql" : "' + $("#sql_area").val() + '", "database" : "<?= $data['database'] ?>"}';
+            data['data'] += '"sql" : "' + $("#sql_area").val() + '", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
             parent.IframeSend(data);
         }
         
@@ -428,7 +484,7 @@
             var values = $("#insert_list").serializeArray();
             var data = new Array();
             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
-            data['group'] = 'desktop';
+            data['group'] = 'WSPDM2';
             data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/InsertData';
             data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "database" : "<?= $data['database'] ?>", "table" : "<?= $data['table'] ?>", "data" : {';
             $.each(values, function(i, field){

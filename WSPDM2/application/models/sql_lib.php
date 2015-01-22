@@ -158,7 +158,7 @@ class Sql_lib extends CI_Model{
                 $data['cols'][$colinfo['COLUMN_NAME']]['right'] = $colinfo['PRIVILEGES'];
                 
                 //注释
-                $data['cols'][$colinfo['COLUMN_NAME']]['comment'] = $colinfo['COLUMN_COMMENT'];
+                $data['cols'][$colinfo['COLUMN_NAME']]['comment'] = trim($colinfo['COLUMN_COMMENT']);
                 
             }
             
@@ -166,5 +166,23 @@ class Sql_lib extends CI_Model{
         } else {
             return 0;
         }
+    }
+    
+    //执行命令
+    public function execSQL($query, $sql, $db_type, $db_username, $db_password, $db_host, $db_port){
+        if (!self::$_ci){
+            self::$_ci =& get_instance();
+            self::$_ci->load->library('database');
+        }
+        
+        self::$_ci->database->connect(0, $db_type, $db_username, $db_password, $db_host, $db_port);
+        
+        if ($query){
+            //SELECT
+            return self::$_ci->database->query($sql, 1);
+        } else {
+            return self::$_ci->database->exec($sql, 1);
+        }
+        
     }
 }
