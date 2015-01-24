@@ -331,4 +331,43 @@ class Sql_lib extends CI_Model{
         
         return  $this->database->query($sql_search, 1);
     }
+    
+    //删除表
+    public function deleTable($database, $table, $db_type, $db_username, $db_password, $db_host, $db_port){
+        if (!self::$_ci){
+            self::$_ci =& get_instance();
+            self::$_ci->load->library('database');
+        }
+        
+        self::$_ci->database->connect(0, $db_type, $db_username, $db_password, $db_host, $db_port);
+        
+        $sql = 'DROP TABLE ' . $database . '.' . $table . ' ';
+        return self::$_ci->database->exec($sql, 1);
+    }
+    
+    //清除表
+    public function truncateTable($database, $table, $db_type, $db_username, $db_password, $db_host, $db_port){
+        if (!self::$_ci){
+            self::$_ci =& get_instance();
+            self::$_ci->load->library('database');
+        }
+        
+        self::$_ci->database->connect(0, $db_type, $db_username, $db_password, $db_host, $db_port);
+        
+        $sql = 'TRUNCATE ' . $database . '.' . $table . ' ';
+        return self::$_ci->database->exec($sql, 1);
+    }
+    
+    //表重命名
+    public function renameTable($database, $old_table_name, $new_table_name, $db_type, $db_username, $db_password, $db_host, $db_port){
+        if (!self::$_ci){
+            self::$_ci =& get_instance();
+            self::$_ci->load->library('database');
+        }
+        
+        self::$_ci->database->connect(0, $db_type, $db_username, $db_password, $db_host, $db_port);
+        
+        $sql = "RENAME TABLE $database.$old_table_name TO $database.$new_table_name";
+        return self::$_ci->database->exec($sql, 1);
+    }
 }

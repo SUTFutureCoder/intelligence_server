@@ -31,11 +31,18 @@ class TableInfo extends CI_Controller{
         $data['database'] = htmlentities($this->input->get('db', TRUE), ENT_QUOTES);
         
         //获取浏览数据
-        $data = array_merge($data, $this->sql_lib->getTableData($data['database'], 
+        $data_temp = array();
+        if (0 == ($data_temp = $this->sql_lib->getTableData($data['database'], 
                 $data['table'], 
                 $data['start'], 
-                $data['end']));
+                $data['end']))){
+            echo '<script>alert("该表不存在");</script>';
+            return 0;
+        } else {
+            $data = array_merge($data, $data_temp);
+        }
         
+        unset($data_temp);
         $data = array_merge($data, $this->sql_lib->getColData($data['database'], $data['table']));
         
         $this->load->view('TableInfoView', array('data' => $data,
@@ -345,6 +352,9 @@ class TableInfo extends CI_Controller{
      *  POST src      目标地址
      *  POST database 操作数据库
      *  POST table    操作表
+     *  POST db_type  数据库类型
+     *  POST db_host  数据库地址
+     *  POST db_port  数据库端口
      * 
      *  @Return: 
      *  状态码|说明
@@ -354,8 +364,8 @@ class TableInfo extends CI_Controller{
     */ 
     public function DeleTable(){
         $this->load->library('secure');
-        $this->load->library('database');
         $this->load->library('data');
+        $this->load->model('sql_lib');
         
         $db = array();
         if ($this->input->post('user_name', TRUE) && $this->input->post('user_key', TRUE)){
@@ -367,23 +377,27 @@ class TableInfo extends CI_Controller{
             $this->data->Out('iframe', $this->input->post('src', TRUE), -2, '未检测到密钥');
         }
         
-        //连接数据库
-        $conn = $this->database->dbConnect($db['user_name'], $db['password']);
-        
-        //过滤数据库名
-        $database = mysqli_real_escape_string($conn, $this->input->post('database', TRUE));
-        $table = mysqli_real_escape_string($conn, $this->input->post('table', TRUE));
-
-        //连接数据库，非记录模式
-        $sql = 'USE ' . $database;
-        $this->database->execSQL($conn, $sql, 0);
+        if (!$this->input->post('db_type', TRUE) || !$db['user_name'] || 
+                null == $this->input->post('database', TRUE) || 
+                null == $this->input->post('table', TRUE)){
+            $this->data->Out('iframe', $this->input->post('src', TRUE), -3, 'SQL信息缺失，请重新登录');
+        }
         
         //执行SQL语句，为记录模式
-        //ALTER TABLE `activity` DROP `act_section`
-        $sql = 'DROP TABLE ' . $table . ' ';
-        $data = $this->database->execSQL($conn, $sql, 1);
-        $data['table'] = $table;
-        $data['database'] = $database;
+        $data = $this->sql_lib->deleTable($this->input->post('database', TRUE),
+                $this->input->post('table', TRUE),
+                $this->input->post('db_type', TRUE),
+                $db['user_name'],
+                $db['password'],
+                $this->input->post('db_host', TRUE),
+                $this->input->post('db_port', TRUE));
+        
+        if (is_string($data)){
+            $this->data->Out('iframe', $this->input->post('src', TRUE), 0, 'SQL语句出错,出错信息:' . $data);
+        }
+        
+        $data['table'] = $this->input->post('table', TRUE);
+        $data['database'] = $this->input->post('database', TRUE);
         
         $this->data->Out('iframe', $this->input->post('src', TRUE), 1, 'DeleTable', $data);
                
@@ -400,6 +414,9 @@ class TableInfo extends CI_Controller{
      *  POST src      目标地址
      *  POST database 操作数据库
      *  POST table    操作表
+     *  POST db_type  数据库类型
+     *  POST db_host  数据库地址
+     *  POST db_port  数据库端口
      * 
      *  @Return: 
      *  状态码|说明
@@ -409,8 +426,8 @@ class TableInfo extends CI_Controller{
     */ 
     public function TruncateTable(){
         $this->load->library('secure');
-        $this->load->library('database');
         $this->load->library('data');
+        $this->load->model('sql_lib');
         
         $db = array();
         if ($this->input->post('user_name', TRUE) && $this->input->post('user_key', TRUE)){
@@ -422,23 +439,27 @@ class TableInfo extends CI_Controller{
             $this->data->Out('iframe', $this->input->post('src', TRUE), -2, '未检测到密钥');
         }
         
-        //连接数据库
-        $conn = $this->database->dbConnect($db['user_name'], $db['password']);
-        
-        //过滤数据库名
-        $database = mysqli_real_escape_string($conn, $this->input->post('database', TRUE));
-        $table = mysqli_real_escape_string($conn, $this->input->post('table', TRUE));
-
-        //连接数据库，非记录模式
-        $sql = 'USE ' . $database;
-        $this->database->execSQL($conn, $sql, 0);
+        if (!$this->input->post('db_type', TRUE) || !$db['user_name'] || 
+                null == $this->input->post('database', TRUE) || 
+                null == $this->input->post('table', TRUE)){
+            $this->data->Out('iframe', $this->input->post('src', TRUE), -3, 'SQL信息缺失，请重新登录');
+        }
         
         //执行SQL语句，为记录模式
-        //ALTER TABLE `activity` DROP `act_section`
-        $sql = 'TRUNCATE ' . $table . ' ';
-        $data = $this->database->execSQL($conn, $sql, 1);
-        $data['table'] = $table;
-        $data['database'] = $database;
+        $data = $this->sql_lib->truncateTable($this->input->post('database', TRUE),
+                $this->input->post('table', TRUE),
+                $this->input->post('db_type', TRUE),
+                $db['user_name'],
+                $db['password'],
+                $this->input->post('db_host', TRUE),
+                $this->input->post('db_port', TRUE));
+        
+        if (is_string($data)){
+            $this->data->Out('iframe', $this->input->post('src', TRUE), 0, 'SQL语句出错,出错信息:' . $data);
+        }
+        
+        $data['table'] = $this->input->post('table', TRUE);
+        $data['database'] = $this->input->post('database', TRUE);
         
         $this->data->Out('iframe', $this->input->post('src', TRUE), 1, 'TruncateTable', $data);
                
@@ -456,6 +477,9 @@ class TableInfo extends CI_Controller{
      *  POST database 操作数据库
      *  POST old_table_name    操作表(旧表名)
      *  POST new_table_name    新表名
+     *  POST db_type  数据库类型
+     *  POST db_host  数据库地址
+     *  POST db_port  数据库端口
      * 
      *  @Return: 
      *  状态码|说明
@@ -465,8 +489,8 @@ class TableInfo extends CI_Controller{
     */ 
     public function RenameTable(){
         $this->load->library('secure');
-        $this->load->library('database');
         $this->load->library('data');
+        $this->load->model('sql_lib');
         
         $db = array();
         if ($this->input->post('user_name', TRUE) && $this->input->post('user_key', TRUE)){
@@ -478,24 +502,28 @@ class TableInfo extends CI_Controller{
             $this->data->Out('iframe', $this->input->post('src', TRUE), -2, '未检测到密钥');
         }
         
-        //连接数据库
-        $conn = $this->database->dbConnect($db['user_name'], $db['password']);
-        
-        //过滤数据库名
-        $database = mysqli_real_escape_string($conn, $this->input->post('database', TRUE));
-        $old_table_name = mysqli_real_escape_string($conn, $this->input->post('old_table_name', TRUE));
-        $new_table_name = mysqli_real_escape_string($conn, $this->input->post('new_table_name', TRUE));
+        if (!$this->input->post('db_type', TRUE) || !$db['user_name'] || 
+                null == $this->input->post('database', TRUE) || 
+                null == $this->input->post('old_table_name', TRUE) || 
+                null == $this->input->post('new_table_name', TRUE)){
+            $this->data->Out('iframe', $this->input->post('src', TRUE), -3, 'SQL信息缺失，请重新登录');
+        }
 
-        //连接数据库，非记录模式
-        $sql = 'USE ' . $database;
-        $this->database->execSQL($conn, $sql, 0);
-        
         //执行SQL语句，为记录模式
-        //ALTER TABLE `activity` DROP `act_section`
-        $sql = "RENAME TABLE $database.$old_table_name TO $database.$new_table_name";
-        $data = $this->database->execSQL($conn, $sql, 1);
-        $data['old_table_name'] = $old_table_name;
-        $data['new_table_name'] = $new_table_name;
+        $data = $this->sql_lib->renameTable($this->input->post('database', TRUE),
+                $this->input->post('old_table_name', TRUE),
+                $this->input->post('new_table_name', TRUE),
+                $this->input->post('db_type', TRUE),
+                $db['user_name'],
+                $db['password'],
+                $this->input->post('db_host', TRUE),
+                $this->input->post('db_port', TRUE));
+        
+        if (is_string($data)){
+            $this->data->Out('iframe', $this->input->post('src', TRUE), 0, 'SQL语句出错,出错信息:' . $data);
+        }
+        $data['old_table_name'] = $this->input->post('old_table_name', TRUE);
+        $data['new_table_name'] = $this->input->post('new_table_name', TRUE);
         
         $this->data->Out('iframe', $this->input->post('src', TRUE), 1, 'RenameTable', $data);
                
@@ -521,7 +549,6 @@ class TableInfo extends CI_Controller{
     */ 
     public function B_ReFreshTable(){
         $this->load->library('secure');
-        $this->load->library('database');
         $this->load->library('data');
         
         $db = array();
@@ -561,7 +588,6 @@ class TableInfo extends CI_Controller{
     */ 
     public function B_DeleCol(){
         $this->load->library('secure');
-        $this->load->library('database');
         $this->load->library('data');
         
         $db = array();
@@ -596,7 +622,6 @@ class TableInfo extends CI_Controller{
     */ 
     public function B_DeleTable(){
         $this->load->library('secure');
-        $this->load->library('database');
         $this->load->library('data');
         
         $db = array();
@@ -634,7 +659,6 @@ class TableInfo extends CI_Controller{
     */ 
     public function B_TruncateTable(){
         $this->load->library('secure');
-        $this->load->library('database');
         $this->load->library('data');
         
         $db = array();
@@ -673,7 +697,6 @@ class TableInfo extends CI_Controller{
     */ 
     public function B_RenameTable(){
         $this->load->library('secure');
-        $this->load->library('database');
         $this->load->library('data');
         
         $db = array();

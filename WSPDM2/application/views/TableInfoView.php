@@ -4,6 +4,7 @@
         <title></title>
         <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
         <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+        <script src="<?= base_url('./echarts/dist/echarts-all.js')?>"></script>
         <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">         
     </head>
     <body>
@@ -22,11 +23,12 @@
             <li role="presentation"><a href="#sql" role="tab" data-toggle="tab">SQL</a></li>
             <li role="presentation"><a href="#insert" role="tab" data-toggle="tab">插入</a></li>
             <li role="presentation"><a href="#search" role="tab" data-toggle="tab">搜索</a></li>
+            <li role="presentation"><a href="#chart" role="tab" data-toggle="tab">分析</a></li>
             <li role="presentation"><a href="#operating" role="tab" data-toggle="tab">操作</a></li>
         </ul>
 
         <div class="tab-content">
-            <div role="tabpanel" class="tab-pane active" id="view">
+            <div role="tabpanel" class="tab-pane fade in active" id="view">
                 <br/>
                 <table class="table table-hover table-bordered" id="data_view">
                     <thead>
@@ -51,7 +53,7 @@
                 </table>
                 
             </div>
-            <div role="tabpanel" class="tab-pane" id="struct">
+            <div role="tabpanel" class="tab-pane fade" id="struct">
                 <br/>
                 <table class="table table-hover table-bordered" id="struct_view">
                     <thead>
@@ -91,7 +93,7 @@
                     </tbody>
                 </table>
             </div>
-            <div role="tabpanel" class="tab-pane" id="sql">
+            <div role="tabpanel" class="tab-pane fade" id="sql">
                 <br/>
                 <div class="col-sm-8">
                     <textarea class="form-control" rows="5" id="sql_area"></textarea>
@@ -139,7 +141,7 @@
                     
                 </div>
             </div>
-            <div role="tabpanel" class="tab-pane" id="insert">                
+            <div role="tabpanel" class="tab-pane fade" id="insert">                
                 <table class="table table-hover table-bordered" >                       
                     <tbody>  
                         <form role="form" id="insert_list">
@@ -181,7 +183,7 @@
                 </table>
                 <button type="button" class="btn btn-primary btn-lg btn-block" onclick="insert()">插入</button>
             </div>
-            <div role="tabpanel" class="tab-pane" id="search">
+            <div role="tabpanel" class="tab-pane fade" id="search">
                 <table class="table table-hover table-bordered" id="search_panel"> 
                     <thead>
                         <tr>
@@ -225,7 +227,13 @@
                     
                 </div>
             </div>
-            <div role="tabpanel" class="tab-pane" id="operating">                
+            <div role="tabpanel" class="tab-pane fade" id="char">
+                <br/>
+                <div id="char_view">
+                    
+                </div>
+            </div>
+            <div role="tabpanel" class="tab-pane fade" id="operating">                
                 <br/>
                 <div class="panel panel-warning">
                     <div class="panel-heading">修改表名</div>
@@ -555,7 +563,7 @@
             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
             data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/DeleTable';
             data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
-            data['data'] += '"table" : "<?= $data['table'] ?>", "database" : "<?= $data['database'] ?>"}';
+            data['data'] += '"table" : "<?= $data['table'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
             parent.IframeSend(data);
         }
         
@@ -565,7 +573,7 @@
             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
             data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/TruncateTable';
             data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
-            data['data'] += '"table" : "<?= $data['table'] ?>", "database" : "<?= $data['database'] ?>"}';
+            data['data'] += '"table" : "<?= $data['table'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
             parent.IframeSend(data);
         }
         
@@ -576,7 +584,7 @@
                 data['src'] = location.href.slice((location.href.lastIndexOf("/")));
                 data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/RenameTable';
                 data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
-                data['data'] += '"old_table_name" : "<?= $data['table'] ?>", "new_table_name" : "' + $("#new_table_name").val() + '", "database" : "<?= $data['database'] ?>"}';
+                data['data'] += '"old_table_name" : "<?= $data['table'] ?>", "new_table_name" : "' + $("#new_table_name").val() + '", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
                 parent.IframeSend(data);
             }
         }
