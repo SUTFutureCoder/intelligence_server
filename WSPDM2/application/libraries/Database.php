@@ -154,7 +154,7 @@ class Database{
         $data = array();
         
         if ($memcache){
-            if ($memcache_obj = memcache_connect('127.0.0.1', 11211)){
+            if ($memcache_obj = @memcache_connect('127.0.0.1', 11211)){
                 $key = md5($sql);
                 $time_potin_a = microtime(TRUE);
                 if ($data = $memcache_obj->get($key)){
@@ -193,7 +193,7 @@ class Database{
                 $data['time'] = number_format($time_potin_b - $time_potin_a, '8');
             }
             
-            if ($memcache){
+            if (isset($memcache_obj) && is_object($memcache_obj)){
                 $memcache_obj->add($key, $data);
             }
             

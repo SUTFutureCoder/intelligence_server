@@ -4,8 +4,13 @@
         <title></title>
         <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
         <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
-        <script src="<?= base_url('./echarts/dist/echarts-all.js')?>"></script>
-        <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">         
+        <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">   
+        <script>
+            //预定义全局变量用于图表显示，图表显示和执行SQL结果一致
+            var chart_data = new Array();
+            chart_data['cols'] = new Array();
+            chart_data['data'] = new Array();
+        </script>
     </head>
     <body>
         <br/>
@@ -23,7 +28,7 @@
             <li role="presentation"><a href="#sql" role="tab" data-toggle="tab">SQL</a></li>
             <li role="presentation"><a href="#insert" role="tab" data-toggle="tab">插入</a></li>
             <li role="presentation"><a href="#search" role="tab" data-toggle="tab">搜索</a></li>
-            <li role="presentation"><a href="#chart" role="tab" data-toggle="tab">分析</a></li>
+            <li role="presentation"><a href="#chart" id="chart_prepare" role="tab" data-toggle="tab">分析</a></li>
             <li role="presentation"><a href="#operating" role="tab" data-toggle="tab">操作</a></li>
         </ul>
 
@@ -36,6 +41,9 @@
                             <th>#</th>
                             <?php foreach ($data['cols'] as $col_name => $col_type):?>
                             <th id="data_view_<?= $col_name?>"><?= $col_name ?></th>
+                            <script>
+                                chart_data['cols'].push("<?= $col_name?>");
+                            </script>
                             <?php endforeach; ?>
                         </tr>
                     </thead>
@@ -46,6 +54,9 @@
                             <td class="col-sm-1"><?= $key + 1 ?></td>
                             <?php foreach($value as $table_name => $table_value): ?>   
                                 <td><?=$table_value?></td>
+                                <script>
+                                chart_data['data'].push("<?= $table_value?>");
+                                </script>
                             <?php endforeach; ?>
                         </tr>
                     <?php endforeach; ?>
@@ -227,11 +238,8 @@
                     
                 </div>
             </div>
-            <div role="tabpanel" class="tab-pane fade" id="char">
-                <br/>
-                <div id="char_view">
-                    
-                </div>
+            <div role="tabpanel" class="tab-pane fade" id="chart">
+                <br/>                
             </div>
             <div role="tabpanel" class="tab-pane fade" id="operating">                
                 <br/>
@@ -258,8 +266,7 @@
         </div>
         
     </body>
-    <script>
-        
+    <script>        
         //接收母窗口传来的值
         function MotherResultRec(data) {
             if (1 == data[2]) {
@@ -286,20 +293,30 @@
                                 break;
                             } else {
                                 //取出字段
-                                $.each(data[4]['cols'], function (col_id, col_name){
-                                    $("#sql_data_view thead tr").append("<th>" + col_name + "</th>");
-                                });
-                                $("#sql_data_view").append("</thead><tbody>");                        
-                                //取出数据
-                                $.each(data[4]['data'], function (i, data_item){
-        //                            console.log(data_item);
-                                    $("#sql_data_view tbody").append("<tr id=" + i + "><td>" + i + "</td></tr>");
-                                    $.each(data_item, function (m, data_item_val){
-        //                                console.log(data_item_val);
-                                        $("#sql_data_view tbody #" + i).append("<td>" + data_item_val + "</td>");
-                                    })   
-                                })
-                                $("#sql_data_view").append("</tbody></table>");
+                                if (data[4]['cols'].length){
+                                    return 0;
+                                } else {
+                                    $.each(data[4]['cols'], function (col_id, col_name){
+                                        $("#sql_data_view thead tr").append("<th>" + col_name + "</th>");
+                                    });
+                                    $("#sql_data_view").append("</thead><tbody>");                        
+                                    //取出数据
+                                    $.each(data[4]['data'], function (i, data_item){
+            //                            console.log(data_item);
+                                        $("#sql_data_view tbody").append("<tr id=" + i + "><td>" + i + "</td></tr>");
+                                        $.each(data_item, function (m, data_item_val){
+            //                                console.log(data_item_val);
+                                            $("#sql_data_view tbody #" + i).append("<td>" + data_item_val + "</td>");
+                                        })   
+                                    })
+                                    $("#sql_data_view").append("</tbody></table>");
+                                }
+                                
+                                
+                                
+                                //准备显示图表
+                                chart_data['cols'] = data[4]['cols'];
+                                chart_data['data'] = data[4]['data'];
                             }
                             break;    
 
@@ -589,5 +606,98 @@
             }
         }
         
+    </script>
+    <script src="<?= base_url('./echarts/dist/echarts-all.js')?>"></script>
+    <script>
+    //直接在tab中无法使用echart，需要等待tab执行结束后再执行一遍
+    $(function (){
+        $('#chart_prepare[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+            $("#chart_view").remove();
+            $("#chart").append('<div id="chart_view" style="height:400px"></div>');
+            var myChart = echarts.init(document.getElementById('chart_view')); 
+            var option = {
+                title : {
+                    text: '<?= $data['database']?>.<?= $data['table']?>',
+                    subtext: '统计数据由SQL命令生成'
+                },
+                tooltip : {
+                    trigger: 'axis'
+                },
+                legend: {
+                    //类别
+                    data:[]
+                },
+                toolbox: {
+                    show : true,
+                    feature : {
+                        mark : {show: true},
+                        dataView : {show: true, readOnly: false},
+                        magicType : {show: true, type: ['line', 'bar', 'stack', 'tiled']},
+                        restore : {show: true},
+                        saveAsImage : {show: true}
+                    }
+                },
+                calculable : true,
+                xAxis : [
+                    {
+                        type : 'category',
+                        boundaryGap : false,
+                        data : ['周一','周二','周三','周四','周五','周六','周日']
+                    }
+                ],
+                yAxis : [
+                    {
+                        type : 'value',
+    //                    axisLabel : {
+    //                        formatter: '{value} °C'
+    //                    }
+                    }
+                ],
+                series : [
+                    {
+                        name:'最高气温',
+                        type:'line',
+                        data:[11, 11, 15, 13, 12, 13, 10],
+                        markPoint : {
+                            data : [
+                                {type : 'max', name: '最大值'},
+                                {type : 'min', name: '最小值'}
+                            ]
+                        },
+                        markLine : {
+                            data : [
+                                {type : 'average', name: '平均值'}
+                            ]
+                        }
+                    },
+                    {
+                        name:'最低气温',
+                        type:'line',
+                        data:[1, -2, 2, 5, 3, 2, 0],
+                        markPoint : {
+                            data : [
+                                {name : '周最低', value : -2, xAxis: 1, yAxis: -1.5}
+                            ]
+                        },
+                        markLine : {
+                            data : [
+                                {type : 'average', name : '平均值'}
+                            ]
+                        }
+                    }
+                ]
+            };
+            
+            delete option.legend.data.length;
+            
+            
+            var chart_cols_data_length = chart_data['cols'].length;
+            for (i = 0; i < chart_cols_data_length; i++){
+                option.legend.data.push(chart_data['cols'][i]);  
+            }
+            console.log(option);
+            myChart.setOption(option); 
+        })
+    });
     </script>
 </html>

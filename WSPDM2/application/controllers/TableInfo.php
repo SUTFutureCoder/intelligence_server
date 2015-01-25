@@ -115,12 +115,18 @@ class TableInfo extends CI_Controller{
                     $this->data->Out('iframe', $this->input->post('src', TRUE), 0, 'SQL语句出错,出错信息:' . $data);
                 }
 
-                foreach ($data['data'] as $key => $value){
-                    foreach ($value as $col_name => $col_value){
-                        $data['cols'][] = $col_name;
+                if (isset($data['data'])){
+                    foreach ($data['data'] as $key => $value){
+                        foreach ($value as $col_name => $col_value){
+                            $data['cols'][] = $col_name;
+                        }
+                        break;
                     }
-                    break;
+                } else {
+                    $data['cols'] = null;
                 }
+                
+                
                 break;
                 
             default :
