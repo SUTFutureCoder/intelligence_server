@@ -123,7 +123,7 @@ class TableInfo extends CI_Controller{
                         break;
                     }
                 } else {
-                    $data['cols'] = null;
+                    $data['cols'] = 0;
                 }
                 
                 

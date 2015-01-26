@@ -25,10 +25,10 @@
         <ul class="nav nav-tabs" role="tablist">
             <li role="presentation" class="active"><a href="#view" role="tab" data-toggle="tab">浏览</a></li>
             <li role="presentation"><a href="#struct" role="tab" data-toggle="tab">结构</a></li>
-            <li role="presentation"><a href="#sql" role="tab" data-toggle="tab">SQL</a></li>
+            <li role="presentation"><a href="#sql" id="sql_tab" role="tab" data-toggle="tab">SQL</a></li>
             <li role="presentation"><a href="#insert" role="tab" data-toggle="tab">插入</a></li>
             <li role="presentation"><a href="#search" role="tab" data-toggle="tab">搜索</a></li>
-            <li role="presentation"><a href="#chart" id="chart_prepare" role="tab" data-toggle="tab">分析</a></li>
+            <li role="presentation"><a href="#chart" id="chart_tab" role="tab" data-toggle="tab">分析</a></li>
             <li role="presentation"><a href="#operating" role="tab" data-toggle="tab">操作</a></li>
         </ul>
 
@@ -41,9 +41,6 @@
                             <th>#</th>
                             <?php foreach ($data['cols'] as $col_name => $col_type):?>
                             <th id="data_view_<?= $col_name?>"><?= $col_name ?></th>
-                            <script>
-                                chart_data['cols'].push("<?= $col_name?>");
-                            </script>
                             <?php endforeach; ?>
                         </tr>
                     </thead>
@@ -53,10 +50,7 @@
                         <tr>
                             <td class="col-sm-1"><?= $key + 1 ?></td>
                             <?php foreach($value as $table_name => $table_value): ?>   
-                                <td><?=$table_value?></td>
-                                <script>
-                                chart_data['data'].push("<?= $table_value?>");
-                                </script>
+                                <td><?=$table_value?></td>                                
                             <?php endforeach; ?>
                         </tr>
                     <?php endforeach; ?>
@@ -239,7 +233,27 @@
                 </div>
             </div>
             <div role="tabpanel" class="tab-pane fade" id="chart">
-                <br/>                
+                <br/>    
+                <form class="form-horizontal" role="form">
+                    <div class="form-group">
+                        <label class="col-sm-1 control-label">横坐标</label>
+                        <div class="col-sm-4">
+                            <select class="form-control" id="chart_x_select">
+                            </select>
+                        </div>
+                        
+                        <div class="col-sm-4">
+                            <label>
+                                <input type="checkbox" id="chart_square_switch">面积图
+                            </label>
+                        </div>
+                    </div>                    
+                </form>
+                
+                
+                <div id="chart_view" style="height:400px">
+                    
+                </div>
             </div>
             <div role="tabpanel" class="tab-pane fade" id="operating">                
                 <br/>
@@ -293,7 +307,7 @@
                                 break;
                             } else {
                                 //取出字段
-                                if (data[4]['cols'].length){
+                                if (!data[4]['cols'].length){
                                     return 0;
                                 } else {
                                     $.each(data[4]['cols'], function (col_id, col_name){
@@ -611,93 +625,169 @@
     <script>
     //直接在tab中无法使用echart，需要等待tab执行结束后再执行一遍
     $(function (){
-        $('#chart_prepare[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-            $("#chart_view").remove();
-            $("#chart").append('<div id="chart_view" style="height:400px"></div>');
-            var myChart = echarts.init(document.getElementById('chart_view')); 
-            var option = {
-                title : {
-                    text: '<?= $data['database']?>.<?= $data['table']?>',
-                    subtext: '统计数据由SQL命令生成'
-                },
-                tooltip : {
-                    trigger: 'axis'
-                },
-                legend: {
-                    //类别
-                    data:[]
-                },
-                toolbox: {
-                    show : true,
-                    feature : {
-                        mark : {show: true},
-                        dataView : {show: true, readOnly: false},
-                        magicType : {show: true, type: ['line', 'bar', 'stack', 'tiled']},
-                        restore : {show: true},
-                        saveAsImage : {show: true}
-                    }
-                },
-                calculable : true,
-                xAxis : [
-                    {
-                        type : 'category',
-                        boundaryGap : false,
-                        data : ['周一','周二','周三','周四','周五','周六','周日']
-                    }
-                ],
-                yAxis : [
-                    {
-                        type : 'value',
-    //                    axisLabel : {
-    //                        formatter: '{value} °C'
-    //                    }
-                    }
-                ],
-                series : [
-                    {
-                        name:'最高气温',
-                        type:'line',
-                        data:[11, 11, 15, 13, 12, 13, 10],
-                        markPoint : {
-                            data : [
-                                {type : 'max', name: '最大值'},
-                                {type : 'min', name: '最小值'}
-                            ]
-                        },
-                        markLine : {
-                            data : [
-                                {type : 'average', name: '平均值'}
-                            ]
-                        }
-                    },
-                    {
-                        name:'最低气温',
-                        type:'line',
-                        data:[1, -2, 2, 5, 3, 2, 0],
-                        markPoint : {
-                            data : [
-                                {name : '周最低', value : -2, xAxis: 1, yAxis: -1.5}
-                            ]
-                        },
-                        markLine : {
-                            data : [
-                                {type : 'average', name : '平均值'}
-                            ]
-                        }
-                    }
-                ]
-            };
-            
-            delete option.legend.data.length;
-            
-            
+        $('#chart_tab[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+            $("#chart_x_select").html('');
             var chart_cols_data_length = chart_data['cols'].length;
             for (i = 0; i < chart_cols_data_length; i++){
-                option.legend.data.push(chart_data['cols'][i]);  
+                $("#chart_x_select").append('<option>' + chart_data['cols'][i] + '</option>');
             }
-            console.log(option);
-            myChart.setOption(option); 
+            
+            if (!chart_data['cols'].length){
+                alert('开始分析前请输入SQL命令,您可以直接点击“执行”按钮');
+                $("#sql_area").html("SELECT * FROM <?= $data['database']?>.<?= $data['table'] ?>");
+                $("#sql_tab").tab('show');
+            } else {
+                setChart(chart_data['cols'][0]);
+            }            
+        })
+        
+        $('#chart_x_select,#chart_square_switch').change(function (e) {               
+//            alert($("#chart_x_select").val());
+            setChart($("#chart_x_select").val());
         })
     });
+    
+    //设置显示
+    function setChart(x){        
+        var chart_square_switch = $("#chart_square_switch").prop('checked');
+        var myChart = echarts.init(document.getElementById('chart_view')); 
+        var option = {
+            title : {
+                text: '<?= $data['database']?>.<?= $data['table']?>',
+                subtext: '统计数据由SQL命令生成'
+            },
+            tooltip : {
+                trigger: 'axis',
+//                axisPointer : {            // 坐标轴指示器，坐标轴触发有效
+//                    type : 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+//                }
+            },
+            legend: {
+                //类别
+                data:[]
+            },
+            toolbox: {
+                show : true,
+                feature : {
+                    mark : {show: true},
+                    dataView : {show: true, readOnly: false},
+                    magicType : {show: true, type: ['line', 'bar', 'stack', 'tiled']},
+                    restore : {show: true},
+                    saveAsImage : {show: true}
+                }
+            },
+            calculable : true,
+            xAxis : [
+                {
+                    type : 'category',
+                    boundaryGap : false,
+                    data : [' ']
+                }
+            ],
+            yAxis : [
+                {
+                    type : 'value',
+//                    axisLabel : {
+//                        formatter: '{value} °C'
+//                    }
+                }
+            ],
+            series : [
+//                {
+//                    name:'最高气温',
+//                    type:'line',
+//                    data:[11, 11, 15, 13, 12, 13, 10],
+//                    markPoint : {
+//                        data : [
+//                            {type : 'max', name: '最大值'},
+//                            {type : 'min', name: '最小值'}
+//                        ]
+//                    },
+//                    markLine : {
+//                        data : [
+//                            {type : 'average', name: '平均值'}
+//                        ]
+//                    }
+//                },
+//                {
+//                    name:'最低气温',
+//                    type:'line',
+//                    data:[1, -2, 2, 5, 3, 2, 0],
+//                    markPoint : {
+//                        data : [
+//                            {name : '周最低', value : -2, xAxis: 1, yAxis: -1.5}
+//                        ]
+//                    },
+//                    markLine : {
+//                        data : [
+//                            {type : 'average', name : '平均值'}
+//                        ]
+//                    }
+//                }
+            ]
+        };
+
+        //legend
+        option.legend.data.length = 0;
+        //series
+        option.series.length = 0;
+        for (i in chart_data['cols']){
+            option.legend.data.push(chart_data['cols'][i]);
+            //根据legend生成i组series数组等待填充
+            option.series[i] = new Object();
+            option.series[i].name = chart_data['cols'][i];
+            option.series[i].type = 'line';
+            option.series[i].data = new Array();
+            
+            
+            if (true === chart_square_switch){
+                option.series[i].itemStyle = new Object();
+                option.series[i].itemStyle.normal = new Object();
+                option.series[i].itemStyle.normal.areaStyle = new Object();
+                option.series[i].itemStyle.normal.areaStyle.type = 'default';
+                option.series[i].smooth = true;
+            }
+            
+            option.series[i].markPoint = new Object();
+            option.series[i].markPoint.data = new Array();
+            option.series[i].markPoint.data[0] = new Object();
+            option.series[i].markPoint.data[0].type = 'max';
+            option.series[i].markPoint.data[0].name = '最大值';
+            
+            option.series[i].markPoint.data[1] = new Object();
+            option.series[i].markPoint.data[1].type = 'min';
+            option.series[i].markPoint.data[1].name = '最小值';
+
+            option.series[i].markLine = new Object();
+            option.series[i].markLine.data = new Array();
+            option.series[i].markLine.data[0] = new Object();
+            option.series[i].markLine.data[0].type = 'average';
+            option.series[i].markLine.data[0].name = '平均值';            
+        }
+        
+        if (chart_data['data'].length != 0){
+            option.xAxis[0].data.length = 0;
+        }
+        
+        //大型for循环   
+        for (i in chart_data['data']){
+        //xAxis
+            if ("undefined" !== chart_data['data'][i][x]){
+                option.xAxis[0].data.push(chart_data['data'][i][x]);
+            } else {
+                alert('横坐标错误');
+                return 0;
+            }
+            
+        //series
+            var m = 0;
+            for (n in chart_data['data'][i]){                                 
+                option.series[m].data.push(chart_data['data'][i][n]);
+                m++;
+            }
+            
+        }
+        myChart.setOption(option); 
+    }
     </script>
 </html>
