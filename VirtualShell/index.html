@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Virtual_Shell</title>
+        <title>Virtual_Shell2</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="include/css/shell.css" rel="stylesheet" type="text/css">
@@ -135,6 +135,7 @@
     };
     ws.onclose = function() {
         console.log("服务端关闭了连接");
+        AddMessageBox("Lost connection to server", "red");
     };
     ws.onerror = function() {
         console.log("出现错误");

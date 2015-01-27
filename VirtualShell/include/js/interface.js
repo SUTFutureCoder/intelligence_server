@@ -1,7 +1,8 @@
 //初始界面
 $(function(){
-    AddMessageBox("Welcome to use the virtual shell");
-    AddMessageBox("(C) SUT-ACM 2014-2015 *Chen & Bricks");
+    AddMessageBox("Welcome to use the virtual shell2");
+    var now = new Date();    
+    AddMessageBox("(C) SUT-ACM 2014-" + now.getFullYear() + " *Chen");
     AddMessageBox("USE $vs:help to get more information");
     AddCommandBox();
     $("input:last").focus();

@@ -12,6 +12,8 @@ use \Lib\StatisticClient;
 use \Lib\Store;
 use \Protocols\GatewayProtocol;
 use \Protocols\WebSocket;
+use \User\VirtualShell;
+
 
 class Event
 {
@@ -114,7 +116,7 @@ class Event
             self::onClose($uid);
             return;
         }
-        $message =WebSocket::decode($message);
+        $message = WebSocket::decode($message);
         // debug
         echo "client:{$_SERVER['REMOTE_ADDR']}:{$_SERVER['REMOTE_PORT']} gateway:{$_SERVER['GATEWAY_ADDR']}:{$_SERVER['GATEWAY_PORT']} socketid:{$_SERVER['GATEWAY_SOCKET_ID']} uid:$uid onMessage:".$message."\n";
         $message_data = json_decode($message, true);
@@ -126,35 +128,68 @@ class Event
         switch($message_data['type'])
         {
             // 用户登录 message格式: {type:login, name:xx} ，添加到用户，广播给所有用户xx进入聊天室
-            case 'login':  
+            case 'login': 
+                
+                if ('VirtualShell' == $message_data['group']){
+                    //此处不信任任何转发，直接处理
+                    $clean = array();
+                    $clean['user_name'] = htmlentities(trim($message_data['name']), ENT_QUOTES);
+                    $clean['password'] = htmlentities(trim($message_data['password']), ENT_QUOTES);
+                    $clean['group'] = htmlentities(trim($message_data['group']), ENT_QUOTES);
+
+                    $result = array();
+                    $result = VirtualShell::CheckShellPassWord($clean['user_name'], $clean['password'], $uid);
+                    if (1 != $result['id']){
+                        $new_message = array(
+                            '0' => 'login',
+                            '1' => $result['id'],
+                            '2' => $result['message'],
+                        );
+                        self::addUserToList($uid, htmlspecialchars($message_data['name']), $message_data['group']);
+                    } else {
+                        $new_message = array(
+                            '0' => 'login',
+                            '1' => $result['id'],
+                        );
+                    }
+                    
+                    return Gateway::sendToUid($uid, WebSocket::encode(json_encode($new_message)));
+                } else {
+                }
                 self::addUserToList($uid, htmlspecialchars($message_data['name']), $message_data['group']);
                 break;
             // 用户发言 message: {type:say, to_uid:xx, content:xx}
             case 'say':
                 // 私聊
-                if($message_data['to_uid'] != 'all')
-                {
-                    $new_message = array(
-                        'type'=>'say',
-                        'from_uid'=>$uid, 
-                        'to_uid'=>$message_data['to_uid'],
-                        'content'=>nl2br(htmlspecialchars($message_data['content'])),
-                        'time'=>date('Y-m-d :i:s'),
-                    );
-                    return Gateway::sendToUid($message_data['to_uid'], WebSocket::encode(json_encode($new_message)));
-                }
+//                if($message_data['to_uid'] != 'all')
+//                {
+//                    $new_message = array(
+//                        'type'=>'say',
+//                        'from_uid'=>$uid, 
+//                        'to_uid'=>$message_data['to_uid'],
+//                        'content'=>nl2br(htmlspecialchars($message_data['content'])),
+//                        'time'=>date('Y-m-d :i:s')
+//                    );
+//                    return Gateway::sendToUid($message_data['to_uid'], WebSocket::encode(json_encode($new_message)));
+//                }
                 // 向大家说
                
                 $new_message = array(
-                    'type'=>'say', 
-                    'from_uid'=>$uid,
-                    'to_uid'=>'all',
-                    'content'=>nl2br(htmlspecialchars($message_data['content'])),
-                    'time'=>date('Y-m-d :i:s'),
+                    '0'=>'say', 
+                    '1'=> htmlspecialchars($message_data['name']),
+                    '2'=>nl2br(htmlspecialchars($message_data['content'])),
+                    '3'=>date('Y-m-d H:i:s'),
                 );
+                $new_message_encode = json_encode($new_message);
                 
-                
-                return Gateway::sendToAll(WebSocket::encode(json_encode($new_message)));
+                foreach (self::getGroupUserList() as $key => $value){                    
+                    if ($key == $message_data['group']){
+                        foreach ($value as $uid => $user_id){
+                            Gateway::sendToUid($uid, WebSocket::encode($new_message_encode));
+                        }                        
+                    }   
+                }
+                return TRUE;
                 
             case 'func':
                 $url = $message_data['api'];
@@ -218,6 +253,24 @@ class Event
                 //选择器索引放入result[2]
 //                $new_message[2] = $message_data['src'];
                 return Gateway::sendToUid($uid, WebSocket::encode($new_message));
+                
+            case 'shell':
+                $command = $message_data['command'];
+                //过滤
+                $command = escapeshellcmd(trim($command));
+                
+                $new_message = array();
+                
+                if (VirtualShell::Logined($uid)){
+                    $new_message = VirtualShell::Socket($uid, $command);    
+                    if (isset($new_message[0])){
+                        return Gateway::sendToUid($uid, WebSocket::encode(json_encode($new_message)));
+                    }
+                } else {
+                    $new_message[0] = 'shell';
+                    $new_message[1] = 'Please Login First';
+                    return Gateway::sendToUid($uid, WebSocket::encode(json_encode($new_message)));
+                }
         }
    }
    
@@ -288,7 +341,6 @@ class Event
    }
    
    public static function getApiData($url, $data, $key = null){
-//        $cmh = curl_multi_init();
         $ch = curl_init();
         $timeout = 0;
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -303,5 +355,6 @@ class Event
         //echo $handles;
         curl_close($ch);   
         return $handles;
-    }
+    }      
+    
 }

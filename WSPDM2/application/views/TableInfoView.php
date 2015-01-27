@@ -48,7 +48,8 @@
                         
                     <?php foreach($data['data'] as $key => $value): ?>                    
                         <tr>
-                            <td class="col-sm-1"><?= $key + 1 ?></td>
+                            <td class="col-sm-1"><?= $key + 1 ?>
+                            </td>
                             <?php foreach($value as $table_name => $table_value): ?>   
                                 <td><?=$table_value?></td>                                
                             <?php endforeach; ?>
@@ -621,7 +622,7 @@
         }
         
     </script>
-    <script src="<?= base_url('./echarts/dist/echarts-all.js')?>"></script>
+    <script src="<?= base_url('./echarts/dist/echarts-all.js') ?>"></script>
     <script>
     //直接在tab中无法使用echart，需要等待tab执行结束后再执行一遍
     $(function (){
@@ -758,11 +759,11 @@
             option.series[i].markPoint.data[1].type = 'min';
             option.series[i].markPoint.data[1].name = '最小值';
 
-            option.series[i].markLine = new Object();
-            option.series[i].markLine.data = new Array();
-            option.series[i].markLine.data[0] = new Object();
-            option.series[i].markLine.data[0].type = 'average';
-            option.series[i].markLine.data[0].name = '平均值';            
+//            option.series[i].markLine = new Object();
+//            option.series[i].markLine.data = new Array();
+//            option.series[i].markLine.data[0] = new Object();
+//            option.series[i].markLine.data[0].type = 'average';
+//            option.series[i].markLine.data[0].name = '平均值';            
         }
         
         if (chart_data['data'].length != 0){
@@ -787,6 +788,7 @@
             }
             
         }
+        console.log(option);
         myChart.setOption(option); 
     }
     </script>
