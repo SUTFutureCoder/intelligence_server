@@ -7,6 +7,7 @@
         <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">   
         <script>
             //预定义全局变量用于图表显示，图表显示和执行SQL结果一致
+            //也用于修改时的面板生成
             var chart_data = new Array();
             chart_data['cols'] = new Array();
             chart_data['data'] = new Array();
@@ -37,18 +38,20 @@
                 <br/>
                 <table class="table table-hover table-bordered" id="data_view">
                     <thead>
-                        <tr>
+                        <tr id="data_col_name">
                             <th>#</th>
                             <?php foreach ($data['cols'] as $col_name => $col_type):?>
-                            <th id="data_view_<?= $col_name?>"><?= $col_name ?></th>
+                            <th><?= $col_name ?></th>
                             <?php endforeach; ?>
                         </tr>
                     </thead>
                     <tbody>
                         
                     <?php foreach($data['data'] as $key => $value): ?>                    
-                        <tr>
-                            <td class="col-sm-1"><?= $key + 1 ?>
+                        <tr id="data_<?= $key ?>">
+                            <td><?= $key + 1 ?>
+                                <button type="button" class="btn btn-primary btn-xs" onclick="data_update_button(0, <?= $key ?>)">修改</button>
+                                <button type="button" class="btn btn-danger btn-xs" onclick="data_dele_button(0, <?= $key ?>)">删除</button>
                             </td>
                             <?php foreach($value as $table_name => $table_value): ?>   
                                 <td><?=$table_value?></td>                                
@@ -151,7 +154,7 @@
                 <table class="table table-hover table-bordered" >                       
                     <tbody>  
                         <form role="form" id="insert_list">
-                        <?php foreach ($data['cols'] as $col_name => $col_type): ?> 
+                        <?php foreach ($data['cols'] as $col_name => $col_type): ?>                         
                         <tr id="insert_<?= $col_name ?>">
                             <td><?= $col_name ?>
                             <?php if ('UNI' == $data['cols'][$col_name]['key']): ?>
@@ -276,10 +279,60 @@
                         <button type="button" class="btn btn-danger col-sm-offset-11"  onclick="dele_table()">删除表</button>
                     </div>
                 </div>  
-                
             </div>
         </div>
-        
+        <div class="modal fade " id="data_update_modal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title" id="data_update_title"></h4>
+                </div>        
+                <div class="modal-body" id="data_update_body">     
+                    <form role="form" id="data_update_list">
+                    <table class="table table-hover table-bordered">
+                    <?php foreach ($data['cols'] as $col_name => $col_type): ?>                                                 
+                        <tr id="data_update_<?= $col_name ?>" class="data_update_tr" >
+                            <td class="col-sm-2"><strong><?= $col_name ?></strong><br/>
+                            <?php if($data['cols'][$col_name]['comment']):?>
+                                <small class="primary">[<?= $data['cols'][$col_name]['comment'] ?>]</small><br/>
+                            <?php endif;?>
+                            <?php if ('UNI' == $data['cols'][$col_name]['key']): ?>
+                                <span class="label label-primary">唯</span>
+                            <?php elseif ('PRI' == $data['cols'][$col_name]['key']): ?>
+                                <span class="label label-danger">主</span>
+                            <?php endif;?>
+                            <?php if ('auto_increment' == $data['cols'][$col_name]['auto']): ?>
+                                <span class="label label-success">增</span>
+                            <?php endif;?>
+                            <?php if ('YES' == $data['cols'][$col_name]['nullable']): ?>
+                                <span class="label label-default">空</span>
+                            <?php endif;?>    
+                            </td>
+                            <td><?= $data['cols'][$col_name]['type_length'] ?></td>
+                            <td>
+                                <div class="form-group">
+                                    <?php if ('tinyint' == $data['cols'][$col_name]['type'] || 'int(1)' == $data['cols'][$col_name]['type_length']): ?>
+                                        <input type="checkbox" class="form-control cbx data_update_val">
+                                    <?php elseif ('text' == $data['cols'][$col_name]['type'] || $data['cols'][$col_name]['length'] >= 25): ?>
+                                        <textarea class="form-control data_update_val" rows="3"></textarea>
+                                    <?php else: ?>
+                                        <input type="text" class="form-control data_update_val">
+                                    <?php endif; ?>
+                                </div>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </table>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>            
+                    <button type="button" class="btn btn-danger" id="data_update_confirm">确认</button>                
+                </div>
+            </div>
+            </div>
+        </div>  
     </body>
     <script>        
         //接收母窗口传来的值
@@ -293,7 +346,7 @@
                         case 'ExecSQL':
                             $("#sql_result").html("");
                             $("#sql_result").append("<br/><table class=\"table table-hover table-bordered\" id=\"sql_data_view\">");
-                            $("#sql_data_view").append("<thead><tr><th>#</th>");
+                            $("#sql_data_view").append("<thead><tr id=\"sql_exec_col_name\"><th>#</th>");
                             
                             if (data[4]['sql'].substr(0, 6) != 'SELECT' && data[4]['sql'].substr(0, 6) != 'select'){
                                 sql = data[4]['sql'];
@@ -318,10 +371,10 @@
                                     //取出数据
                                     $.each(data[4]['data'], function (i, data_item){
             //                            console.log(data_item);
-                                        $("#sql_data_view tbody").append("<tr id=" + i + "><td>" + i + "</td></tr>");
+                                        $("#sql_data_view tbody").append("<tr id=sql_exec_" + i + "><td>" + (i + 1) + "<button type=\"button\" class=\"btn btn-primary btn-xs\" onclick=\"data_update_button(1, " + i + ")\">修改</button><button type=\"button\" class=\"btn btn-danger btn-xs\" onclick=\"data_dele_button(1, " + i + ")\">删除</button></td></tr>");
                                         $.each(data_item, function (m, data_item_val){
             //                                console.log(data_item_val);
-                                            $("#sql_data_view tbody #" + i).append("<td>" + data_item_val + "</td>");
+                                            $("#sql_data_view tbody #sql_exec_" + i).append("<td>" + data_item_val + "</td>");
                                         })   
                                     })
                                     $("#sql_data_view").append("</tbody></table>");
@@ -790,6 +843,69 @@
         }
         console.log(option);
         myChart.setOption(option); 
+    }
+    
+    
+    //数据修改
+    var data_update_length = 0;
+    var data_update_col_name = new Array();
+    var data_update_old_data = new Array();   
+    //显示修改窗口
+    function data_update_button(source, key){    
+    //source来源：0为data_view 1为SQL查询页 
+        $("#data_update_title").html('修改第' + (key + 1) + '行数据');
+        $("#data_update_confirm").attr("onclick", "data_update_confirm(" + source + "," + key + ")");  
+        
+        if (!source){
+            data_update_length = $("#data_view tbody #data_" + key + " td").length - 1;
+            for (var i = 1; i <= data_update_length; i++){    
+                data_update_col_name.push($("#data_col_name th:eq(" + i + ")").html());      
+                data_update_old_data.push($("#data_view tbody #data_" + key + " td:eq(" + i + ")").html());
+                if ("checkbox" == $(".data_update_val:eq(" + (i - 1) + ")").attr("type")){
+                    if (data_update_old_data[data_update_old_data.length - 1] == 1){
+                        $(".data_update_val:eq(" + (i - 1) + ")").attr("checked", "checked");
+                    }
+                } else {
+                    $(".data_update_val:eq(" + (i - 1) + ")").val(data_update_old_data[data_update_old_data.length - 1]);
+                }
+            }
+            $("#data_update_modal").modal('show');
+        } else {
+            $(".data_update_tr").hide();            
+            for (i in chart_data['cols']){
+                $("#data_update_" + chart_data['cols'][i]).show();
+            }
+            
+            
+            data_update_length = $("#sql_data_view tbody #sql_exec_" + key + " td").length - 1;
+            for (var i = 1; i <= data_update_length; i++){    
+                data_update_old_data.push($("#sql_data_view tbody #sql_exec_" + key + " td:eq(" + i + ")").html());
+                if ("checkbox" == $(".data_update_val:eq(" + (i - 1) + ")").attr("type")){
+                    if (data_update_old_data[data_update_old_data.length - 1] == 1){
+                        $(".data_update_val:eq(" + (i - 1) + ")").attr("checked", "checked");
+                    }
+                } else {
+                    $(".data_update_val:eq(" + (i - 1) + ")").val(data_update_old_data[data_update_old_data.length - 1]);
+                }
+            }
+        }
+        $("#data_update_modal").modal('show');
+    }
+    
+    //执行修改过程
+    function data_update_confirm(source, key){
+        //source来源：0为data_view 1为SQL查询页  
+        
+        if (!source){
+            while (data = data_update_old_data.shift()){
+                
+            }
+        }
+    }
+    
+    //显示删除窗口
+    function data_dele_button(key){
+        
     }
     </script>
 </html>

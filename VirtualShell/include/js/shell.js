@@ -71,8 +71,9 @@ function ShellCommand(command) {
                         if (shutdown >= 0) {
                             shutdown--;
                         } else {
-                            AddMessageBox("Now HALT");
-                            window.close();
+                            AddMessageBox("Now HALT, Please Close The Shell", "red");
+                            ws.close();
+                            delete ws;
                             clearInterval(shutdowntimer);
                         }
                     }, 1000);
