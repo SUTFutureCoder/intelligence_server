@@ -249,8 +249,7 @@ class Database{
                 $data['rows'] = $row;
                 $time_potin_b = microtime(TRUE);
                 $data['time'] = number_format($time_potin_b - $time_potin_a, '8');
-            }
-            
+            }            
             return $data;        
         } catch (Exception $ex) {
             return $ex->getMessage();

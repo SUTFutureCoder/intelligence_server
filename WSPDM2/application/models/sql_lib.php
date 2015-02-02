@@ -370,4 +370,33 @@ class Sql_lib extends CI_Model{
         $sql = "RENAME TABLE $database.$old_table_name TO $database.$new_table_name";
         return self::$_ci->database->exec($sql, 1);
     }
+    
+    //更新数据
+    public function updateData($database, $table, $db_type, $db_username, $db_password, $db_host, $db_port, $old_data, $col_name, $new_data){
+        if (!self::$_ci){
+            self::$_ci =& get_instance();
+            self::$_ci->load->library('database');
+        }
+        
+        if (!self::$_db){
+            self::$_db = self::$_ci->database->connect(1, $db_type, $db_username, $db_password, $db_host, $db_port);
+        }
+        
+        $sql = "UPDATE $database.$table SET ";
+        $sql_where = ' WHERE ';
+       
+        $length = count($col_name);
+        
+        for ($i = 0; $i < $length; ++$i){
+            if ($i != 0){
+                $sql .= ', ';
+                $sql_where .= ' AND ';
+            }
+            $sql .= $col_name[$i] . ' = ' . self::$_db->quote($new_data[$i]);
+            $sql_where .= $col_name[$i] . ' = ' . self::$_db->quote($old_data[$i]);
+        }        
+        
+        $sql .= $sql_where;        
+        return self::$_ci->database->exec($sql, 1);
+    }
 }

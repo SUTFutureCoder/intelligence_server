@@ -535,6 +535,83 @@ class TableInfo extends CI_Controller{
                
     }
     
+    
+    /**    
+     *  @Purpose:    
+     *  修改数据   
+     *  @Method Name:
+     *  UpdateData()
+     *  @Parameter: 
+     *  POST user_name 数据库用户名
+     *  POST user_key 用户密钥
+     *  POST src      目标地址
+     *  POST database 操作数据库
+     *  POST table    操作表
+     *  POST db_type  数据库类型
+     *  POST db_host  数据库地址
+     *  POST db_port  数据库端口
+     *  POST old_data Array 旧数据数组
+     *  POST col_name Array 数据列名
+     *  POST new_data Array 新数据数组
+     * 
+     *  @Return: 
+     *  状态码|说明
+     *      0|修改失败或未更改
+     *      1|修改成功
+     * 
+     * 
+     *  
+    */ 
+    public function UpdateData(){
+        $this->load->library('secure');
+        $this->load->library('data');
+        $this->load->model('sql_lib');
+        
+        $db = array();
+        if ($this->input->post('user_name', TRUE) && $this->input->post('user_key', TRUE)){
+            $db = $this->secure->CheckUserKey($this->input->post('user_key', TRUE));
+            if ($this->input->post('user_name', TRUE) != $db['user_name']){
+                $this->data->Out('iframe', $this->input->post('src', TRUE), -1, '密钥无法通过安检');
+            }
+        } else {
+            $this->data->Out('iframe', $this->input->post('src', TRUE), -2, '未检测到密钥');
+        }
+        
+        if (!$this->input->post('db_type', TRUE) || !$db['user_name'] || 
+                null == $this->input->post('database', TRUE) || 
+                null == $this->input->post('table', TRUE)){
+            $this->data->Out('iframe', $this->input->post('src', TRUE), -3, 'SQL信息缺失，请重新登录');
+        }
+        
+        $old_data = array();
+        $old_data = $this->input->post('old_data', TRUE);
+        
+        $new_data = array();
+        $new_data = $this->input->post('new_data', TRUE);
+        
+        $col_name = array();
+        $col_name = $this->input->post('col_name', TRUE);
+        
+        $data = array();
+        $data = $this->sql_lib->updateData($this->input->post('database', TRUE),
+                $this->input->post('table', TRUE),
+                $this->input->post('db_type', TRUE),
+                $db['user_name'],
+                $db['password'],
+                $this->input->post('db_host', TRUE),
+                $this->input->post('db_port', TRUE),
+                $old_data,
+                $col_name,
+                $new_data);    
+        
+        if (is_string($data)){
+            $this->data->Out('iframe', $this->input->post('src', TRUE), 0, '修改出错,出错信息:' . $data);
+        }
+        
+        $this->data->Out('iframe', $this->input->post('src', TRUE), 1, 'UpdateData', $data);
+    }
+    
+    
     /**    
      *  @Purpose:    
      *  广播刷新表（表数据已被更改）   

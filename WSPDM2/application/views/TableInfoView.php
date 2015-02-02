@@ -333,6 +333,23 @@
             </div>
             </div>
         </div>  
+        <div class="modal fade " id="data_dele_confirm_modal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">确认删除</h4>
+                </div>        
+                <div class="modal-body" id="data_update_body">     
+                    
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>            
+                    <button type="button" class="btn btn-danger" id="data_update_confirm">确认</button>                
+                </div>
+            </div>
+            </div>
+        </div>  
     </body>
     <script>        
         //接收母窗口传来的值
@@ -379,8 +396,6 @@
                                     })
                                     $("#sql_data_view").append("</tbody></table>");
                                 }
-                                
-                                
                                 
                                 //准备显示图表
                                 chart_data['cols'] = data[4]['cols'];
@@ -484,6 +499,11 @@
                             data_rename['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/B_RenameTable';
                             data_rename['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "database" : "<?= $data['database'] ?>", "old_table_name" : "' + data[4]['old_table_name'] + '", "new_table_name" : "' + data[4]['new_table_name'] + '"}';
                             parent.IframeSend(data_rename, 'group');    
+                            break;
+                            
+                        case 'UpdateData':
+                            $("#data_update_modal").modal('hide');
+                                                     
                             break;
                     }
                     //重置表单
@@ -851,7 +871,9 @@
     var data_update_col_name = new Array();
     var data_update_old_data = new Array();   
     //显示修改窗口
-    function data_update_button(source, key){    
+    function data_update_button(source, key){   
+        $("#data_update_confirm").html('确认');        
+        $("#data_update_confirm").removeAttr('disabled');   
     //source来源：0为data_view 1为SQL查询页 
         $("#data_update_title").html('修改第' + (key + 1) + '行数据');
         $("#data_update_confirm").attr("onclick", "data_update_confirm(" + source + "," + key + ")");  
@@ -876,7 +898,6 @@
                 $("#data_update_" + chart_data['cols'][i]).show();
             }
             
-            
             data_update_length = $("#sql_data_view tbody #sql_exec_" + key + " td").length - 1;
             for (var i = 1; i <= data_update_length; i++){    
                 data_update_old_data.push($("#sql_data_view tbody #sql_exec_" + key + " td:eq(" + i + ")").html());
@@ -894,13 +915,70 @@
     
     //执行修改过程
     function data_update_confirm(source, key){
+        
+        $("#data_update_confirm").html('<span class="glyphicon glyphicon-flash" aria-hidden="true"></span>正在处理中，请稍候...');
+        
+        $("#data_update_confirm").attr('disabled', 'disabled');
         //source来源：0为data_view 1为SQL查询页  
+        var data = new Array();
+        data['src'] = location.href.slice((location.href.lastIndexOf("/")));
+        data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/UpdateData';
+        data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
+        data['data'] += '"table" : "<?= $data['table'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>", "old_data" : {';
+        
+        i = 0;
+        while (null != (old_data = data_update_old_data.shift())){
+            //获取style中display为style="display: table-row;"
+            if (i != 0){
+                data['data'] += ', ';
+            }
+            data['data'] += '"' + i  + '" : "' + old_data + '"';
+            i++;
+        }
+        
+        data['data'] += '}, "col_name" : {';
         
         if (!source){
-            while (data = data_update_old_data.shift()){
-                
+            i = 0;
+            while (null != (col_name = data_update_col_name.shift())){                
+                if (i != 0){
+                    data['data'] += ', ';
+                }
+                data['data'] += '"' + i  + '" : "' + col_name + '"';
+                i++;
+            }
+        } else {
+            i = 0;
+            for (key in chart_data['cols']){
+                if (i != 0){
+                    data['data'] += ', ';
+                }
+                data['data'] += '"' + i  + '" : "' + chart_data['cols'][key] + '"';
+                i++;
             }
         }
+        
+        data['data'] += '}, "new_data" : {';
+        
+        for (i = 0; i < data_update_length; i++){
+            if (i != 0){
+                data['data'] += ', ';
+            }
+            
+            if ("checkbox" == $(".data_update_tr:visible .data_update_val:eq(" + i + ")").attr('type')){                
+                if (true == $(".data_update_tr:visible .data_update_val:eq(" + i + ")").prop('checked')){                    
+                    data['data'] += '"' + i  + '" : "1"';
+                } else {                    
+                    data['data'] += '"' + i  + '" : "0"';
+                }
+            } else {
+                data['data'] += '"' + i  + '" : "' + $(".data_update_tr:visible .data_update_val:eq(" + i + ")").val() + '"';
+            }
+            
+        }
+        
+        data['data'] += '}}';
+        parent.IframeSend(data);
     }
     
     //显示删除窗口
