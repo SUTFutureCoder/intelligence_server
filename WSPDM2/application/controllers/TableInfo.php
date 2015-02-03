@@ -164,8 +164,8 @@ class TableInfo extends CI_Controller{
                 $this->input->post('db_host', TRUE),
                 $this->input->post('db_port', TRUE));
         
-        if (is_string($data)){
-            $this->data->Out('iframe', $this->input->post('src', TRUE), 0, '快照创建出错,出错信息:' . $data);
+        if (is_string($data['data'])){
+            $this->data->Out('iframe', $this->input->post('src', TRUE), 0, '快照创建出错,出错信息:' . $data['data']);
         }
         
         if (!is_dir('./snapshot/')){
@@ -178,21 +178,134 @@ class TableInfo extends CI_Controller{
         
         if (!is_dir('./snapshot/' . $this->input->post('db_type', TRUE) . '/' . $this->input->post('database', TRUE) . '/')){
             mkdir('./snapshot/' . $this->input->post('db_type', TRUE) . '/' . $this->input->post('database', TRUE) . '/');
+        }        
+        
+        if (!is_dir('./snapshot/' . $this->input->post('db_type', TRUE) . '/' . $this->input->post('database', TRUE) . '/' . $this->input->post('table', TRUE) . '/')){
+            mkdir('./snapshot/' . $this->input->post('db_type', TRUE) . '/' . $this->input->post('database', TRUE) . '/' . $this->input->post('table', TRUE) . '/');
         }
         
         switch ($this->input->post('snap_type', TRUE)){
-            case 0:
-                $output = new SplFileObject('./snapshot/' . $this->input->post('db_type', TRUE) . '/' . $this->input->post('database', TRUE) . '/' . $this->input->post('table', TRUE) . '/' . date('Y-m-d H:i:s') . '_' . rand(0, 999) . '.sql', 'w');
+            case '0':
+                try{
+                //必须在使用SPL之前将目录从浅到深全部创建完毕
+                    $output = new SplFileObject('./snapshot/' . $this->input->post('db_type', TRUE) . '/' . $this->input->post('database', TRUE) . '/' . $this->input->post('table', TRUE) . '/' . date('Y-m-d H:i:s') . '_' . rand(0, 999) . '.sql', 'w');
+                } catch (Exception $ex) {
+                    echo $ex->getMessage();
+                }
+                
+                
                 $sql_output = "-- WSPDM2 SQL Dump\n";
-                $sql_output += "-- version 2.0\n";
-                $sql_output += "-- https://github.com/SUTFutureCoder/intelligence_server/tree/master/WSPDM2\n";
-                $sql_output += "-- \n";
-                $sql_output += '-- Generation Time: ' + date("Y-m-d H:i:s") + "\n";
-                $sql_output += '-- Generation Time: ' + date("Y-m-d H:i:s") + "\n";
+                $sql_output .= "-- version 2.0\n";
+                $sql_output .= "-- https://github.com/SUTFutureCoder/intelligence_server/tree/master/WSPDM2\n";
+                $sql_output .= "-- \n";
+                $sql_output .= '-- 生成时间: ' . date("Y-m-d H:i:s") . "\n";
+                $sql_output .= "-- \n";
+                $sql_output .= "\n";
+                $sql_output .= "\n";
+                $sql_output .= "-- \n";
+                $sql_output .= '-- 数据库: `' . $this->input->post('database', TRUE) . "`\n";
+                $sql_output .= "-- \n";
+                $sql_output .= "\n";
+                $sql_output .= "-- --------------------------------------------------------\n";
+                
+                
+                //建表      
+                $sql_output .= "\n";
+                $sql_output .= "-- \n";
+                $sql_output .= "-- 表的结构 `" . $this->input->post('table', TRUE)  . "`\n";
+                $sql_output .= "-- \n";
+                $sql_output .= "\n";
+                $sql_output .= 'CREATE TABLE IF NOT EXISTS `' . $this->input->post('table', TRUE) . "` (\n";
+                
+                $i = 0;
+                foreach ($data['struct'] as $struct_key => $struct_value){
+                    if (0 != $i){
+                        $sql_output .= ",\n";
+                    }
+                    $sql_output .= '`' . $struct_value['COLUMN_NAME'] . '` ' . $struct_value['COLUMN_TYPE'];
+                    if ('NO' == $struct_value['IS_NULLABLE']){
+                        $sql_output .= ' NOT NULL ';
+                    }
+                    
+                    if ('auto_increment' == $struct_value['EXTRA']){
+                        $sql_output .= '  AUTO_INCREMENT ';
+                    }
+                    
+                    if (NULL != $struct_value['COLUMN_DEFAULT']){
+                        $sql_output .= " DEFAULT '" . $struct_value['COLUMN_DEFAULT'] . "' ";
+                    }
+                    
+                    if ('' != $struct_value['COLUMN_COMMENT']){
+                        $sql_output .= " COMMENT '" . $struct_value['COLUMN_DEFAULT'] . "' ";
+                    }
+                    ++$i;
+                }
+                $sql_output .= ') ENGINE=' . $data['engine']['STORAGE_ENGINE'] . ' DEFAULT CHARSET=' . $data['engine']['CHARACTER_SET_SYSTEM'] . ";\n";
+                
+                //填充数据
+                $sql_output .= "\n";
+                $sql_output .= "--\n";
+                $sql_output .= "-- 转存表中的数据`" . $this->input->post('table', TRUE) . "`\n";
+                $sql_output .= "--\n";
+                $sql_output .= "\n";
+                
+                $sql_output .= "INSERT INTO `" . $this->input->post('table', TRUE) . "` VALUES\n";
+                $i_a = 0;
+                foreach ($data['data'] as $data_key => $data_value){
+                    if (0 != $i_a){
+                        $sql_output .= "),\n";
+                    }
+                    $sql_output .= '(';
+                    $i_b = 0;
+                    foreach ($data_value as $key => $value){
+                        if (0 != $i_b){
+                            $sql_output .= ', ';
+                        }
+                        $sql_output .= "'" . $value . "'";
+                        ++$i_b;
+                    }
+                    ++$i_a;
+                }
+                $sql_output .= ");\n";
+                //额外的设定
+                $sql_output .= "\n";
+                $sql_output .= "--\n";
+                $sql_output .= "-- 额外的设定于表 `" . $this->input->post('table', TRUE) . "`\n";
+                $sql_output .= "--\n";
+                $sql_output .= "\n";
+                
+                
+                foreach ($data['struct'] as $struct_key => $struct_value){
+                    if ('' != $struct_value['COLUMN_KEY']){
+                        //UNI => UNIQUE() / PRI => PRIMARY KEY (..)
+                        $sql_output .= "ALTER TABLE `" . $this->input->post('table', TRUE) . "`\n";
+                        $flag = 0;
+                        if ('UNI' == $struct_value['COLUMN_KEY']){                            
+                            ++$flag;
+                            $sql_output .= "ADD UNIQUE (" . $struct_key . ")\n";
+                        }
+                        
+                        if ('PRI' == $struct_value['COLUMN_KEY']){
+                            if ($flag){
+                                $sql_output .= ', ';
+                            }
+                            $sql_output .= "ADD PRIMARY KEY (" . $struct_key . ")\n";
+                        }
+                        $sql_output .= ";\n";
+                    }
+                }
+                $sql_output .= "\n";
+                $sql_output .= "--\n";
+                $sql_output .= "-- EOF -- 文件结束 --\n";
+                $sql_output .= "--\n";
+                $sql_output .= "\n";
+                
+                $output->fwrite($sql_output);
+                unset($output);
                 break;
-            case 1:
+            case '1':
                 break;
-            case 2:
+            case '2':
                 break;
         }
     }

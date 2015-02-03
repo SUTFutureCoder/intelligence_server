@@ -417,10 +417,25 @@ class Sql_lib extends CI_Model{
             //注意表基础信息
             case 0:
                 //表备份
+                //基本引擎
+                $engine_data = self::$_ci->database->query('SELECT * FROM information_schema.GLOBAL_VARIABLES WHERE '
+                . 'VARIABLE_NAME = "CHARACTER_SET_SYSTEM" '        
+                . 'OR VARIABLE_NAME = "STORAGE_ENGINE"', 0);
+                
+                $data['engine'][$engine_data['data'][0]['VARIABLE_NAME']] = $engine_data['data'][0]['VARIABLE_VALUE'];
+                $data['engine'][$engine_data['data'][1]['VARIABLE_NAME']] = $engine_data['data'][1]['VARIABLE_VALUE'];
+                
+                //表结构
+                $sql = 'SELECT COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, CHARACTER_SET_NAME, COLUMN_TYPE, COLUMN_KEY, EXTRA, COLUMN_COMMENT FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ' . self::$_db->quote($database) . ' AND TABLE_NAME = ' . self::$_db->quote($table);
+                $table_struct_data = self::$_ci->database->query($sql, 0);
+                foreach ($table_struct_data['data'] as $key => $value){
+                    $data['struct'][$value["COLUMN_NAME"]] = $value;
+                }
+                
                 $sql = 'SELECT * FROM ' . $database . '.' . $table;
                 $table_data = self::$_ci->database->query($sql, 0);
-                foreach ($table_data as $key => $value){
-                    $data[] = $value;
+                foreach ($table_data['data'] as $key => $value){
+                    $data['data'][] = $value;
                 }
                 break;
             
@@ -432,7 +447,7 @@ class Sql_lib extends CI_Model{
                         $sql = 'SELECT * FROM ' . $database . '.' . $table_name['TABLE_NAME'];
                         $table_data = self::$_ci->database->query($sql, 0);
                         foreach ($table_data as $table_key => $table_value){
-                            $data[] = $value;
+                            $data['data'][] = $value;
                         }
                     }
                 }
