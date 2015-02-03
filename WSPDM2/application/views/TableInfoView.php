@@ -30,6 +30,7 @@
             <li role="presentation"><a href="#insert" role="tab" data-toggle="tab">插入</a></li>
             <li role="presentation"><a href="#search" role="tab" data-toggle="tab">搜索</a></li>
             <li role="presentation"><a href="#chart" id="chart_tab" role="tab" data-toggle="tab">分析</a></li>
+            <li role="presentation"><a href="#backup" role="tab" data-toggle="tab">云备份</a></li>
             <li role="presentation"><a href="#operating" role="tab" data-toggle="tab">操作</a></li>
         </ul>
 
@@ -252,15 +253,34 @@
                             </label>
                         </div>
                     </div>                    
-                </form>
-                
-                
+                </form>                                
                 <div id="chart_view" style="height:400px">
                     
                 </div>
             </div>
-            <div role="tabpanel" class="tab-pane fade" id="operating">                
+            <div role="tabpanel" class="tab-pane fade" id="backup">                
                 <br/>
+                <div class="panel panel-success">
+                    <div class="panel-heading">创建快照</div>
+                    <div class="panel-body">                        
+                        <button type="button" class="btn btn-lg btn-block btn-info"  onclick="set_snapshot(0)">创建表快照</button>
+                        <br/>
+                        <button type="button" class="btn btn-lg btn-block btn-info"  onclick="set_snapshot(1)">创建数据库快照</button>
+                        <hr/>
+                        <div id="snapshot_list">
+                            <ul class="list-group">
+                                <li class="list-group-item">Cras justo odio</li>
+                                <li class="list-group-item">Dapibus ac facilisis in</li>
+                                <li class="list-group-item">Morbi leo risus</li>
+                                <li class="list-group-item">Porta ac consectetur ac</li>
+                                <li class="list-group-item">Vestibulum at eros</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div role="tabpanel" class="tab-pane fade" id="operating">                
+                <br/>                
                 <div class="panel panel-warning">
                     <div class="panel-heading">修改表名</div>
                     <div class="panel-body">
@@ -333,19 +353,19 @@
             </div>
             </div>
         </div>  
-        <div class="modal fade " id="data_dele_confirm_modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal fade " id="danger_confirm_modal" tabindex="-1" role="dialog" aria-hidden="true">
             <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                    <h4 class="modal-title">确认删除</h4>
+                    <h4 class="modal-title">确认操作</h4>
                 </div>        
-                <div class="modal-body" id="data_update_body">     
+                <div class="modal-body" id="danger_confirm_body">     
                     
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>            
-                    <button type="button" class="btn btn-danger" id="data_update_confirm">确认</button>                
+                    <button type="button" class="btn btn-danger" onclick="" id="danger_confirm">确认</button>                
                 </div>
             </div>
             </div>
@@ -472,6 +492,7 @@
                             break;
                             
                         case 'DeleTable':
+                            $("#danger_confirm_modal").modal('hide');
                             alert('删除成功');
                             var data = new Array();
                             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
@@ -482,6 +503,7 @@
                             break;
                             
                         case 'TruncateTable':
+                            $("#danger_confirm_modal").modal('hide');
                             alert('清除成功');
                             var data = new Array();
                             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
@@ -492,6 +514,7 @@
                             break;
                             
                         case 'RenameTable':
+                            $("#danger_confirm_modal").modal('hide');
                             alert('修改成功');
                             var data_rename = new Array();
                             data_rename['src'] = location.href.slice((location.href.lastIndexOf("/")));
@@ -502,8 +525,12 @@
                             break;
                             
                         case 'UpdateData':
-                            $("#data_update_modal").modal('hide');
-                                                     
+                            $("#data_update_modal").modal('hide');   
+                            update_data_display();
+                            break;
+                            
+                        case 'DeleData':
+                            $("#danger_confirm_modal").modal('hide');
                             break;
                     }
                     //重置表单
@@ -664,6 +691,15 @@
         
         //删除表
         function dele_table(){
+            $("#danger_confirm_body").html('<h4><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>确认执行<a style="color:red">删除表</a>操作吗？</h4>');
+            $("#danger_confirm").attr('onclick', 'dele_table_exec()');
+            $("#danger_confirm_modal").modal('show');
+        }
+        
+        //执行删除表
+        function dele_table_exec(){
+            $("#danger_confirm").html('<span class="glyphicon glyphicon-flash" aria-hidden="true"></span>正在处理中，请稍候...');
+            $("#danger_confirm").attr('disabled', 'disabled');
             var data = new Array();
             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
             data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/DeleTable';
@@ -674,6 +710,15 @@
         
         //清除表
         function truncate_table(){
+            $("#danger_confirm_body").html('<h4><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>确认执行<a style="color:red">清除表</a>操作吗？</h4>');
+            $("#danger_confirm").attr('onclick', 'truncate_table_exec()');
+            $("#danger_confirm_modal").modal('show');
+        }
+        
+        //执行清除表
+        function truncate_table_exec(){
+            $("#danger_confirm").html('<span class="glyphicon glyphicon-flash" aria-hidden="true"></span>正在处理中，请稍候...');
+            $("#danger_confirm").attr('disabled', 'disabled');
             var data = new Array();
             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
             data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/TruncateTable';
@@ -684,6 +729,15 @@
         
         //重命名
         function rename_table(){
+            $("#danger_confirm_body").html('<h4><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>确认执行<a style="color:red">重命名表</a>操作吗？</h4>');
+            $("#danger_confirm").attr('onclick', 'dele_table_exec()');
+            $("#danger_confirm_modal").modal('show');
+        }
+        
+        //执行重命名
+        function rename_table_exec(){
+            $("#danger_confirm").html('<span class="glyphicon glyphicon-flash" aria-hidden="true"></span>正在处理中，请稍候...');
+            $("#danger_confirm").attr('disabled', 'disabled');
             if ($("#new_table_name").val() != ''){
                 var data = new Array();
                 data['src'] = location.href.slice((location.href.lastIndexOf("/")));
@@ -761,43 +815,9 @@
             yAxis : [
                 {
                     type : 'value',
-//                    axisLabel : {
-//                        formatter: '{value} °C'
-//                    }
                 }
             ],
             series : [
-//                {
-//                    name:'最高气温',
-//                    type:'line',
-//                    data:[11, 11, 15, 13, 12, 13, 10],
-//                    markPoint : {
-//                        data : [
-//                            {type : 'max', name: '最大值'},
-//                            {type : 'min', name: '最小值'}
-//                        ]
-//                    },
-//                    markLine : {
-//                        data : [
-//                            {type : 'average', name: '平均值'}
-//                        ]
-//                    }
-//                },
-//                {
-//                    name:'最低气温',
-//                    type:'line',
-//                    data:[1, -2, 2, 5, 3, 2, 0],
-//                    markPoint : {
-//                        data : [
-//                            {name : '周最低', value : -2, xAxis: 1, yAxis: -1.5}
-//                        ]
-//                    },
-//                    markLine : {
-//                        data : [
-//                            {type : 'average', name : '平均值'}
-//                        ]
-//                    }
-//                }
             ]
         };
 
@@ -870,6 +890,9 @@
     var data_update_length = 0;
     var data_update_col_name = new Array();
     var data_update_old_data = new Array();   
+    var data_update_new_data = new Array();
+    var data_update_source = 0;
+    var data_update_key = 0;
     //显示修改窗口
     function data_update_button(source, key){   
         $("#data_update_confirm").html('确认');        
@@ -917,7 +940,6 @@
     function data_update_confirm(source, key){
         
         $("#data_update_confirm").html('<span class="glyphicon glyphicon-flash" aria-hidden="true"></span>正在处理中，请稍候...');
-        
         $("#data_update_confirm").attr('disabled', 'disabled');
         //source来源：0为data_view 1为SQL查询页  
         var data = new Array();
@@ -966,24 +988,59 @@
             }
             
             if ("checkbox" == $(".data_update_tr:visible .data_update_val:eq(" + i + ")").attr('type')){                
-                if (true == $(".data_update_tr:visible .data_update_val:eq(" + i + ")").prop('checked')){                    
+                if (true == $(".data_update_tr:visible .data_update_val:eq(" + i + ")").prop('checked')){   
+                    data_update_new_data.push("1");
                     data['data'] += '"' + i  + '" : "1"';
                 } else {                    
+                    data_update_new_data.push("0");
                     data['data'] += '"' + i  + '" : "0"';
                 }
             } else {
-                data['data'] += '"' + i  + '" : "' + $(".data_update_tr:visible .data_update_val:eq(" + i + ")").val() + '"';
+                data_update_new_data.push($(".data_update_tr:visible .data_update_val:eq(" + i + ")").val());
+                data['data'] += '"' + i  + '" : "' + data_update_new_data[data_update_new_data.length - 1] + '"';
             }
-            
         }
-        
         data['data'] += '}}';
         parent.IframeSend(data);
+        
+        data_update_source = source;
+        data_update_key = key;
+    }
+    
+    //更新显示数据
+    function update_data_display(){
+        if (!data_update_source){
+            for (var i = 1; i <= data_update_length; i++){ 
+                $("#data_view tbody #data_" + data_update_key + " td:eq(" + i + ")").html(data_update_new_data[i - 1]);
+            }
+        } else {            
+            for (var i = 1; i <= data_update_length; i++){    
+                $("#sql_data_view tbody #sql_exec_" + data_update_key + " td:eq(" + i + ")").html(data_update_new_data[i - 1]);
+            }
+        }
+        
+        //回收内存
+        delete data_update_length;
+        delete data_update_col_name;
+        delete data_update_old_data;   
+        delete data_update_new_data;
+        delete data_update_source;
+        delete data_update_key;
     }
     
     //显示删除窗口
     function data_dele_button(key){
         
+    }
+    
+    //设置快照
+    function set_snapshot(snap_type){
+        var data = new Array();
+        data['src'] = location.href.slice((location.href.lastIndexOf("/")));
+        data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/SetSnapShot';
+        data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
+        data['data'] += '"snap_type" : "' + snap_type + '", "table" : "<?= $data['table'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
+        parent.IframeSend(data);
     }
     </script>
 </html>

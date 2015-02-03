@@ -45,6 +45,9 @@ class TableInfo extends CI_Controller{
         unset($data_temp);
         $data = array_merge($data, $this->sql_lib->getColData($data['database'], $data['table']));
         
+        $backup_list = $this->GetSnapshot($this->session->userdata('db_type'), $data['database'], $data['table']);
+        
+        
         $this->load->view('TableInfoView', array('data' => $data,
                             'user_key' => $this->secure->CreateUserKey($this->session->userdata('db_username'),
                                     $this->session->userdata('db_password')),
@@ -53,7 +56,148 @@ class TableInfo extends CI_Controller{
                             'db_host' => $this->session->userdata('db_host'),
                             'db_port' => $this->session->userdata('db_port')));
     } 
-       
+    
+    
+    /**    
+     *  @Purpose:    
+     *  获取快照列表   
+     *  @Method Name:
+     *  GetSnapshot()
+     *  @Parameter: 
+     *  $db_type        数据库类型
+     *  $database       数据库名称
+     *  $table          表名称
+     * 
+     *  @Return: 
+     *  状态码|说明
+     *      data
+     * 
+     *  
+    */ 
+    private function GetSnapshot($db_type, $database, $table){
+        // ./snapshot/$db_type/$database/$table
+        
+        $data = array();
+        
+        //先获取数据库总体快照        
+        if (is_dir('./snapshot/' . $db_type . '/' . $database . '/')){
+            $i_db = new FilesystemIterator('./snapshot/' . $db_type . '/' . $database . '/');
+            foreach ($i_db as $db_snap){
+                if ($db_snap->isFile()){
+                    $data['db'][$db_snap->getFilename()]['size'] = $db_snap->getSize();
+                    $data['db'][$db_snap->getFilename()]['m_time'] = date('Y-m-d H:i:s', $db_snap->getMTime());
+                }
+            }
+                        
+            if (is_dir('./snapshot/' . $db_type . '/' . $database . '/' . $table . '/')){
+                $i_table = new FilesystemIterator('./snapshot/' . $db_type . '/' . $database . '/' . $table . '/');
+                foreach ($i_table as $table_snap){
+                    if ($table_snap->isFile()){
+                        $data['table'][$table_snap->getFilename()]['size'] = $table_snap->getSize();
+                        $data['table'][$table_snap->getFilename()]['m_time'] = date('Y-m-d H:i:s', $db_snap->getMTime());
+                    }                    
+                }      
+                return $data;
+            } else{                
+                return $data;
+            }
+            
+        } else {
+            //没有数据库文件夹，直接返回0
+            return 0;
+        }        
+    }
+    
+    /**    
+     *  @Purpose:    
+     *  创建快照   
+     *  @Method Name:
+     *  SetSnapshot()
+     *  @Parameter: 
+     *  POST user_name 数据库用户名
+     *  POST user_key 用户密钥
+     *  POST src      目标地址
+     *  POST database 操作数据库
+     *  POST table    操作表
+     *  POST db_type  数据库类型
+     *  POST db_host  数据库地址
+     *  POST db_port  数据库端口
+     *  POST snap_type快照类型(0:表备份，1:数据库备份，2:整库备份)
+     * 
+     *  @Return: 
+     *  状态码|说明
+     *      data
+     * 
+     *  
+    */ 
+    public function SetSnapShot(){
+        $this->load->library('secure');
+        $this->load->library('data');
+        $this->load->model('sql_lib');
+        
+        $db = array();
+        if ($this->input->post('user_name', TRUE) && $this->input->post('user_key', TRUE)){
+            $db = $this->secure->CheckUserKey($this->input->post('user_key', TRUE));
+            if ($this->input->post('user_name', TRUE) != $db['user_name']){
+                $this->data->Out('iframe', $this->input->post('src', TRUE), -1, '密钥无法通过安检');
+            }
+        } else {
+            $this->data->Out('iframe', $this->input->post('src', TRUE), -2, '未检测到密钥');
+        }
+        
+        if (!$this->input->post('db_type', TRUE) || !$db['user_name'] || 
+                null == $this->input->post('database', TRUE) || 
+                null == $this->input->post('table', TRUE)){
+            $this->data->Out('iframe', $this->input->post('src', TRUE), -3, 'SQL信息缺失，请重新登录');
+        }
+        
+        if (!ctype_digit($this->input->post('snap_type', TRUE))){
+            $this->data->Out('iframe', $this->input->post('src', TRUE), -4, '快照类型错误');
+        }
+        
+        //执行SQL语句，为记录模式
+        $data = $this->sql_lib->setSnapShot($this->input->post('snap_type', TRUE), $this->input->post('database', TRUE),
+                $this->input->post('table', TRUE),
+                $this->input->post('db_type', TRUE),
+                $db['user_name'],
+                $db['password'],
+                $this->input->post('db_host', TRUE),
+                $this->input->post('db_port', TRUE));
+        
+        if (is_string($data)){
+            $this->data->Out('iframe', $this->input->post('src', TRUE), 0, '快照创建出错,出错信息:' . $data);
+        }
+        
+        if (!is_dir('./snapshot/')){
+            mkdir('./snapshot/');
+        }
+        
+        if (!is_dir('./snapshot/' . $this->input->post('db_type', TRUE) . '/')){
+            mkdir('./snapshot/' . $this->input->post('db_type', TRUE) . '/');
+        }
+        
+        if (!is_dir('./snapshot/' . $this->input->post('db_type', TRUE) . '/' . $this->input->post('database', TRUE) . '/')){
+            mkdir('./snapshot/' . $this->input->post('db_type', TRUE) . '/' . $this->input->post('database', TRUE) . '/');
+        }
+        
+        switch ($this->input->post('snap_type', TRUE)){
+            case 0:
+                $output = new SplFileObject('./snapshot/' . $this->input->post('db_type', TRUE) . '/' . $this->input->post('database', TRUE) . '/' . $this->input->post('table', TRUE) . '/' . date('Y-m-d H:i:s') . '_' . rand(0, 999) . '.sql', 'w');
+                $sql_output = "-- WSPDM2 SQL Dump\n";
+                $sql_output += "-- version 2.0\n";
+                $sql_output += "-- https://github.com/SUTFutureCoder/intelligence_server/tree/master/WSPDM2\n";
+                $sql_output += "-- \n";
+                $sql_output += '-- Generation Time: ' + date("Y-m-d H:i:s") + "\n";
+                $sql_output += '-- Generation Time: ' + date("Y-m-d H:i:s") + "\n";
+                break;
+            case 1:
+                break;
+            case 2:
+                break;
+        }
+    }
+    
+
     /**    
      *  @Purpose:    
      *  执行SQL语句   
@@ -797,4 +941,5 @@ class TableInfo extends CI_Controller{
         $data['old_table_name'] = $this->input->post('old_table_name', TRUE);
         $this->data->Out('group', $this->input->post('src', TRUE), 1, 'B_RenameTable', $data);
     }
+    
 }

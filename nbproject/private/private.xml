@@ -9,6 +9,7 @@
             <file>file:/var/www/html/intelligence_server/WSPDM2/application/libraries/Database.php</file>
             <file>file:/var/www/html/intelligence_server/WSPDM2/application/views/TableInfoView.php</file>
             <file>file:/var/www/html/intelligence_server/VirtualShell/index.html</file>
+            <file>file:/var/www/html/intelligence_server/WSPDM2/application/models/sql_lib.php</file>
         </group>
     </open-files>
 </project-private>

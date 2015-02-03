@@ -33,7 +33,7 @@ class Sql_lib extends CI_Model{
         return self::$_ci->database->query('SELECT TABLE_SCHEMA, TABLE_NAME FROM information_schema.TABLES', 0);
     }
     
-    //获取数据库、表列表
+    //获取数据库信息
     public function getDbInfo(){
         if (!self::$_ci){
             self::$_ci =& get_instance();
@@ -241,8 +241,8 @@ class Sql_lib extends CI_Model{
         
         $sql_result .= ' LIMIT 1';
         
-        $data = $this->database->exec($sql, 1);
-        $data['data'] = $this->database->query($sql_result, 0);
+        $data = self::$_ci->database->exec($sql, 1);
+        $data['data'] = self::$_ci->database->query($sql_result, 0);
         
         return $data;
     }
@@ -329,7 +329,7 @@ class Sql_lib extends CI_Model{
         }
         
         
-        return  $this->database->query($sql_search, 1);
+        return  self::$_ci->database->query($sql_search, 1);
     }
     
     //删除表
@@ -398,5 +398,47 @@ class Sql_lib extends CI_Model{
         
         $sql .= $sql_where;        
         return self::$_ci->database->exec($sql, 1);
+    }
+    
+    //创建快照
+    public function setSnapShot($snap_type, $database, $table, $db_type, $db_username, $db_password, $db_host, $db_port){
+        if (!self::$_ci){
+            self::$_ci =& get_instance();
+            self::$_ci->load->library('database');
+        }
+        
+        if (!self::$_db){
+            self::$_db = self::$_ci->database->connect(1, $db_type, $db_username, $db_password, $db_host, $db_port);
+        }
+        
+        $data = array();
+        
+        switch ($snap_type){
+            //注意表基础信息
+            case 0:
+                //表备份
+                $sql = 'SELECT * FROM ' . $database . '.' . $table;
+                $table_data = self::$_ci->database->query($sql, 0);
+                foreach ($table_data as $key => $value){
+                    $data[] = $value;
+                }
+                break;
+            
+            case 1:
+                //数据库备份
+                $tables = self::$_ci->database->query('SELECT TABLE_SCHEMA, TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = ' . self::$_db->quote($database), 0);
+                foreach ($tables as $key => $value){
+                    foreach ($value as $table_id => $table_name){
+                        $sql = 'SELECT * FROM ' . $database . '.' . $table_name['TABLE_NAME'];
+                        $table_data = self::$_ci->database->query($sql, 0);
+                        foreach ($table_data as $table_key => $table_value){
+                            $data[] = $value;
+                        }
+                    }
+                }
+                break;
+        }
+        
+        return $data;
     }
 }

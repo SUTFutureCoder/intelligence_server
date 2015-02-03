@@ -25,7 +25,7 @@ class ControlCenter extends CI_Controller{
         
         if (!$this->session->userdata('db_username')){
             header("Content-Type: text/html;charset=utf-8");
-            echo '<script>alert("'. $this->session->userdata('db_username') .'")</script>';
+            echo '<script>alert("无法确认您的身份，请重新登录")</script>';
             echo '<script>window.location.href= \'' . base_url() . '\';</script>'; 
         }
               
