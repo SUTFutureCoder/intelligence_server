@@ -531,6 +531,7 @@
                             
                         case 'DeleData':
                             $("#danger_confirm_modal").modal('hide');
+                            dele_data_display();
                             break;
                     }
                     //重置表单
@@ -601,11 +602,12 @@
         
         //执行SQL语句
         function launch_sql(){
-            switch ($("#memcache").val()){
-                case 'on':
+            alert($("#memcache").prop('checked'));
+            switch ($("#memcache").prop('checked')){
+                case true:
                     memcache = 1;
                     break;
-                case 'off':
+                case false:
                     memcache = 0;
                     break;
             }
@@ -691,6 +693,7 @@
         
         //删除表
         function dele_table(){
+            $("#danger_confirm").removeAttr('disabled');
             $("#danger_confirm_body").html('<h4><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>确认执行<a style="color:red">删除表</a>操作吗？</h4>');
             $("#danger_confirm").attr('onclick', 'dele_table_exec()');
             $("#danger_confirm_modal").modal('show');
@@ -710,6 +713,7 @@
         
         //清除表
         function truncate_table(){
+            $("#danger_confirm").removeAttr('disabled');
             $("#danger_confirm_body").html('<h4><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>确认执行<a style="color:red">清除表</a>操作吗？</h4>');
             $("#danger_confirm").attr('onclick', 'truncate_table_exec()');
             $("#danger_confirm_modal").modal('show');
@@ -729,6 +733,7 @@
         
         //重命名
         function rename_table(){
+            $("#danger_confirm").removeAttr('disabled');
             $("#danger_confirm_body").html('<h4><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>确认执行<a style="color:red">重命名表</a>操作吗？</h4>');
             $("#danger_confirm").attr('onclick', 'dele_table_exec()');
             $("#danger_confirm_modal").modal('show');
@@ -894,11 +899,24 @@
     var data_update_source = 0;
     var data_update_key = 0;
     //显示修改窗口
-    function data_update_button(source, key){   
+    function data_update_button(source, key){
+    //防止执行失败导致重复push
+        data_update_length = 0;
+        data_update_col_name = [];
+        data_update_old_data = [];   
+        data_update_new_data = [];
+        data_update_source = 0;
+        data_update_key = 0;
+        
         $("#data_update_confirm").html('确认');        
         $("#data_update_confirm").removeAttr('disabled');   
     //source来源：0为data_view 1为SQL查询页 
-        $("#data_update_title").html('修改第' + (key + 1) + '行数据');
+        if (!source){
+            $("#data_update_title").html('修改第' + (key + 1) + '行数据');
+        } else {
+            $("#data_update_title").html('修改第' + (key + 1) + '行数据' + "<br/><br/><a style='color:red'>注意：未选取主键将会导致多行数据修改</a>");
+        }
+        
         $("#data_update_confirm").attr("onclick", "data_update_confirm(" + source + "," + key + ")");  
         
         if (!source){
@@ -937,7 +955,7 @@
     }
     
     //执行修改过程
-    function data_update_confirm(source, key){
+    function data_update_confirm(source, update_key){
         
         $("#data_update_confirm").html('<span class="glyphicon glyphicon-flash" aria-hidden="true"></span>正在处理中，请稍候...');
         $("#data_update_confirm").attr('disabled', 'disabled');
@@ -1004,7 +1022,7 @@
         parent.IframeSend(data);
         
         data_update_source = source;
-        data_update_key = key;
+        data_update_key = update_key;
     }
     
     //更新显示数据
@@ -1015,7 +1033,7 @@
             }
         } else {            
             for (var i = 1; i <= data_update_length; i++){    
-                $("#sql_data_view tbody #sql_exec_" + data_update_key + " td:eq(" + i + ")").html(data_update_new_data[i - 1]);
+                $("#sql_exec_" + data_update_key + " td:eq(" + i + ")").html(data_update_new_data[i - 1]);
             }
         }
         
@@ -1029,8 +1047,91 @@
     }
     
     //显示删除窗口
-    function data_dele_button(key){
+    function data_dele_button(source, key){
+        $("#danger_confirm").html('确认');
+        $("#danger_confirm").removeAttr('disabled');
+        if (!source){
+            $("#danger_confirm_body").html('<h4><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>确认执行<a style="color:red">删除行</a>操作吗？<br/><br/><a style="color:red">*[如未指定主键将会删除多行数据]</a></h4>');
+        } else {
+            $("#danger_confirm_body").html('<h4><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>确认执行<a style="color:red">删除表</a>操作吗？<br/><br/><a style="color:red">*[如未选定主键将会删除多行数据]</a></h4>');
+        }
+
+        $("#danger_confirm").attr('onclick', 'dele_table_exec(' + source + ', ' + key + ')');
+        $("#danger_confirm_modal").modal('show');
+    }
+    
+    //执行删除    
+    var data_dele_source = 0;
+    var data_dele_key = 0;
+    var data_dele_col_name = new Array();
+    function dele_table_exec(source, dele_key){
+    //防止重复push
+        data_dele_source = 0;
+        data_dele_key = 0;
+        data_dele_col_name = [];
+        if (!source){
+            data_dele_length = $("#data_view tbody #data_" + dele_key + " td").length - 1;
+            for (var i = 1; i <= data_update_length; i++){    
+                data_dele_col_name.push($("#data_col_name th:eq(" + i + ")").html());      
+            }            
+        } else {
+            data_dele_length = $("#sql_data_view tbody #sql_exec_" + dele_key + " td").length - 1;
+        }
         
+        //source来源：0为data_view 1为SQL查询页  
+        var data = new Array();
+        data['src'] = location.href.slice((location.href.lastIndexOf("/")));
+        data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/DeleData';
+        data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
+        data['data'] += '"table" : "<?= $data['table'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>", "old_data" : {';
+        
+        for (i = 0; i < data_dele_length; i++){
+            //获取style中display为style="display: table-row;"
+            if (i != 0){
+                data['data'] += ', ';
+            }
+            if (!source){
+                data['data'] += '"' + i  + '" : "' + $("#data_view tbody #data_" + dele_key + " td:eq(" + (i + 1) + ")").html() + '"';
+            } else {
+                data['data'] += '"' + i  + '" : "' + $("#sql_data_view tbody #sql_exec_" + dele_key + " td:eq(" + (i + 1) + ")").html() + '"';
+            }
+        }
+        
+        data['data'] += '}, "col_name" : {';        
+        
+        if (!source){
+            for(i = 0; i < data_dele_length; i++){                
+                if (i != 0){
+                    data['data'] += ', ';
+                }
+                data['data'] += '"' + i  + '" : "' + $("#data_col_name th:eq(" + (i + 1) + ")").html() + '"';
+            }
+        } else {
+            i = 0;
+            for (key in chart_data['cols']){
+                if (i != 0){
+                    data['data'] += ', ';
+                }
+                data['data'] += '"' + i  + '" : "' + chart_data['cols'][key] + '"';
+                i++;
+            }
+        }
+        
+        data['data'] += '}}';
+        parent.IframeSend(data);
+        
+        data_dele_source = source;
+        data_dele_key = dele_key;
+    }
+    
+    
+    //处理删除前端
+    function dele_data_display(){
+        if (!data_dele_source){
+            $("#data_view tbody #data_" + data_dele_key).remove();
+        } else {           
+            $("#sql_exec_" + data_dele_key).remove();
+        }
     }
     
     //设置快照

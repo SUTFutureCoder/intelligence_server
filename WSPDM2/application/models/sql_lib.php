@@ -400,6 +400,33 @@ class Sql_lib extends CI_Model{
         return self::$_ci->database->exec($sql, 1);
     }
     
+    //删除数据
+    public function deleData($database, $table, $db_type, $db_username, $db_password, $db_host, $db_port, $old_data, $col_name){
+        if (!self::$_ci){
+            self::$_ci =& get_instance();
+            self::$_ci->load->library('database');
+        }
+        
+        if (!self::$_db){
+            self::$_db = self::$_ci->database->connect(1, $db_type, $db_username, $db_password, $db_host, $db_port);
+        }
+        
+        $sql = "DELETE FROM $database.$table ";
+        $sql_where = ' WHERE ';
+       
+        $length = count($col_name);
+        
+        for ($i = 0; $i < $length; ++$i){
+            if ($i != 0){                
+                $sql_where .= ' AND ';
+            }
+            $sql_where .= $col_name[$i] . ' = ' . self::$_db->quote($old_data[$i]);
+        }        
+        
+        $sql .= $sql_where;        
+        return self::$_ci->database->exec($sql, 1);
+    }
+    
     //创建快照
     public function setSnapShot($snap_type, $database, $table, $db_type, $db_username, $db_password, $db_host, $db_port){
         if (!self::$_ci){
@@ -413,18 +440,19 @@ class Sql_lib extends CI_Model{
         
         $data = array();
         
+        //基本引擎
+            $engine_data = self::$_ci->database->query('SELECT * FROM information_schema.GLOBAL_VARIABLES WHERE '
+            . 'VARIABLE_NAME = "CHARACTER_SET_SYSTEM" '        
+            . 'OR VARIABLE_NAME = "STORAGE_ENGINE"', 0);
+
+            $data['engine'][$engine_data['data'][0]['VARIABLE_NAME']] = $engine_data['data'][0]['VARIABLE_VALUE'];
+            $data['engine'][$engine_data['data'][1]['VARIABLE_NAME']] = $engine_data['data'][1]['VARIABLE_VALUE'];
+
+        
         switch ($snap_type){
             //注意表基础信息
             case 0:
-                //表备份
-                //基本引擎
-                $engine_data = self::$_ci->database->query('SELECT * FROM information_schema.GLOBAL_VARIABLES WHERE '
-                . 'VARIABLE_NAME = "CHARACTER_SET_SYSTEM" '        
-                . 'OR VARIABLE_NAME = "STORAGE_ENGINE"', 0);
-                
-                $data['engine'][$engine_data['data'][0]['VARIABLE_NAME']] = $engine_data['data'][0]['VARIABLE_VALUE'];
-                $data['engine'][$engine_data['data'][1]['VARIABLE_NAME']] = $engine_data['data'][1]['VARIABLE_VALUE'];
-                
+                //表备份                
                 //表结构
                 $sql = 'SELECT COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, CHARACTER_SET_NAME, COLUMN_TYPE, COLUMN_KEY, EXTRA, COLUMN_COMMENT FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ' . self::$_db->quote($database) . ' AND TABLE_NAME = ' . self::$_db->quote($table);
                 $table_struct_data = self::$_ci->database->query($sql, 0);
@@ -434,26 +462,35 @@ class Sql_lib extends CI_Model{
                 
                 $sql = 'SELECT * FROM ' . $database . '.' . $table;
                 $table_data = self::$_ci->database->query($sql, 0);
-                foreach ($table_data['data'] as $key => $value){
-                    $data['data'][] = $value;
+                if (isset($table_data['data'])){
+                    foreach ($table_data['data'] as $key => $value){
+                        $data['data'][] = $value;
+                    }
                 }
+                
                 break;
             
             case 1:
-                //数据库备份
-                $tables = self::$_ci->database->query('SELECT TABLE_SCHEMA, TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = ' . self::$_db->quote($database), 0);
-                foreach ($tables as $key => $value){
-                    foreach ($value as $table_id => $table_name){
-                        $sql = 'SELECT * FROM ' . $database . '.' . $table_name['TABLE_NAME'];
-                        $table_data = self::$_ci->database->query($sql, 0);
-                        foreach ($table_data as $table_key => $table_value){
-                            $data['data'][] = $value;
+                //数据库备份                
+                $tables = self::$_ci->database->query('SELECT TABLE_SCHEMA, TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = ' . self::$_db->quote($database), 0);                
+                foreach ($tables['data'] as $key => $value){
+                    //表结构
+                    $sql = 'SELECT COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, CHARACTER_SET_NAME, COLUMN_TYPE, COLUMN_KEY, EXTRA, COLUMN_COMMENT FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ' . self::$_db->quote($value['TABLE_SCHEMA']) . ' AND TABLE_NAME = ' . self::$_db->quote($value['TABLE_NAME']);
+                    $table_struct_data = self::$_ci->database->query($sql, 0);
+                    foreach ($table_struct_data['data'] as $struct_key => $struct_value){
+                        $data['struct'][$value['TABLE_NAME']][$struct_value["COLUMN_NAME"]] = $struct_value;
+                    }
+                    
+                    $sql = 'SELECT * FROM ' . $value['TABLE_SCHEMA'] . '.' . $value['TABLE_NAME'];
+                    $table_data = self::$_ci->database->query($sql, 0);
+                    if (isset($table_data['data'])){
+                        foreach ($table_data['data'] as $table_key => $table_value){
+                            $data['data'][$value['TABLE_NAME']][] = $table_value;
                         }
                     }
                 }
                 break;
         }
-        
         return $data;
     }
 }

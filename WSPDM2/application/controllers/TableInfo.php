@@ -164,7 +164,7 @@ class TableInfo extends CI_Controller{
                 $this->input->post('db_host', TRUE),
                 $this->input->post('db_port', TRUE));
         
-        if (is_string($data['data'])){
+        if (isset($data['data']) && is_string($data['data'])){
             $this->data->Out('iframe', $this->input->post('src', TRUE), 0, '快照创建出错,出错信息:' . $data['data']);
         }
         
@@ -215,7 +215,7 @@ class TableInfo extends CI_Controller{
                 $sql_output .= "-- 表的结构 `" . $this->input->post('table', TRUE)  . "`\n";
                 $sql_output .= "-- \n";
                 $sql_output .= "\n";
-                $sql_output .= 'CREATE TABLE IF NOT EXISTS `' . $this->input->post('table', TRUE) . "` (\n";
+                $sql_output .= 'CREATE TABLE IF NOT EXISTS ' . $this->input->post('database', TRUE) . '.' . $this->input->post('table', TRUE) . " (\n";
                 
                 $i = 0;
                 foreach ($data['struct'] as $struct_key => $struct_value){
@@ -225,10 +225,6 @@ class TableInfo extends CI_Controller{
                     $sql_output .= '`' . $struct_value['COLUMN_NAME'] . '` ' . $struct_value['COLUMN_TYPE'];
                     if ('NO' == $struct_value['IS_NULLABLE']){
                         $sql_output .= ' NOT NULL ';
-                    }
-                    
-                    if ('auto_increment' == $struct_value['EXTRA']){
-                        $sql_output .= '  AUTO_INCREMENT ';
                     }
                     
                     if (NULL != $struct_value['COLUMN_DEFAULT']){
@@ -242,31 +238,36 @@ class TableInfo extends CI_Controller{
                 }
                 $sql_output .= ') ENGINE=' . $data['engine']['STORAGE_ENGINE'] . ' DEFAULT CHARSET=' . $data['engine']['CHARACTER_SET_SYSTEM'] . ";\n";
                 
-                //填充数据
-                $sql_output .= "\n";
-                $sql_output .= "--\n";
-                $sql_output .= "-- 转存表中的数据`" . $this->input->post('table', TRUE) . "`\n";
-                $sql_output .= "--\n";
-                $sql_output .= "\n";
+
                 
-                $sql_output .= "INSERT INTO `" . $this->input->post('table', TRUE) . "` VALUES\n";
-                $i_a = 0;
-                foreach ($data['data'] as $data_key => $data_value){
-                    if (0 != $i_a){
-                        $sql_output .= "),\n";
-                    }
-                    $sql_output .= '(';
-                    $i_b = 0;
-                    foreach ($data_value as $key => $value){
-                        if (0 != $i_b){
-                            $sql_output .= ', ';
+                if (isset($data['data'])){
+                //填充数据
+                    $sql_output .= "\n";
+                    $sql_output .= "--\n";
+                    $sql_output .= "-- 转存表中的数据`" . $this->input->post('table', TRUE) . "`\n";
+                    $sql_output .= "--\n";
+                    $sql_output .= "\n";
+                    
+                    $sql_output .= "INSERT INTO " . $this->input->post('database', TRUE) . '.' . $this->input->post('table', TRUE) . " VALUES\n";
+                    $i_a = 0;
+                    foreach ($data['data'] as $data_key => $data_value){
+                        if (0 != $i_a){
+                            $sql_output .= "),\n";
                         }
-                        $sql_output .= "'" . $value . "'";
-                        ++$i_b;
+                        $sql_output .= '(';
+                        $i_b = 0;
+                        foreach ($data_value as $key => $value){
+                            if (0 != $i_b){
+                                $sql_output .= ', ';
+                            }
+                            $sql_output .= "'" . $value . "'";
+                            ++$i_b;
+                        }
+                        ++$i_a;
                     }
-                    ++$i_a;
+                    $sql_output .= ");\n";
                 }
-                $sql_output .= ");\n";
+                
                 //额外的设定
                 $sql_output .= "\n";
                 $sql_output .= "--\n";
@@ -278,7 +279,7 @@ class TableInfo extends CI_Controller{
                 foreach ($data['struct'] as $struct_key => $struct_value){
                     if ('' != $struct_value['COLUMN_KEY']){
                         //UNI => UNIQUE() / PRI => PRIMARY KEY (..)
-                        $sql_output .= "ALTER TABLE `" . $this->input->post('table', TRUE) . "`\n";
+                        $sql_output .= "ALTER TABLE " . $this->input->post('database', TRUE) . '.' . $this->input->post('table', TRUE) . "\n";
                         $flag = 0;
                         if ('UNI' == $struct_value['COLUMN_KEY']){                            
                             ++$flag;
@@ -291,7 +292,155 @@ class TableInfo extends CI_Controller{
                             }
                             $sql_output .= "ADD PRIMARY KEY (" . $struct_key . ")\n";
                         }
+                        $sql_output .= ";\n\n";
+                    }
+                    if ('auto_increment' == $struct_value['EXTRA']){
+                        $sql_output .= 'ALTER TABLE ' . $this->input->post('database', TRUE) . '.' . $this->input->post('table', TRUE) . "\n";
+                        $sql_output .= 'MODIFY `' . $struct_key . '` ' . $struct_value['COLUMN_TYPE'];                        
+                        if ('NO' == $struct_value['IS_NULLABLE']){
+                            $sql_output .= ' NOT NULL ';
+                        }
+                        $sql_output .= ' AUTO_INCREMENT ';
+                        if ('' != $struct_value['COLUMN_COMMENT']){
+                            $sql_output .= " COMMENT '" . $struct_value['COLUMN_DEFAULT'] . "' ";
+                        }
                         $sql_output .= ";\n";
+                    }
+                }
+                $sql_output .= "\n";
+                $sql_output .= "--\n";
+                $sql_output .= "-- EOF -- 文件结束 --\n";
+                $sql_output .= "--\n";
+                $sql_output .= "\n";
+                $output->fwrite($sql_output);
+                unset($output);
+                break;
+                
+            case '1':
+                try{
+                //必须在使用SPL之前将目录从浅到深全部创建完毕
+                    $output = new SplFileObject('./snapshot/' . $this->input->post('db_type', TRUE) . '/' . $this->input->post('database', TRUE) . '/' . date('Y-m-d H:i:s') . '_' . rand(0, 999) . '.sql', 'w');
+                } catch (Exception $ex) {
+                    echo $ex->getMessage();
+                }
+                
+                
+                $sql_output = "-- WSPDM2 SQL Dump\n";
+                $sql_output .= "-- version 2.0\n";
+                $sql_output .= "-- https://github.com/SUTFutureCoder/intelligence_server/tree/master/WSPDM2\n";
+                $sql_output .= "-- \n";
+                $sql_output .= '-- 生成时间: ' . date("Y-m-d H:i:s") . "\n";
+                $sql_output .= "-- \n";
+                $sql_output .= "\n";
+                $sql_output .= "\n";
+                $sql_output .= "-- \n";
+                $sql_output .= '-- 数据库: `' . $this->input->post('database', TRUE) . "`\n";
+                $sql_output .= "-- \n";
+                $sql_output .= "\n";
+                $sql_output .= 'CREATE DATABASE IF NOT EXISTS ' . $this->input->post('database', TRUE) . ' DEFAULT CHARSET ' . $data['engine']['CHARACTER_SET_SYSTEM'] . ";\n";
+                $sql_output .= "\n";
+                $sql_output .= "-- --------------------------------------------------------\n";
+                
+                //建表
+                foreach ($data['struct'] as $struct_key => $struct_value){
+                    $sql_output .= "\n";
+                    $sql_output .= "-- \n";
+                    $sql_output .= "-- 表的结构 `" . $struct_key  . "`\n";
+                    $sql_output .= "-- \n";
+                    $sql_output .= "\n";
+                    $sql_output .= 'CREATE TABLE IF NOT EXISTS ' . $this->input->post('database', TRUE) . '.' . $struct_key . " (\n";
+                    
+                    $i = 0;
+                    foreach ($struct_value as $struct_row){
+                        if (0 != $i){
+                            $sql_output .= ",\n";
+                        }
+                        $sql_output .= '`' . $struct_row['COLUMN_NAME'] . '` ' . $struct_row['COLUMN_TYPE'];
+                        if ('NO' == $struct_row['IS_NULLABLE']){
+                            $sql_output .= ' NOT NULL ';
+                        }
+
+                        if (NULL != $struct_row['COLUMN_DEFAULT']){
+                            $sql_output .= " DEFAULT '" . $struct_row['COLUMN_DEFAULT'] . "' ";
+                        }
+
+                        if ('' != $struct_row['COLUMN_COMMENT']){
+                            $sql_output .= " COMMENT '" . $struct_row['COLUMN_DEFAULT'] . "' ";
+                        }
+                        ++$i;
+                    }
+                    $sql_output .= ') ENGINE=' . $data['engine']['STORAGE_ENGINE'] . ' DEFAULT CHARSET=' . $data['engine']['CHARACTER_SET_SYSTEM'] . ";\n";
+                    
+                    
+                    if (isset($data['data'][$struct_key])){
+                        //填充数据
+                        $sql_output .= "\n";
+                        $sql_output .= "--\n";
+                        $sql_output .= "-- 转存表中的数据`" . $struct_key . "`\n";
+                        $sql_output .= "--\n";
+                        $sql_output .= "\n";
+
+                        $sql_output .= "INSERT INTO " . $this->input->post('database', TRUE) . '.' . $struct_key .  " VALUES\n";
+                        $i_a = 0;
+                        foreach ($data['data'][$struct_key] as $data_key => $data_value){                        
+                            if (0 != $i_a){
+                                $sql_output .= "),\n";
+                            }
+                            $sql_output .= '(';
+                            $i_b = 0;
+                            foreach ($data_value as $key => $value){
+                                if (0 != $i_b){
+                                    $sql_output .= ', ';
+                                }
+                                $sql_output .= "'" . $value . "'";
+                                ++$i_b;
+                            }
+                            ++$i_a;
+                        }
+                        
+                        $sql_output .= ");\n";
+                    }
+                    
+                    
+                    //额外的设定
+                    $sql_output .= "\n";
+                    $sql_output .= "--\n";
+                    $sql_output .= "-- 额外的设定于表 `" . $this->input->post('table', TRUE) . "`\n";
+                    $sql_output .= "--\n";
+                    $sql_output .= "\n";
+
+
+                    foreach ($struct_value as $struct_row){
+                        if ('' != $struct_row['COLUMN_KEY']){
+                            //UNI => UNIQUE() / PRI => PRIMARY KEY (..)
+                            $sql_output .= "ALTER TABLE " . $this->input->post('database', TRUE) . '.' . $struct_key . "\n";
+                            $flag = 0;
+                            if ('UNI' == $struct_row['COLUMN_KEY']){                            
+                                ++$flag;
+                                $sql_output .= "ADD UNIQUE (" . $struct_row['COLUMN_NAME'] . ")\n";
+                            }
+
+                            if ('PRI' == $struct_row['COLUMN_KEY']){
+                                if ($flag){
+                                    $sql_output .= ', ';
+                                }
+                                $sql_output .= "ADD PRIMARY KEY (" . $struct_row['COLUMN_NAME'] . ")\n";
+                            }
+                            $sql_output .= ";\n\n";
+                        }
+                        
+                        if ('auto_increment' == $struct_row['EXTRA']){
+                            $sql_output .= 'ALTER TABLE ' . $this->input->post('database', TRUE) . '.' . $struct_key . "\n";
+                            $sql_output .= 'MODIFY `' . $struct_row['COLUMN_NAME'] . '` ' . $struct_row['COLUMN_TYPE'];                        
+                            if ('NO' == $struct_row['IS_NULLABLE']){
+                                $sql_output .= ' NOT NULL ';
+                            }
+                            $sql_output .= ' AUTO_INCREMENT ';
+                            if ('' != $struct_row['COLUMN_COMMENT']){
+                                $sql_output .= " COMMENT '" . $struct_row['COLUMN_DEFAULT'] . "' ";
+                            }
+                            $sql_output .= ";\n";
+                        }
                     }
                 }
                 $sql_output .= "\n";
@@ -302,8 +451,6 @@ class TableInfo extends CI_Controller{
                 
                 $output->fwrite($sql_output);
                 unset($output);
-                break;
-            case '1':
                 break;
             case '2':
                 break;
@@ -866,6 +1013,77 @@ class TableInfo extends CI_Controller{
         }
         
         $this->data->Out('iframe', $this->input->post('src', TRUE), 1, 'UpdateData', $data);
+    }
+    
+    
+    /**    
+     *  @Purpose:    
+     *  删除数据   
+     *  @Method Name:
+     *  DeleData()
+     *  @Parameter: 
+     *  POST user_name 数据库用户名
+     *  POST user_key 用户密钥
+     *  POST src      目标地址
+     *  POST database 操作数据库
+     *  POST table    操作表
+     *  POST db_type  数据库类型
+     *  POST db_host  数据库地址
+     *  POST db_port  数据库端口
+     *  POST old_data Array 旧数据数组
+     *  POST col_name Array 数据列名
+     * 
+     *  @Return: 
+     *  状态码|说明
+     *      0|修改失败或未更改
+     *      1|修改成功
+     * 
+     * 
+     *  
+    */ 
+    public function DeleData(){
+        $this->load->library('secure');
+        $this->load->library('data');
+        $this->load->model('sql_lib');
+        
+        $db = array();
+        if ($this->input->post('user_name', TRUE) && $this->input->post('user_key', TRUE)){
+            $db = $this->secure->CheckUserKey($this->input->post('user_key', TRUE));
+            if ($this->input->post('user_name', TRUE) != $db['user_name']){
+                $this->data->Out('iframe', $this->input->post('src', TRUE), -1, '密钥无法通过安检');
+            }
+        } else {
+            $this->data->Out('iframe', $this->input->post('src', TRUE), -2, '未检测到密钥');
+        }
+        
+        if (!$this->input->post('db_type', TRUE) || !$db['user_name'] || 
+                null == $this->input->post('database', TRUE) || 
+                null == $this->input->post('table', TRUE)){
+            $this->data->Out('iframe', $this->input->post('src', TRUE), -3, 'SQL信息缺失，请重新登录');
+        }
+        
+        $old_data = array();
+        $old_data = $this->input->post('old_data', TRUE); 
+        
+        $col_name = array();
+        $col_name = $this->input->post('col_name', TRUE);
+        
+        $data = array();
+        $data = $this->sql_lib->deleData($this->input->post('database', TRUE),
+                $this->input->post('table', TRUE),
+                $this->input->post('db_type', TRUE),
+                $db['user_name'],
+                $db['password'],
+                $this->input->post('db_host', TRUE),
+                $this->input->post('db_port', TRUE),
+                $old_data,
+                $col_name);    
+        
+        if (is_string($data)){
+            $this->data->Out('iframe', $this->input->post('src', TRUE), 0, '修改出错,出错信息:' . $data);
+        }
+        
+        $this->data->Out('iframe', $this->input->post('src', TRUE), 1, 'DeleData', $data);
     }
     
     
