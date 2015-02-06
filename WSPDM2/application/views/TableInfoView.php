@@ -267,15 +267,41 @@
                         <br/>
                         <button type="button" class="btn btn-lg btn-block btn-info"  onclick="set_snapshot(1)">创建数据库快照</button>
                         <hr/>
-                        <div id="snapshot_list">
-                            <ul class="list-group">
-                                <li class="list-group-item">Cras justo odio</li>
-                                <li class="list-group-item">Dapibus ac facilisis in</li>
-                                <li class="list-group-item">Morbi leo risus</li>
-                                <li class="list-group-item">Porta ac consectetur ac</li>
-                                <li class="list-group-item">Vestibulum at eros</li>
-                            </ul>
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">表快照</h3>
+                            </div>
+                            <table class="table table-condensed table-hover" id="table_snap">
+                                <?php if (isset($snapshot['table'])): ?>
+                                <?php foreach ($snapshot['table'] as $table_snap_name => $table_snap_value):?>
+                                    <tr file="snap_0_<?= $table_snap_name?>">
+                                        <td class="col-sm-8"><a><?= $table_snap_name?></a></td>
+                                        <td class="col-sm-2"><a><?= $table_snap_value['size']?></a></td>
+                                        <td class="col-sm-1"><button type="button" class="btn btn-danger btn-sm" onclick="snap_dele(0, '<?= $table_snap_name?>')">删除快照</button></td>
+                                        <td class="col-sm-1"><button type="button" class="btn btn-success btn-sm" onclick="snap_rewind(0, '<?= $table_snap_name?>')">恢复</button></td>
+                                    </tr>
+                                <?php endforeach; ?>  
+                                <?php endif; ?>
+                            </table>
                         </div>
+                        <br/>   
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">数据库快照</h3>
+                            </div>
+                            <table class="table table-condensed table-hover" id="db_snap">
+                                <?php if (isset($snapshot['db'])): ?>
+                                <?php foreach ($snapshot['db'] as $db_snap_name => $db_snap_value):?>
+                                    <tr file="snap_1_<?= $db_snap_name?>">
+                                        <td class="col-sm-8"><a><?= $db_snap_name?></a></td>
+                                        <td class="col-sm-2"><a><?= $db_snap_value['size']?></a></td>
+                                        <td class="col-sm-1"><button type="button" class="btn btn-danger btn-sm" onclick="snap_dele(1, '<?= $db_snap_name?>')">删除快照</button></td>
+                                        <td class="col-sm-1"><button type="button" class="btn btn-success btn-sm" onclick="snap_rewind(1, '<?= $db_snap_name?>')">恢复</button></td>
+                                    </tr>
+                                <?php endforeach; ?>  
+                                <?php endif; ?>
+                            </table>
+                        </div>                                
                     </div>
                 </div>
             </div>
@@ -532,6 +558,23 @@
                         case 'DeleData':
                             $("#danger_confirm_modal").modal('hide');
                             dele_data_display();
+                            break;
+                            
+                        case 'SnapShot':
+                            if ('table' == data[4]['type']){                                
+                                $("#table_snap").append('<tr file="snap_0_' + data[4]['name'] + '"><td class="col-sm-8"><a>' + data[4]['name'] + '</a></td><td class="col-sm-2"><a>' + data[4]['size'] + '</a></td><td class="col-sm-1"><button type="button" class="btn btn-danger btn-sm" onclick="snap_dele(0, \'' + data[4]['name'] + '\')">删除快照</button></td><td class="col-sm-1"><button type="button" class="btn btn-success btn-sm" onclick="snap_rewind(0, \'' + data[4]['name'] + '\')">恢复</button></td></tr>');
+                            } else {                                
+                                $("#db_snap").append('<tr file="snap_1_' + data[4]['name'] + '"><td class="col-sm-8"><a>' + data[4]['name'] + '</a></td><td class="col-sm-2"><a>' + data[4]['size'] + '</a></td><td class="col-sm-1"><button type="button" class="btn btn-danger btn-sm" onclick="snap_dele(1, \'' + data[4]['name'] + '\')">删除快照</button></td><td class="col-sm-1"><button type="button" class="btn btn-success btn-sm" onclick="snap_rewind(1, \'' + data[4]['name'] + '\')">恢复</button></td></tr>');
+                            }
+                            break;
+                            
+                        case 'DeleSnapShot':
+                            $("#danger_confirm_modal").modal('hide');                            
+                            if ('table' == data[4]['type']){
+                                $('#table_snap [file="snap_0_' + data[4]['name'] + '"]').remove();
+                            } else {
+                                $('#db_snap [file="snap_1_' + data[4]['name'] + '"]').remove();
+                            }
                             break;
                     }
                     //重置表单
@@ -1141,6 +1184,24 @@
         data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/SetSnapShot';
         data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
         data['data'] += '"snap_type" : "' + snap_type + '", "table" : "<?= $data['table'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
+        parent.IframeSend(data);
+    }
+    
+    //删除快照
+    function snap_dele(type, name){
+        $("#danger_confirm").removeAttr('disabled');
+        $("#danger_confirm_body").html('<h4><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>确认执行<a style="color:red">删除快照</a>操作吗？</h4>');
+        $("#danger_confirm").attr('onclick', 'snap_dele_exec(' + type + ', "' + name + '")');
+        $("#danger_confirm_modal").modal('show');
+    }
+    
+    //执行删除快照
+    function snap_dele_exec(type, name){
+        var data = new Array();
+        data['src'] = location.href.slice((location.href.lastIndexOf("/")));
+        data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/DeleSnapshot';
+        data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
+        data['data'] += '"snap_type" : "' + type + '", "table" : "<?= $data['table'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "snap_name" : "' + name + '"}';
         parent.IframeSend(data);
     }
     </script>

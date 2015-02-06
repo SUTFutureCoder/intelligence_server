@@ -39,6 +39,9 @@ class BasicDbInfo extends CI_Controller{
         
         unset($data);
         
+        $db_snap = $this->GetDbSnapShot($this->session->userdata('db_type'));
+        
+        var_dump($db_snap);
         $this->load->view('BasicDbInfoView', array('db_info' => $db_info,
                                                     'user_key' => $this->secure->CreateUserKey($this->session->userdata('db_username'), $this->session->userdata('db_password')),
                                                     'user_name' => $this->session->userdata('db_username'),                                                    
@@ -108,5 +111,41 @@ class BasicDbInfo extends CI_Controller{
             } 
         }
         
+    }
+    
+    /**    
+     *  @Purpose:    
+     *  便利获取数据库快照列表   
+     *  @Method Name:
+     *  GetDbSnapShot()
+     *  @Parameter: 
+     *  $db_type        数据库类型
+     * 
+     *  @Return: 
+     *  状态码|说明
+     *      data
+     * 
+     *  
+    */ 
+    private function GetDbSnapShot($db_type){
+        
+        $data = array();
+        //先获取数据库总体快照        
+        if (is_dir('/home/' . get_current_user() . '/wspdm2/snapshot/' . $db_type . '/')){
+            $i_db = new FilesystemIterator('/home/' . get_current_user() . '/wspdm2/snapshot/' . $db_type . '/');            
+            foreach ($i_db as $db_snap){
+                $db_snap_file = new FilesystemIterator('/home/' . get_current_user() . '/wspdm2/snapshot/' . $db_type . '/' . $db_snap->getFilename() . '/');
+                foreach ($db_snap_file as $db_snap_file_name){
+                    if ($db_snap_file_name->isDir()){
+                        continue;
+                    }
+                    $data[$db_snap->getFilename()][] = $db_snap_file_name->getFilename();
+                }
+            }
+        } else {
+            //没有数据库文件夹，直接返回0
+            return 0;
+        }
+        return $data;
     }
 }
