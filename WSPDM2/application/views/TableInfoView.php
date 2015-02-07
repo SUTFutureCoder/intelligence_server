@@ -401,7 +401,7 @@
         //接收母窗口传来的值
         function MotherResultRec(data) {
             if (1 == data[2]) {
-                if ('group' != data[0]){
+                if ('iframe' == data[0]){
                     $("#alert").removeClass("alert-danger");
                     $("#alert").addClass("alert-success");
                     if (undefined != data[4]['rows']){
@@ -586,19 +586,24 @@
                             
                         case 'RewindSnapshot':
                             $("#danger_confirm_modal").modal('hide');
-                            alert('回滚成功，请结束其他未执行的操作并刷新页面以进行深度重载');
-//                            var data = new Array();
-//                            data['src'] = location.href.slice((location.href.lastIndexOf("/")));
-//                            data['group'] = 'WSPDM2';
-//                            data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/B_ReFreshTable';
-//                            data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "sql" : "' + sql + '", "col" : "' + col + '"}';
-//                            parent.IframeSend(data, 'group'); 
-//                            break;
+                            alert('回滚成功，请结束其他未执行的操作并刷新页面以进行深度重载');                            
+                            var Rewind = new Array();
+                            Rewind['src'] = location.href.slice((location.href.lastIndexOf("/")));
+                            Rewind['group'] = 'WSPDM2';
+                            Rewind['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/B_RewindSnapShot';
+                            Rewind['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "snap_type" : "' + data[4]['type'] + '", "database" : "' + data[4]['database'] + '", "table" : "<?= $data['table'] ?>"}';
+                            parent.IframeSend(Rewind, 'group'); 
+                            break;
                     }
                     //重置表单
                     $("form").each(function () {
                         this.reset();
                     });              
+                } else if('rewind_snap' == data[0]){
+                    //快照回滚广播
+                    $("#alert").removeClass("alert-success");
+                    $("#alert").addClass("alert-danger");
+                    $("#alert").append("<br/>警告！数据因回滚快照而发生更改！<br/><br/><button type=\"button\" class=\"btn btn-success\" onclick=\" window.location.href='" + location.href + "'\">重新加载以消除脏数据</button>");
                 } else {
                 //广播接收
                     switch (data[3]){  

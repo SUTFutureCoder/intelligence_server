@@ -145,14 +145,22 @@
                 
                 case 'RewindSnapshot':
                     $("#danger_confirm_modal").modal('hide');
-                    alert('回滚成功，请结束其他未执行的操作并刷新页面以进行深度重载');
-
+                    var Rewind = new Array();
+                    Rewind['src'] = location.href.slice((location.href.lastIndexOf("/")));
+                    Rewind['group'] = 'WSPDM2';
+                    Rewind['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/TableInfo/B_RewindSnapShot';
+                    Rewind['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "snap_type" : "' + data[4]['type'] + '", "database" : "' + data[4]['database'] + '"}';
+                    parent.IframeSend(Rewind, 'group'); 
                     break;
                 
                 case 'B_DeleSnapShot':
                     if ('database' == data[4]['type']){
                         $('#db_snap [file="snap_1_' + data[4]['name'] + '"]').remove();
                     }
+                    break;
+                    
+                case 'B_RewindSnapShot':
+                    alert('回滚快照成功，请结束其他未执行的操作并刷新页面以进行深度重载');
                     break;
             }
             

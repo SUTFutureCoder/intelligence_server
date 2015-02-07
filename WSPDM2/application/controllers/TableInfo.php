@@ -688,8 +688,9 @@ class TableInfo extends CI_Controller{
         
         $time_potin_b = microtime(TRUE);
         $file['time'] = number_format($time_potin_b - $time_potin_a, '8');        
-        $file['sql'] = '从云服务器回滚快照';
-        //因为是纯文本文档，所以可直接算出大小
+        $file['sql'] = '从云服务器回滚快照';        
+        $file['database'] = $this->input->post('database', TRUE);
+        
         $this->data->Out('iframe', $this->input->post('src', TRUE), 1, 'RewindSnapshot', $file);
     }
     
@@ -1584,6 +1585,46 @@ class TableInfo extends CI_Controller{
         $data['name'] = $this->input->post('snap_name', TRUE);
         $data['size'] = $this->input->post('snap_size', TRUE);
         $this->data->Out('group', $this->input->post('src', TRUE), 1, 'B_SnapShot', $data);
+    }
+    
+    /**    
+     *  @Purpose:    
+     *  广播恢复快照   
+     *  @Method Name:
+     *  B_RewindSnapShot()
+     *  @Parameter: 
+     *  POST user_name 数据库用户名
+     *  POST user_key 用户密钥
+     *  POST src      目标地址
+     *  POST snap_type 快照类型
+     *  POST snap_name 快照名
+     * 
+     *  @Return: 
+     *  状态码|说明
+     *      data
+     * 
+     *  
+    */ 
+    public function B_RewindSnapShot(){
+        $this->load->library('secure');
+        $this->load->library('data');
+        
+        $db = array();
+        if ($this->input->post('user_name', TRUE) && $this->input->post('user_key', TRUE)){
+            $db = $this->secure->CheckUserKey($this->input->post('user_key', TRUE));
+            if ($this->input->post('user_name', TRUE) != $db['user_name']){
+                return 0;
+            }
+        } else {
+            return 0;
+        }       
+        
+        if ('table' == $this->input->post('snap_type', TRUE)){
+            $src = $this->input->post('src', TRUE);
+        } else {
+            $src = base_url() . 'index.php?c=TableInfo&db=' . $this->input->post('database', TRUE);
+        }
+        $this->data->Out('rewind_snap', $src, 1, 'B_RewindSnapShot');
     }
     
 }

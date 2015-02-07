@@ -79,7 +79,16 @@ var ws, ping, name = 'null', user_list={};
                 alert($("iframe[src='" + result[1] + "']").attr('scrolling'));
             }*/
             break;
-
+        
+        case 'rewind_snap':
+            //回滚数据库快照操作后广播刷新
+            length = $("iframe[src^='" + result[1] + "']").length;
+            for (i = 0; i < length; i++){
+                $("iframe[src^='" + result[1] + "']")[i].contentWindow.MotherResultRec(result);
+            }
+            
+            
+            break;
     }
 
 };

@@ -29,11 +29,7 @@ class Index extends CI_Controller{
      * :WARNING: 请不要地址末尾加上index.php打开 :WARNING:
     */
     public function Index()
-    {           
-        if (!file_exists('application/config/config.php')){
-            //执行初始化，设置base_url参数
-            echo $_SERVER['HTTP_PORT'];
-        }
+    {   
         $this->load->view('login_view');
     }
     
