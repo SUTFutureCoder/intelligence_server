@@ -260,7 +260,7 @@
             </div>
             <div role="tabpanel" class="tab-pane fade" id="backup">                
                 <br/>
-                <div class="panel panel-success">
+                <div class="panel panel-info">
                     <div class="panel-heading">创建快照</div>
                     <div class="panel-body">                        
                         <button type="button" class="btn btn-lg btn-block btn-info"  onclick="set_snapshot(0)">创建表快照</button>
@@ -269,7 +269,7 @@
                         <hr/>
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title">表快照</h3>
+                                <h3 class="panel-title"><a style="color:red"><?= $data['table'] ?></a>表快照</h3>
                             </div>
                             <table class="table table-condensed table-hover" id="table_snap">
                                 <?php if (isset($snapshot['table'])): ?>
@@ -287,7 +287,7 @@
                         <br/>   
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title">数据库快照</h3>
+                                <h3 class="panel-title"><a style="color:red"><?= $data['database'] ?></a>数据库快照</h3>
                             </div>
                             <table class="table table-condensed table-hover" id="db_snap">
                                 <?php if (isset($snapshot['db'])): ?>
@@ -404,7 +404,12 @@
                 if ('group' != data[0]){
                     $("#alert").removeClass("alert-danger");
                     $("#alert").addClass("alert-success");
-                    $("#alert").html("<p>共操作" + data[4]['rows'] + "行，操作消耗" + data[4]['time'] + "秒<p>" + "<p>" + data[4]['sql'] + "<p>");
+                    if (undefined != data[4]['rows']){
+                        $("#alert").html("<p>共操作" + data[4]['rows'] + "行，操作消耗" + data[4]['time'] + "秒<p>" + "<p>" + data[4]['sql'] + "<p>");
+                    } else {
+                        $("#alert").html("<p>操作消耗" + data[4]['time'] + "秒<p>" + "<p>" + data[4]['sql'] + "<p>");
+                    }
+                    
                     switch (data[3]){
                         case 'ExecSQL':
                             $("#sql_result").html("");
@@ -561,21 +566,34 @@
                             break;
                             
                         case 'SnapShot':
-                            if ('table' == data[4]['type']){                                
-                                $("#table_snap").append('<tr file="snap_0_' + data[4]['name'] + '"><td class="col-sm-8"><a>' + data[4]['name'] + '</a></td><td class="col-sm-2"><a>' + data[4]['size'] + '</a></td><td class="col-sm-1"><button type="button" class="btn btn-danger btn-sm" onclick="snap_dele(0, \'' + data[4]['name'] + '\')">删除快照</button></td><td class="col-sm-1"><button type="button" class="btn btn-success btn-sm" onclick="snap_rewind(0, \'' + data[4]['name'] + '\')">恢复</button></td></tr>');
-                            } else {                                
-                                $("#db_snap").append('<tr file="snap_1_' + data[4]['name'] + '"><td class="col-sm-8"><a>' + data[4]['name'] + '</a></td><td class="col-sm-2"><a>' + data[4]['size'] + '</a></td><td class="col-sm-1"><button type="button" class="btn btn-danger btn-sm" onclick="snap_dele(1, \'' + data[4]['name'] + '\')">删除快照</button></td><td class="col-sm-1"><button type="button" class="btn btn-success btn-sm" onclick="snap_rewind(1, \'' + data[4]['name'] + '\')">恢复</button></td></tr>');
-                            }
+                            var snapshot = new Array();
+                            snapshot['src'] = location.href.slice((location.href.lastIndexOf("/")));
+                            snapshot['group'] = 'WSPDM2';
+                            snapshot['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/B_SnapShot';
+                            snapshot['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "snap_type" : "' + data[4]['type'] + '", "snap_name" : "' + data[4]['name'] + '", "snap_size" : "' + data[4]['size'] + '"}';
+                            parent.IframeSend(snapshot, 'group');  
                             break;
                             
                         case 'DeleSnapShot':
-                            $("#danger_confirm_modal").modal('hide');                            
-                            if ('table' == data[4]['type']){
-                                $('#table_snap [file="snap_0_' + data[4]['name'] + '"]').remove();
-                            } else {
-                                $('#db_snap [file="snap_1_' + data[4]['name'] + '"]').remove();
-                            }
+                            $("#danger_confirm_modal").modal('hide');  
+                            var delesnapshot = new Array();
+                            delesnapshot['src'] = location.href.slice((location.href.lastIndexOf("/")));
+                            delesnapshot['group'] = 'WSPDM2';
+                            delesnapshot['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/B_DeleSnapShot';
+                            delesnapshot['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "snap_type" : "' + data[4]['type'] + '", "snap_name" : "' + data[4]['name'] + '"}';
+                            parent.IframeSend(delesnapshot, 'group');  
                             break;
+                            
+                        case 'RewindSnapshot':
+                            $("#danger_confirm_modal").modal('hide');
+                            alert('回滚成功，请结束其他未执行的操作并刷新页面以进行深度重载');
+//                            var data = new Array();
+//                            data['src'] = location.href.slice((location.href.lastIndexOf("/")));
+//                            data['group'] = 'WSPDM2';
+//                            data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/B_ReFreshTable';
+//                            data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "sql" : "' + sql + '", "col" : "' + col + '"}';
+//                            parent.IframeSend(data, 'group'); 
+//                            break;
                     }
                     //重置表单
                     $("form").each(function () {
@@ -616,6 +634,22 @@
                         case 'B_RenameTable':
                             parent.UpdateTableName(data[4]['database'], data[4]['old_table_name'], data[4]['new_table_name']);
                             break;
+                            
+                        case 'B_DeleSnapShot':
+                            if ('table' == data[4]['type']){
+                                $('#table_snap [file="snap_0_' + data[4]['name'] + '"]').remove();
+                            } else {
+                                $('#db_snap [file="snap_1_' + data[4]['name'] + '"]').remove();
+                            }
+                            break;
+                            
+                        case 'B_SnapShot':
+                            if ('table' == data[4]['type']){                                
+                                $("#table_snap").append('<tr file="snap_0_' + data[4]['name'] + '"><td class="col-sm-8"><a>' + data[4]['name'] + '</a></td><td class="col-sm-2"><a>' + data[4]['size'] + '</a></td><td class="col-sm-1"><button type="button" class="btn btn-danger btn-sm" onclick="snap_dele(0, \'' + data[4]['name'] + '\')">删除快照</button></td><td class="col-sm-1"><button type="button" class="btn btn-success btn-sm" onclick="snap_rewind(0, \'' + data[4]['name'] + '\')">恢复</button></td></tr>');
+                            } else {                                
+                                $("#db_snap").append('<tr file="snap_1_' + data[4]['name'] + '"><td class="col-sm-8"><a>' + data[4]['name'] + '</a></td><td class="col-sm-2"><a>' + data[4]['size'] + '</a></td><td class="col-sm-1"><button type="button" class="btn btn-danger btn-sm" onclick="snap_dele(1, \'' + data[4]['name'] + '\')">删除快照</button></td><td class="col-sm-1"><button type="button" class="btn btn-success btn-sm" onclick="snap_rewind(1, \'' + data[4]['name'] + '\')">恢复</button></td></tr>');
+                            }
+                            break;
                     }
                 }
                 
@@ -645,7 +679,6 @@
         
         //执行SQL语句
         function launch_sql(){
-            alert($("#memcache").prop('checked'));
             switch ($("#memcache").prop('checked')){
                 case true:
                     memcache = 1;
@@ -737,6 +770,7 @@
         //删除表
         function dele_table(){
             $("#danger_confirm").removeAttr('disabled');
+            $("#danger_confirm").html('确认');
             $("#danger_confirm_body").html('<h4><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>确认执行<a style="color:red">删除表</a>操作吗？</h4>');
             $("#danger_confirm").attr('onclick', 'dele_table_exec()');
             $("#danger_confirm_modal").modal('show');
@@ -757,6 +791,7 @@
         //清除表
         function truncate_table(){
             $("#danger_confirm").removeAttr('disabled');
+            $("#danger_confirm").html('确认');
             $("#danger_confirm_body").html('<h4><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>确认执行<a style="color:red">清除表</a>操作吗？</h4>');
             $("#danger_confirm").attr('onclick', 'truncate_table_exec()');
             $("#danger_confirm_modal").modal('show');
@@ -777,6 +812,7 @@
         //重命名
         function rename_table(){
             $("#danger_confirm").removeAttr('disabled');
+            $("#danger_confirm").html('确认');
             $("#danger_confirm_body").html('<h4><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>确认执行<a style="color:red">重命名表</a>操作吗？</h4>');
             $("#danger_confirm").attr('onclick', 'dele_table_exec()');
             $("#danger_confirm_modal").modal('show');
@@ -1099,7 +1135,7 @@
             $("#danger_confirm_body").html('<h4><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>确认执行<a style="color:red">删除表</a>操作吗？<br/><br/><a style="color:red">*[如未选定主键将会删除多行数据]</a></h4>');
         }
 
-        $("#danger_confirm").attr('onclick', 'dele_table_exec(' + source + ', ' + key + ')');
+        $("#danger_confirm").attr('onclick', 'dele_data_exec(' + source + ', ' + key + ')');
         $("#danger_confirm_modal").modal('show');
     }
     
@@ -1107,7 +1143,7 @@
     var data_dele_source = 0;
     var data_dele_key = 0;
     var data_dele_col_name = new Array();
-    function dele_table_exec(source, dele_key){
+    function dele_data_exec(source, dele_key){
     //防止重复push
         data_dele_source = 0;
         data_dele_key = 0;
@@ -1190,6 +1226,7 @@
     //删除快照
     function snap_dele(type, name){
         $("#danger_confirm").removeAttr('disabled');
+        $("#danger_confirm").html('确认');
         $("#danger_confirm_body").html('<h4><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>确认执行<a style="color:red">删除快照</a>操作吗？</h4>');
         $("#danger_confirm").attr('onclick', 'snap_dele_exec(' + type + ', "' + name + '")');
         $("#danger_confirm_modal").modal('show');
@@ -1200,6 +1237,25 @@
         var data = new Array();
         data['src'] = location.href.slice((location.href.lastIndexOf("/")));
         data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/DeleSnapshot';
+        data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
+        data['data'] += '"snap_type" : "' + type + '", "table" : "<?= $data['table'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "snap_name" : "' + name + '"}';
+        parent.IframeSend(data);
+    }
+    
+    //回滚快照
+    function snap_rewind(type, name){
+        $("#danger_confirm").removeAttr('disabled');
+        $("#danger_confirm").html('确认');
+        $("#danger_confirm_body").html('<h4><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>确认执行<a style="color:red">回滚快照</a>操作吗？</h4>');
+        $("#danger_confirm").attr('onclick', 'snap_rewind_exec(' + type + ', "' + name + '")');
+        $("#danger_confirm_modal").modal('show');
+    }
+    
+    //执行删除快照
+    function snap_rewind_exec(type, name){
+        var data = new Array();
+        data['src'] = location.href.slice((location.href.lastIndexOf("/")));
+        data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/RewindSnapshot';
         data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
         data['data'] += '"snap_type" : "' + type + '", "table" : "<?= $data['table'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "snap_name" : "' + name + '"}';
         parent.IframeSend(data);

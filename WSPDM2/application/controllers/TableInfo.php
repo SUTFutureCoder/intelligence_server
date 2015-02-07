@@ -514,10 +514,102 @@ class TableInfo extends CI_Controller{
             $this->data->Out('iframe', $this->input->post('src', TRUE), -2, '未检测到密钥');
         }
         
-        if (!$this->input->post('db_type', TRUE) || !$db['user_name'] || 
-                null == $this->input->post('database', TRUE) || 
-                null == $this->input->post('table', TRUE)){
-            $this->data->Out('iframe', $this->input->post('src', TRUE), -3, 'SQL信息缺失，请重新登录');
+        if (!ctype_digit($this->input->post('snap_type', TRUE))){
+            $this->data->Out('iframe', $this->input->post('src', TRUE), -4, '快照类型错误');
+        }
+        
+        if (strpos($this->input->post('snap_name', TRUE), '..')){
+            $this->data->Out('iframe', $this->input->post('src', TRUE), -5, '请勿尝试跨目录操作');
+        }
+        
+        //记录模式
+        $time_potin_a = microtime(TRUE);
+        
+        //准备输出字段
+        $file = array();
+        $file['name'] = $this->input->post('snap_name', TRUE);
+        
+        //表为0，数据库为1
+        switch ($this->input->post('snap_type', TRUE)){
+            case '0':
+                if (!$this->input->post('db_type', TRUE) || !$db['user_name'] || 
+                        null == $this->input->post('database', TRUE) || 
+                        null == $this->input->post('table', TRUE)){
+                    $this->data->Out('iframe', $this->input->post('src', TRUE), -3, 'SQL信息缺失，请重新登录');
+                }
+                
+                $file['type'] = 'table';
+                if (!is_file('/home/' . get_current_user() . '/wspdm2/snapshot/' . $this->input->post('db_type', TRUE) . '/' . $this->input->post('database', TRUE) . '/' . $this->input->post('table', TRUE) . '/' . $this->input->post('snap_name', TRUE))){
+                    $this->data->Out('iframe', $this->input->post('src', TRUE), -6, '未找到快照文件');
+                } else {
+                    if (!unlink('/home/' . get_current_user() . '/wspdm2/snapshot/' . $this->input->post('db_type', TRUE) . '/' . $this->input->post('database', TRUE) . '/' . $this->input->post('table', TRUE) . '/' . $this->input->post('snap_name', TRUE))){
+                        $this->data->Out('iframe', $this->input->post('src', TRUE), -7, '快照文件删除错误');
+                    }
+                }
+                break;
+                
+            case '1':
+                if (!$this->input->post('db_type', TRUE) || !$db['user_name'] || 
+                        null == $this->input->post('database', TRUE)){
+                    $this->data->Out('iframe', $this->input->post('src', TRUE), -3, 'SQL信息缺失，请重新登录');
+                }
+                
+                $file['type'] = 'database';
+                if (!is_file('/home/' . get_current_user() . '/wspdm2/snapshot/' . $this->input->post('db_type', TRUE) . '/' . $this->input->post('database', TRUE) . '/' . $this->input->post('snap_name', TRUE))){
+                    $this->data->Out('iframe', $this->input->post('src', TRUE), -6, '未找到快照文件');
+                } else {
+                    if (!unlink('/home/' . get_current_user() . '/wspdm2/snapshot/' . $this->input->post('db_type', TRUE) . '/' . $this->input->post('database', TRUE) . '/' . $this->input->post('snap_name', TRUE))){
+                        $this->data->Out('iframe', $this->input->post('src', TRUE), -7, '快照文件删除错误');
+                    }
+                }               
+                break;
+                
+            case '2':
+                break;
+        }
+        
+        $time_potin_b = microtime(TRUE);
+        $file['time'] = number_format($time_potin_b - $time_potin_a, '8');
+        $file['sql'] = '从云服务器删除快照';
+        //因为是纯文本文档，所以可直接算出大小
+        $this->data->Out('iframe', $this->input->post('src', TRUE), 1, 'DeleSnapShot', $file);        
+    }
+    
+    
+    /**    
+     *  @Purpose:    
+     *  删除快照   
+     *  @Method Name:
+     *  RewindSnapshot()
+     *  @Parameter: 
+     *  POST user_name 数据库用户名
+     *  POST user_key 用户密钥
+     *  POST src      目标地址
+     *  POST database 操作数据库
+     *  POST table    操作表
+     *  POST db_type  数据库类型
+     *  POST snap_name快照名
+     *  POST snap_type快照类型(0:表备份，1:数据库备份，2:整库备份)
+     * 
+     *  @Return: 
+     *  状态码|说明
+     *      data
+     * 
+     *  
+    */ 
+    public function RewindSnapshot(){
+        $this->load->library('secure');
+        $this->load->library('data');
+        $this->load->model('sql_lib');
+        
+        $db = array();
+        if ($this->input->post('user_name', TRUE) && $this->input->post('user_key', TRUE)){
+            $db = $this->secure->CheckUserKey($this->input->post('user_key', TRUE));
+            if ($this->input->post('user_name', TRUE) != $db['user_name']){
+                $this->data->Out('iframe', $this->input->post('src', TRUE), -1, '密钥无法通过安检');
+            }
+        } else {
+            $this->data->Out('iframe', $this->input->post('src', TRUE), -2, '未检测到密钥');
         }
         
         if (!ctype_digit($this->input->post('snap_type', TRUE))){
@@ -538,23 +630,54 @@ class TableInfo extends CI_Controller{
         //表为0，数据库为1
         switch ($this->input->post('snap_type', TRUE)){
             case '0':
-                $file['type'] = 'table';
+                if (!$this->input->post('db_type', TRUE) || !$db['user_name'] || 
+                        null == $this->input->post('database', TRUE) || 
+                        null == $this->input->post('table', TRUE)){
+                    $this->data->Out('iframe', $this->input->post('src', TRUE), -3, 'SQL信息缺失，请重新登录');
+                }
+                
                 if (!is_file('/home/' . get_current_user() . '/wspdm2/snapshot/' . $this->input->post('db_type', TRUE) . '/' . $this->input->post('database', TRUE) . '/' . $this->input->post('table', TRUE) . '/' . $this->input->post('snap_name', TRUE))){
                     $this->data->Out('iframe', $this->input->post('src', TRUE), -6, '未找到快照文件');
                 } else {
-                    if (!unlink('/home/' . get_current_user() . '/wspdm2/snapshot/' . $this->input->post('db_type', TRUE) . '/' . $this->input->post('database', TRUE) . '/' . $this->input->post('table', TRUE) . '/' . $this->input->post('snap_name', TRUE))){
-                        $this->data->Out('iframe', $this->input->post('src', TRUE), -7, '快照文件删除错误');
+                    $snap_file = new SplFileObject('/home/' . get_current_user() . '/wspdm2/snapshot/' . $this->input->post('db_type', TRUE) . '/' . $this->input->post('database', TRUE) . '/' . $this->input->post('table', TRUE) . '/' . $this->input->post('snap_name', TRUE), 'r');
+                    
+                    $data = $this->sql_lib->rewindSnap($this->input->post('database', TRUE),
+                                                $this->input->post('table', TRUE),
+                                                $this->input->post('db_type', TRUE),
+                                                $db['user_name'],
+                                                $db['password'],
+                                                $this->input->post('db_host', TRUE),
+                                                $this->input->post('db_port', TRUE),
+                                                $snap_file->fread($snap_file->getSize()));
+                    
+                    if (is_string($data)){
+                        $this->data->Out('iframe', $this->input->post('src', TRUE), 0, 'SQL语句出错,出错信息:' . $data);
                     }
                 }
                 break;
                 
             case '1':
+                if (!$this->input->post('db_type', TRUE) || !$db['user_name'] || 
+                        null == $this->input->post('database', TRUE)){
+                    $this->data->Out('iframe', $this->input->post('src', TRUE), -3, 'SQL信息缺失，请重新登录');
+                }
+                
                 $file['type'] = 'database';
                 if (!is_file('/home/' . get_current_user() . '/wspdm2/snapshot/' . $this->input->post('db_type', TRUE) . '/' . $this->input->post('database', TRUE) . '/' . $this->input->post('snap_name', TRUE))){
                     $this->data->Out('iframe', $this->input->post('src', TRUE), -6, '未找到快照文件');
                 } else {
-                    if (!unlink('/home/' . get_current_user() . '/wspdm2/snapshot/' . $this->input->post('db_type', TRUE) . '/' . $this->input->post('database', TRUE) . '/' . $this->input->post('snap_name', TRUE))){
-                        $this->data->Out('iframe', $this->input->post('src', TRUE), -7, '快照文件删除错误');
+                    $snap_file = new SplFileObject('/home/' . get_current_user() . '/wspdm2/snapshot/' . $this->input->post('db_type', TRUE) . '/' . $this->input->post('database', TRUE) . '/' . $this->input->post('snap_name', TRUE), 'r');
+                    $data = $this->sql_lib->rewindSnap($this->input->post('database', TRUE),
+                                                $this->input->post('table', TRUE),
+                                                $this->input->post('db_type', TRUE),
+                                                $db['user_name'],
+                                                $db['password'],
+                                                $this->input->post('db_host', TRUE),
+                                                $this->input->post('db_port', TRUE),
+                                                $snap_file->fread($snap_file->getSize()));
+                    
+                    if (is_string($data)){
+                        $this->data->Out('iframe', $this->input->post('src', TRUE), 0, 'SQL语句出错,出错信息:' . $data);
                     }
                 }               
                 break;
@@ -564,11 +687,10 @@ class TableInfo extends CI_Controller{
         }
         
         $time_potin_b = microtime(TRUE);
-        $file['time'] = number_format($time_potin_b - $time_potin_a, '8');
-        $file['rows'] = ' ';
-        $file['sql'] = '从云服务器删除快照';
+        $file['time'] = number_format($time_potin_b - $time_potin_a, '8');        
+        $file['sql'] = '从云服务器回滚快照';
         //因为是纯文本文档，所以可直接算出大小
-        $this->data->Out('iframe', $this->input->post('src', TRUE), 1, 'DeleSnapShot', $file);        
+        $this->data->Out('iframe', $this->input->post('src', TRUE), 1, 'RewindSnapshot', $file);
     }
     
 
@@ -1385,6 +1507,83 @@ class TableInfo extends CI_Controller{
         $data['new_table_name'] = $this->input->post('new_table_name', TRUE);
         $data['old_table_name'] = $this->input->post('old_table_name', TRUE);
         $this->data->Out('group', $this->input->post('src', TRUE), 1, 'B_RenameTable', $data);
+    }
+    
+    /**    
+     *  @Purpose:    
+     *  广播删除快照   
+     *  @Method Name:
+     *  B_DeleSnapShot()
+     *  @Parameter: 
+     *  POST user_name 数据库用户名
+     *  POST user_key 用户密钥
+     *  POST src      目标地址
+     *  POST snap_type 快照类型[0:表快照， 1:数据库快照]
+     *  POST snap_name 快照名
+     * 
+     *  @Return: 
+     *  状态码|说明
+     *      data
+     * 
+     *  
+    */ 
+    public function B_DeleSnapShot(){
+        $this->load->library('secure');
+        $this->load->library('data');
+        
+        $db = array();
+        if ($this->input->post('user_name', TRUE) && $this->input->post('user_key', TRUE)){
+            $db = $this->secure->CheckUserKey($this->input->post('user_key', TRUE));
+            if ($this->input->post('user_name', TRUE) != $db['user_name']){
+                return 0;
+            }
+        } else {
+            return 0;
+        }       
+        
+        $data['type'] = $this->input->post('snap_type', TRUE);
+        $data['name'] = $this->input->post('snap_name', TRUE);
+        $this->data->Out('group', $this->input->post('src', TRUE), 1, 'B_DeleSnapShot', $data);
+    }
+    
+    
+    /**    
+     *  @Purpose:    
+     *  广播创建快照   
+     *  @Method Name:
+     *  B_SnapShot()
+     *  @Parameter: 
+     *  POST user_name 数据库用户名
+     *  POST user_key 用户密钥
+     *  POST src      目标地址
+     *  POST snap_type 快照类型[0:表快照， 1:数据库快照]
+     *  POST snap_name 快照名
+     *  POST snap_size 快照大小
+     * 
+     *  @Return: 
+     *  状态码|说明
+     *      data
+     * 
+     *  
+    */ 
+    public function B_SnapShot(){
+        $this->load->library('secure');
+        $this->load->library('data');
+        
+        $db = array();
+        if ($this->input->post('user_name', TRUE) && $this->input->post('user_key', TRUE)){
+            $db = $this->secure->CheckUserKey($this->input->post('user_key', TRUE));
+            if ($this->input->post('user_name', TRUE) != $db['user_name']){
+                return 0;
+            }
+        } else {
+            return 0;
+        }       
+        
+        $data['type'] = $this->input->post('snap_type', TRUE);
+        $data['name'] = $this->input->post('snap_name', TRUE);
+        $data['size'] = $this->input->post('snap_size', TRUE);
+        $this->data->Out('group', $this->input->post('src', TRUE), 1, 'B_SnapShot', $data);
     }
     
 }

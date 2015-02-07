@@ -40,14 +40,13 @@ class BasicDbInfo extends CI_Controller{
         unset($data);
         
         $db_snap = $this->GetDbSnapShot($this->session->userdata('db_type'));
-        
-        var_dump($db_snap);
         $this->load->view('BasicDbInfoView', array('db_info' => $db_info,
                                                     'user_key' => $this->secure->CreateUserKey($this->session->userdata('db_username'), $this->session->userdata('db_password')),
                                                     'user_name' => $this->session->userdata('db_username'),                                                    
                                                     'host' => $this->session->userdata('db_host'),
                                                     'port' => $this->session->userdata('db_port'),
-                                                    'type' => $this->session->userdata('db_type')));
+                                                    'type' => $this->session->userdata('db_type'),
+                                                    'db_snap' => $db_snap));
     }   
     
     /**    
@@ -69,6 +68,8 @@ class BasicDbInfo extends CI_Controller{
         $this->load->library('database');
         $this->load->library('data');
         $this->load->model('sql_lib');
+        
+        $data = array();
         
         if ($this->input->post('new_pw_confirm', TRUE) != $this->input->post('new_pw', TRUE)){
             $this->data->Out('iframe', $this->input->post('src', TRUE), -6, '两次输入的密码不一致', 'new_pw');
@@ -107,7 +108,7 @@ class BasicDbInfo extends CI_Controller{
             if (!$this->sql_lib->updateUserPass($db['type'], $db['user_name'], $db['password'], $this->input->post('new_pw', TRUE), $db['host'], $db['port'])){
                 $this->data->Out('iframe', $this->input->post('src', TRUE), -3, '修改失败');
             }  else {
-                $this->data->Out('iframe', $this->input->post('src', TRUE), 1, '修改成功');
+                $this->data->Out('iframe', $this->input->post('src', TRUE), 1, 'UpdatePW');
             } 
         }
         
@@ -139,7 +140,7 @@ class BasicDbInfo extends CI_Controller{
                     if ($db_snap_file_name->isDir()){
                         continue;
                     }
-                    $data[$db_snap->getFilename()][] = $db_snap_file_name->getFilename();
+                    $data[$db_snap->getFilename()][$db_snap_file_name->getFilename()] = round($db_snap_file_name->getSize() / pow(1024, 1), 2) . "KB";
                 }
             }
         } else {

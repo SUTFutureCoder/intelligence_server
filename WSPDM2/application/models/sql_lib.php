@@ -493,4 +493,16 @@ class Sql_lib extends CI_Model{
         }
         return $data;
     }
+    
+    //回滚快照
+    public function rewindSnap($database, $table, $db_type, $db_username, $db_password, $db_host, $db_port, $file){
+        if (!self::$_ci){
+            self::$_ci =& get_instance();
+            self::$_ci->load->library('database');
+        }
+        
+        self::$_ci->database->connect(0, $db_type, $db_username, $db_password, $db_host, $db_port);
+        
+        return self::$_ci->database->exec($file, 1);
+    }
 }
