@@ -194,7 +194,7 @@ class Database{
             }
             
             if (isset($memcache_obj) && is_object($memcache_obj)){
-                $memcache_obj->add($key, $data);
+                $memcache_obj->add($key, $data, MEMCACHE_COMPRESSED);
             }
             
             return $data;        

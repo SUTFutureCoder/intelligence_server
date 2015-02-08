@@ -12,8 +12,11 @@ $(function(){
 //设定按键部分 
 $(function(){
     $(this).keydown(function(e){
-        //任意键聚焦
-        $("input:last").focus();        
+        //除alt的任意键聚焦
+        if (e.which != 18){
+            $("input:last").focus();        
+        }
+    
         //按下回车
         if (e.which == 13){
             $("input").attr("disabled", "disabled");

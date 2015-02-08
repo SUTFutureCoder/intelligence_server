@@ -6,6 +6,7 @@ function AddMessageBox() {
     var data = arguments[0] ? arguments[0] : "";
     var color = arguments[1] ? arguments[1] : "white";
     $("#main").append("<br/><div class=\"message_box\" style=\"color:" + color + "\">" + data + "</div>");
+    $('html, body, #main').animate({scrollTop: $(document).height()}, 0); 
 }
 
 //动态添加消息
@@ -13,6 +14,7 @@ function AddTickerMessageBox() {
     var data = arguments[0] ? arguments[0] : "";
     var color = arguments[1] ? arguments[1] : "white";
     $("#main").append("<br/><div class=\"message_box ticker\" style=\"color:" + color + "\">" + data + "</div>");
+    $('html, body, #main').animate({scrollTop: $(document).height()}, 0); 
 }
 
 //动态添加命令输入部分
@@ -26,6 +28,7 @@ function AddCommandBox() {
 
     $("#main").append("<br/><div class=\"command_box\"><div class=\"command_title\"><a>" + user_name + "</a></div><div class=\"command_area\"><input type=\"text\" name=\"command\"></div></div>");
     $("input:last").focus();
+    $('html, body, #main').animate({scrollTop: $(document).height()}, 0); 
 }
 
 //动态添加命令输入部分
@@ -35,6 +38,7 @@ function AddAnyCommandBox() {
     var type = arguments[2] ? arguments[2] : "text";
     $("#main").append("<br/><div class=\"command_box\"><div class=\"command_title\" id=\"" + title + "\"><a>" + title + "</a></div><div class=\"command_area\"><input type=\"" + type + "\" func=\"" + command_function + "\" name=\"command\"></div></div>");
     $("input:last").focus();
+    $('html, body, #main').animate({scrollTop: $(document).height()}, 0); 
 }
 
 

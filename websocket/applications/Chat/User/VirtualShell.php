@@ -91,57 +91,36 @@ class VirtualShell{
 
 
     //执行函数
-    public static function Socket($uid, $command){
+    public static function Exec($uid, $command){
         set_time_limit(0);
-        ob_implicit_flush();
-        $service_port = 10086;
-        $address = '127.0.0.1';
         
-        $new_message = array();
-        $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-        if ($socket === FALSE){
-            $new_message[0] = '-1';
-            $new_message[1] = 'socket_create() failed';
-            return $new_message;
-        }
+        if ('!' == $command){
+            $shmid = shmop_open($uid, 'c', 0755, 32);
+            shmop_write($shmid, '1', 0); 
+            return 0;
+        } 
         
-        $conn = socket_connect($socket, $address, $service_port);
-        if ($conn === FALSE){
-            $new_message[0] = '-2';
-            $new_message[1] = 'socket_connect() failed';
-            return $new_message;
-        }
-        
-        
-        if ($command != '!'){
-            socket_write($socket, $command, strlen($command));
-        } else {
-            //立即停止
-            socket_write($socket, '!', 1);
-            socket_close($socket);
-            $new_message[0] = 'shell';
-            $new_message[1] = 2;
-            $new_message[2] = 'Command Canceled';
-            return $new_message;
-        }
-        
-        //添加响应上限防止无限死循环
-        $max_response = 30;
-        $now_response = 0;
-        while (1){
-            $response = socket_read($socket, 8192);
-            if ($response == '#' || $now_response == $max_response){
+        $handle = popen(escapeshellcmd($command), 'r');
+        while (!feof($handle)){
+            $shmid = shmop_open($uid, 'c', 0755, 32);
+            if (1 == shmop_read($shmid, 0, shmop_size($shmid))){
+                pclose($handle);
+                unset($handle);
+                shmop_delete($shmid);
+                shmop_close($shmid);
+                Gateway::sendToUid($uid, WebSocket::encode(json_encode(array(
+                    'exec', 'VS_interrupted'
+                ))));
                 break;
+            } else {
+                $buffer = fgets($handle);            
+                Gateway::sendToUid($uid, WebSocket::encode(json_encode(array(
+                    'exec', $buffer
+                ))));                           
             }
-            $new_message[0] = 'shell';
-            $new_message[1] = 1;
-            $new_message[2] = $response;
-            Gateway::sendToUid($uid, WebSocket::encode(json_encode($new_message)));
-            ++$now_response;
+            shmop_close($shmid);
         }
-        
-        socket_close($socket);
+        pclose($handle); 
     }
-    
 }
     

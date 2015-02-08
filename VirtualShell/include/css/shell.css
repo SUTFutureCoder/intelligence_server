@@ -14,9 +14,8 @@ body{
 }
 
 .message_box{
-    width: 100%;
     position: relative;
-    margin-top:10px;
+    margin-top:4px;
     
 }
 

@@ -262,10 +262,8 @@ class Event
                 $new_message = array();
                 
                 if (VirtualShell::Logined($uid)){
-                    $new_message = VirtualShell::Socket($uid, $command);    
-                    if (isset($new_message[0])){
-                        return Gateway::sendToUid($uid, WebSocket::encode(json_encode($new_message)));
-                    }
+                    VirtualShell::Exec($uid, $command);   
+                                    
                 } else {
                     $new_message[0] = 'shell';
                     $new_message[1] = 'Please Login First';

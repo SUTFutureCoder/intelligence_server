@@ -129,7 +129,20 @@
                     AddAnyCommandBox("say:", "UserSay");
                 }
                 
-                break;                
+                break;  
+            
+            case 'exec':
+                if ('VS_interrupted' == result[1]){
+                    AddMessageBox('用户中断执行进程');
+                    AddCommandBox();  
+                } else {
+                    if (false == result[1]){
+                        AddCommandBox();
+                    }
+                    AddMessageBox(result[1]);
+                }
+                
+                break;
         }
 
     };
