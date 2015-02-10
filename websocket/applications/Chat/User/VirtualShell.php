@@ -100,25 +100,28 @@ class VirtualShell{
             return 0;
         } 
         
-        $handle = popen(escapeshellcmd($command), 'r');
+        $handle = popen($command, 'r');
+        $i = 0;
         while (!feof($handle)){
             $shmid = shmop_open($uid, 'c', 0755, 32);
-            if (1 == shmop_read($shmid, 0, shmop_size($shmid))){
+            echo "-------" . shmop_read($shmid, 0, shmop_size($shmid)) . "\n\n";
+            if (1 == shmop_read($shmid, 0, shmop_size($shmid) && $i)){
                 pclose($handle);
-                unset($handle);
+                unset($handle);                
                 shmop_delete($shmid);
                 shmop_close($shmid);
                 Gateway::sendToUid($uid, WebSocket::encode(json_encode(array(
                     'exec', 'VS_interrupted'
                 ))));
                 break;
-            } else {
+            } else {                
                 $buffer = fgets($handle);            
                 Gateway::sendToUid($uid, WebSocket::encode(json_encode(array(
                     'exec', $buffer
                 ))));                           
             }
             shmop_close($shmid);
+            $i++;
         }
         pclose($handle); 
     }

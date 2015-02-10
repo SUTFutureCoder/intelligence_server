@@ -3,18 +3,10 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/var/www/html/intelligence_server/WSPDM2/application/controllers/BasicDbInfo.php</file>
-            <file>file:/var/www/html/intelligence_server/WSPDM2/application/views/BasicDbInfoView.php</file>
-            <file>file:/var/www/html/intelligence_server/WSPDM2/application/controllers/TableInfo.php</file>
-            <file>file:/var/www/html/intelligence_server/WSPDM2/application/views/ControlCenterView.php</file>
-            <file>file:/var/www/html/intelligence_server/WSPDM2/application/views/login_view.php</file>
-            <file>file:/var/www/html/intelligence_server/WSPDM2/application/controllers/index.php</file>
-            <file>file:/var/www/html/intelligence_server/WSPDM2/application/libraries/Database.php</file>
-            <file>file:/var/www/html/intelligence_server/WSPDM2/application/views/TableInfoView.php</file>
+            <file>file:/var/www/html/intelligence_server/websocket/applications/Chat/Event.php</file>
+            <file>file:/var/www/html/intelligence_server/websocket/applications/Chat/User/VirtualShell.php</file>
             <file>file:/var/www/html/intelligence_server/VirtualShell/index.html</file>
-            <file>file:/var/www/html/intelligence_server/WSPDM2/application/controllers/ControlCenter.php</file>
-            <file>file:/var/www/html/intelligence_server/WSPDM2/application/models/sql_lib.php</file>
-            <file>file:/var/www/html/intelligence_server/WSPDM2/application/libraries/Data.php</file>
+            <file>file:/var/www/html/intelligence_server/VirtualShell/include/js/shell.js</file>
         </group>
     </open-files>
 </project-private>
