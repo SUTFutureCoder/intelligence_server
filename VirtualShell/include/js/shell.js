@@ -65,21 +65,21 @@ function ShellCommand(command) {
 
                     //关闭VirtualShell
                 case "bye":
-                    AddMessageBox("Virtual Shell will shutdown in 5 seconds...", "red");
-                    AddMessageBox("Good Bye!");
-                    AddMessageBox("Press Ctrl+C to cancel");
+                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_SHUTDOWN"), "red");
+                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_GOODBYE"));
+                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_SHUTDOWN_CANCEL"));
                     shutdown = 5;
 
                     shutdowntimer = setInterval(function () {
                         if ($("input:last").val() != command) {
-                            AddMessageBox("Virtual Shell shutdown process canceled");
+                            AddMessageBox(eval(DEFAULT_LANGUAGE + "_SHUTDOWN_CANCELE"));
                             clearInterval(shutdowntimer);
                         }
 
                         if (shutdown >= 0) {
                             shutdown--;
                         } else {
-                            AddMessageBox("Now HALT, Please Close The Shell", "red");
+                            AddMessageBox(eval(DEFAULT_LANGUAGE + "_SHUTDOWN_HALT"), "red");
                             ws.close();
                             delete ws;
                             clearInterval(shutdowntimer);
@@ -97,37 +97,39 @@ function ShellCommand(command) {
                 case "help":
                 case '?':
                 case '？':
-                    AddMessageBox("Welcome to use Virtual Shell2", "red");
-                    AddMessageBox("$vs:clear - Clean the screen");                    
-                    AddMessageBox("$vs:login - Login the server");
-                    AddMessageBox("$vs:say - Interactive with other users");
-                    AddMessageBox("$vs:clean_history - Clean the command history");
-                    AddMessageBox("$vs:github - Visit the project source code in Github");
-                    AddMessageBox("$vs:author - Show the authors of the Virtual Shell");
-                    AddMessageBox("$vs:bye - Shutdown the Virtual Shell");                   
+                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_NOTICE_TOPIC"), "red");
+                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_NOTICE_LAN"));                    
+                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_NOTICE_CLEAR"));                    
+                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_NOTICE_LOGIN"));
+                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_NOTICE_SAY"));
+                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_NOTICE_CLEAN_HISTORY"));
+                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_NOTICE_GITHUB"));
+                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_NOTICE_AUTHOR"));
+                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_NOTICE_BYE"));                   
+                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_NOTICE_ARROW"));                   
                     
                     AddCommandBox();
                     break;
 
                     //显示作者信息
                 case "author":
-                    AddMessageBox("====================================================", "red");
-                    AddMessageBox("■&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Virtual Shell2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;■");
-                    AddMessageBox("■&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Shenyang University of Technology&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;■", "#00CCFF");
-                    AddMessageBox("====================================================", "red");
-                    AddMessageBox("■&nbsp;&nbsp;&nbsp;&nbsp;Interface Designer & Websocket Kernel Engineer&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;■");
-                    AddMessageBox("■&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;System Interaction API Engineer&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;■");
-                    AddMessageBox("■&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*Chen&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;■", "#FFFF00");
-                    AddMessageBox("====================================================", "red");
-                    AddMessageBox("■&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Thanks For Using Virtual Shell&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;■");
-                    AddMessageBox("====================================================", "red");
+                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_AUTHOR_1"), "red");
+                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_AUTHOR_2"));
+                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_AUTHOR_3"), "#00CCFF");
+                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_AUTHOR_4"), "red");
+                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_AUTHOR_5"));
+                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_AUTHOR_6"));
+                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_AUTHOR_7"), "#FFFF00");
+                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_AUTHOR_8"), "red");
+                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_AUTHOR_9"));
+                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_AUTHOR_10"), "red");
                     AddCommandBox();
                     break;
 
                     //用户登录
                 case "login":
                     $("#main").empty();
-                    AddAnyCommandBox("Login:", "UserName");
+                    AddAnyCommandBox(eval(DEFAULT_LANGUAGE + "_COMMAND_LOGIN"), "UserName");
                     if (undefined != $.LS.get("user_name")) {
                         $("input:last").val($.LS.get("user_name"));
                     }                    
@@ -135,7 +137,7 @@ function ShellCommand(command) {
 
                     //和其他管理员对话
                 case "say":
-                    AddAnyCommandBox("say:", "UserSay");
+                    AddAnyCommandBox(eval(DEFAULT_LANGUAGE + "_SAY"), "UserSay");
                     break;
 
                     //清除操作历史记录
@@ -143,14 +145,14 @@ function ShellCommand(command) {
                 case "clean_history":
                     $.LS.remove("command_stack");
                     if (undefined == $.LS.get("command_stack")) {
-                        AddMessageBox("Clean succeed");
+                        AddMessageBox(eval(DEFAULT_LANGUAGE + "_HISTORY_CLEAN"));
                     } else {
-                        AddMessageBox("Clean ERROR", "red");
+                        AddMessageBox(eval(DEFAULT_LANGUAGE + "_HISTORY_CLEAN_ERR"), "red");
                     }
                     break;
                     
                 default:
-                    AddMessageBox("未识别的内部命令，请输入【$vs:help】或【$vs:?】查询命令集", "red");
+                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_VS_COMMAND_NOT_REC"), "red");
                     AddCommandBox();
                     break;
             }
@@ -196,16 +198,16 @@ function CommandHistory(direction) {
 function UserName(){
     user_name = $("input:last").val();
     $.LS.set("user_name", user_name);
-    AddAnyCommandBox("Password:", "UserPassword", "password");
+    AddAnyCommandBox(eval(DEFAULT_LANGUAGE + "_COMMAND_PSW"), "UserPassword", "password");
 }
 
 function UserPassword(){
-    if (undefined != user_name){
+    if (undefined != user_name || '' == user_name){
         ws.send('{"type":"login","name":"' + user_name + '", "password":"' + $("input:last").val() + '", "group":"VirtualShell"}');
     } else {
-        AddMessageBox("Undefined User Name", "red");
-        AddMessageBox("Access Deined", "red");
-        AddAnyCommandBox("Login:", "UserName");
+        AddMessageBox(eval(DEFAULT_LANGUAGE + "_USER_NAME_EMPTY"), "red");
+        AddMessageBox(eval(DEFAULT_LANGUAGE + "_USER_ACCESS_DENY"), "red");
+        AddAnyCommandBox(eval(DEFAULT_LANGUAGE + "_COMMAND_LOGIN"), "UserName");
         $("input:last").focus();
         return ;
     }
@@ -216,8 +218,8 @@ function UserSay(){
     if (undefined != user_name && logined){
         ws.send('{"type":"say","name":"' + user_name + '","group":"VirtualShell","content":"' + $("input:last").val() + '"}');
     } else {
-        AddMessageBox("Please Login First", "red");
-        AddAnyCommandBox("Login:", "UserName");
+        AddMessageBox(eval(DEFAULT_LANGUAGE + "_USER_LOGIN_FIRST_PLEASE"), "red");
+        AddAnyCommandBox(eval(DEFAULT_LANGUAGE + "_COMMAND_LOGIN"), "UserName");
         $("input:last").focus();
         return ;
     }

@@ -61,6 +61,7 @@
         </div>
         </div>    
     </body>
+    <script type="text/javascript" src="include/js/language.js"></script>
     <script type="text/javascript" src="include/js/shell.js"></script>
     <script type="text/javascript" src="include/js/interface.js"></script>
     
@@ -124,16 +125,16 @@
                 
             case "say":
                 if (result[1] != user_name){
-                    AddMessageBox(result[3] + "-" + result[1] + " 说： " + result[2]);
+                    AddMessageBox(result[3] + "-" + result[1] + " " + eval(DEFAULT_LANGUAGE + "_SAY") + " " + result[2]);
                 } else {
-                    AddAnyCommandBox("say:", "UserSay");
+                    AddAnyCommandBox(eval(DEFAULT_LANGUAGE + "_SAY"), "UserSay");
                 }
                 
                 break;  
             
             case 'exec':
                 if ('VS_interrupted' == result[1]){
-                    AddMessageBox('用户中断执行进程');
+                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_INTERRUPTED"));
                     AddCommandBox();  
                 } else {
                     if (false == result[1]){
@@ -152,7 +153,7 @@
     };
     ws.onclose = function() {
         console.log("服务端关闭了连接");
-        AddMessageBox("Lost connection to server", "red");
+        AddMessageBox(eval(DEFAULT_LANGUAGE + "_LOST_CONNECTION"), "red");
     };
     ws.onerror = function() {
         console.log("出现错误");

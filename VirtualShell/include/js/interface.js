@@ -1,9 +1,8 @@
 //初始界面
 $(function(){
-    AddMessageBox("Welcome to use the virtual shell2");
-    var now = new Date();    
-    AddMessageBox("(C) SUT-ACM 2014-" + now.getFullYear() + " *Chen");
-    AddMessageBox("USE $vs:help to get more information");
+    AddMessageBox(eval(DEFAULT_LANGUAGE + "_INIT_WELCOME"));       
+    AddMessageBox(eval(DEFAULT_LANGUAGE + "_INIT_COPY_RIGHT"));
+    AddMessageBox(eval(DEFAULT_LANGUAGE + "_INIT_HELP"));
     AddCommandBox();
     $("input:last").focus();
 })
@@ -60,7 +59,7 @@ $(function(){
             if (!logined){
                 //未登录则无法绕过登录过程
                 $("#main").empty();
-                AddAnyCommandBox("Login:", "UserName");
+                AddAnyCommandBox(eval(DEFAULT_LANGUAGE + "_COMMAND_LOGIN"), "UserName");
                 if (undefined != $.LS.get("user_name")) {
                     $("input:last").val($.LS.get("user_name"));
                 }                    
