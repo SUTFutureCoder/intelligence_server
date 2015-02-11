@@ -1,5 +1,9 @@
 //已登录标示符
 var logined = 0;
+//用户名
+var user_name = 'Guest';
+//shell命令执行状态(是否结束)
+var exec_end = 0;
 
 //动态添加消息
 function AddMessageBox() {
@@ -19,14 +23,14 @@ function AddTickerMessageBox() {
 
 //动态添加命令输入部分
 function AddCommandBox() {
-    if (undefined != $.LS.get("user")) {
-        user_name = $.LS.get("user_name");
-    } else {
-        user_name = "GUEST:$";
-//        user_name = "lin@lin-SUTACM:~$";
-    }
+//    if (undefined != $.LS.get("user")) {
+//        user_name = $.LS.get("user_name");
+//    } else {
+//        user_name = "GUEST:$";
+////        user_name = "lin@lin-SUTACM:~$";
+//    }
 
-    $("#main").append("<br/><div class=\"command_box\"><div class=\"command_title\"><a>" + user_name + "</a></div><div class=\"command_area\"><input type=\"text\" name=\"command\"></div></div>");
+    $("#main").append("<br/><div class=\"command_box\"><div class=\"command_title\"><a>" + user_name + ":$</a></div><div class=\"command_area\"><input type=\"text\" name=\"command\"></div></div>");
     $("input:last").focus();
     $('html, body, #main').animate({scrollTop: $(document).height()}, 0); 
 }
@@ -91,6 +95,8 @@ function ShellCommand(command) {
 
                     //显示VirtualShell指令集
                 case "help":
+                case '?':
+                case '？':
                     AddMessageBox("Welcome to use Virtual Shell2", "red");
                     AddMessageBox("$vs:clear - Clean the screen");                    
                     AddMessageBox("$vs:login - Login the server");
@@ -124,8 +130,7 @@ function ShellCommand(command) {
                     AddAnyCommandBox("Login:", "UserName");
                     if (undefined != $.LS.get("user_name")) {
                         $("input:last").val($.LS.get("user_name"));
-                    }
-                    
+                    }                    
                     break;
 
                     //和其他管理员对话
@@ -142,6 +147,11 @@ function ShellCommand(command) {
                     } else {
                         AddMessageBox("Clean ERROR", "red");
                     }
+                    break;
+                    
+                default:
+                    AddMessageBox("未识别的内部命令，请输入【$vs:help】或【$vs:?】查询命令集", "red");
+                    AddCommandBox();
                     break;
             }
             break;
@@ -190,8 +200,7 @@ function UserName(){
 }
 
 function UserPassword(){
-    if (undefined != $.LS.get("user_name")){
-        user_name = $.LS.get("user_name");
+    if (undefined != user_name){
         ws.send('{"type":"login","name":"' + user_name + '", "password":"' + $("input:last").val() + '", "group":"VirtualShell"}');
     } else {
         AddMessageBox("Undefined User Name", "red");
@@ -204,8 +213,7 @@ function UserPassword(){
 
 //用户交流
 function UserSay(){
-    if (undefined != $.LS.get("user_name") && logined){
-        user_name = $.LS.get("user_name");
+    if (undefined != user_name && logined){
         ws.send('{"type":"say","name":"' + user_name + '","group":"VirtualShell","content":"' + $("input:last").val() + '"}');
     } else {
         AddMessageBox("Please Login First", "red");

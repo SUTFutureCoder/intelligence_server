@@ -139,20 +139,19 @@ class Event
 
                     $result = array();
                     $result = VirtualShell::CheckShellPassWord($clean['user_name'], $clean['password'], $uid);
-                    if (1 != $result['id']){
+                    if (1 == $result['id']){
                         $new_message = array(
                             '0' => 'login',
-                            '1' => $result['id'],
-                            '2' => $result['message'],
+                            '1' => $result['id']
                         );
                         self::addUserToList($uid, htmlspecialchars($message_data['name']), $message_data['group']);
                     } else {
                         $new_message = array(
                             '0' => 'login',
                             '1' => $result['id'],
+                            '2' => $result['message']
                         );
                     }
-                    
                     return Gateway::sendToUid($uid, WebSocket::encode(json_encode($new_message)));
                 } else {
                 }
@@ -175,16 +174,19 @@ class Event
                 // 向大家说
                
                 $new_message = array(
-                    '0'=>'say', 
-                    '1'=> htmlspecialchars($message_data['name']),
-                    '2'=>nl2br(htmlspecialchars($message_data['content'])),
-                    '3'=>date('Y-m-d H:i:s'),
+                    '0' => 'say', 
+                    '1' => htmlspecialchars($message_data['name']),
+                    '2' => nl2br(htmlspecialchars($message_data['content'])),
+                    '3' => date('Y-m-d H:i:s'),
                 );
                 $new_message_encode = json_encode($new_message);
+                var_dump(self::getGroupUserList());
                 
-                foreach (self::getGroupUserList() as $key => $value){                    
+                foreach (self::getGroupUserList() as $key => $value){   
+                    
                     if ($key == $message_data['group']){
                         foreach ($value as $uid => $user_id){
+                            var_dump($value);
                             Gateway::sendToUid($uid, WebSocket::encode($new_message_encode));
                         }                        
                     }   

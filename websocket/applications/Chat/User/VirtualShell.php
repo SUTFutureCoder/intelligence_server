@@ -113,6 +113,9 @@ class VirtualShell{
                 Gateway::sendToUid($uid, WebSocket::encode(json_encode(array(
                     'exec', 'VS_interrupted'
                 ))));
+                Gateway::sendToUid($uid, WebSocket::encode(json_encode(array(
+                    'exec_end', 1
+                )))); 
                 break;
             } else {                
                 $buffer = fgets($handle);            
@@ -123,6 +126,9 @@ class VirtualShell{
             shmop_close($shmid);
             $i++;
         }
+        Gateway::sendToUid($uid, WebSocket::encode(json_encode(array(
+            'exec_end', 1
+        )))); 
         pclose($handle); 
     }
 }

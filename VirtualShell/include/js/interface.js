@@ -45,6 +45,8 @@ $(function(){
                 if (!ShellCommand($("input:last").val())){
                     //发送命令
                     ws.send('{"type":"shell","command":"' + $("input:last").val() + '"}');
+                    //执行状态复位
+                    exec_end = 0;
                 }
             }
             
@@ -55,13 +57,21 @@ $(function(){
         //ctrl+C
         if (e.ctrlKey && e.which == 67){
             $("input").attr("disabled", "disabled");
-            AddCommandBox();
-            $("input:last").focus();           
-            
-            
-            //判断是否正在执行
-            if (1){
-                ws.send('{"type":"shell","command":"!"}');
+            if (!logined){
+                //未登录则无法绕过登录过程
+                $("#main").empty();
+                AddAnyCommandBox("Login:", "UserName");
+                if (undefined != $.LS.get("user_name")) {
+                    $("input:last").val($.LS.get("user_name"));
+                }                    
+            } else {
+                AddCommandBox();
+                $("input:last").focus();
+
+                //判断是否正在执行
+                if (!exec_end){
+                    ws.send('{"type":"shell","command":"!"}');
+                }
             }
         }
         
