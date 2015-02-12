@@ -23,8 +23,8 @@ function AddTickerMessageBox() {
 
 //动态添加命令输入部分
 function AddCommandBox() {
-//    if (undefined != $.LS.get("user")) {
-//        user_name = $.LS.get("user_name");
+//    if (undefined != $.LS.get("vs_user")) {
+//        user_name = $.LS.get("vs_user_name");
 //    } else {
 //        user_name = "GUEST:$";
 ////        user_name = "lin@lin-SUTACM:~$";
@@ -121,8 +121,12 @@ function ShellCommand(command) {
                     AddMessageBox(eval(DEFAULT_LANGUAGE + "_AUTHOR_6"));
                     AddMessageBox(eval(DEFAULT_LANGUAGE + "_AUTHOR_7"), "#FFFF00");
                     AddMessageBox(eval(DEFAULT_LANGUAGE + "_AUTHOR_8"), "red");
-                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_AUTHOR_9"));
-                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_AUTHOR_10"), "red");
+                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_AUTHOR_9"), "#FFFF00");
+                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_AUTHOR_10"));
+                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_AUTHOR_11"), "#FFFF00");
+                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_AUTHOR_12"), "red");
+                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_AUTHOR_13"));
+                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_AUTHOR_14"), "red");
                     AddCommandBox();
                     break;
 
@@ -130,8 +134,8 @@ function ShellCommand(command) {
                 case "login":
                     $("#main").empty();
                     AddAnyCommandBox(eval(DEFAULT_LANGUAGE + "_COMMAND_LOGIN"), "UserName");
-                    if (undefined != $.LS.get("user_name")) {
-                        $("input:last").val($.LS.get("user_name"));
+                    if (undefined != $.LS.get("vs_user_name")) {
+                        $("input:last").val($.LS.get("vs_user_name"));
                     }                    
                     break;
 
@@ -143,12 +147,27 @@ function ShellCommand(command) {
                     //清除操作历史记录
                     //推荐退出前清除
                 case "clean_history":
-                    $.LS.remove("command_stack");
-                    if (undefined == $.LS.get("command_stack")) {
+                    $.LS.remove("vs_command_stack");
+                    if (undefined == $.LS.get("vs_command_stack")) {
                         AddMessageBox(eval(DEFAULT_LANGUAGE + "_HISTORY_CLEAN"));
                     } else {
                         AddMessageBox(eval(DEFAULT_LANGUAGE + "_HISTORY_CLEAN_ERR"), "red");
                     }
+                    break;
+                
+                //切换语言
+                case 'lan':
+                    if (undefined == LANGUAGE_PACK){
+                        AddMessageBox('Language Package Lost', "red");
+                        return ;
+                    }
+
+                    AddMessageBox(eval(DEFAULT_LANGUAGE + "_LAN_SELECT"), "#00CCFF");
+                    for (i in LANGUAGE_PACK){
+                        AddMessageBox('[' + i + ']' + ' - ' + LANGUAGE_PACK[i]);
+                    }
+                    
+                    AddAnyCommandBox(eval(DEFAULT_LANGUAGE + "_LAN"), "SetLan");                    
                     break;
                     
                 default:
@@ -168,8 +187,8 @@ function ShellCommand(command) {
 //获取历史命令
 var command_array = new Array();
 var now_command = -1;
-if (undefined != $.LS.get("command_stack")) {
-    command_array = JSON.parse($.LS.get("command_stack"));
+if (undefined != $.LS.get("vs_command_stack")) {
+    command_array = JSON.parse($.LS.get("vs_command_stack"));
     //当前命令
     now_command = command_array.length - 1;
 }
@@ -197,7 +216,7 @@ function CommandHistory(direction) {
 //用户登录
 function UserName(){
     user_name = $("input:last").val();
-    $.LS.set("user_name", user_name);
+    $.LS.set("vs_user_name", user_name);
     AddAnyCommandBox(eval(DEFAULT_LANGUAGE + "_COMMAND_PSW"), "UserPassword", "password");
 }
 
@@ -223,4 +242,20 @@ function UserSay(){
         $("input:last").focus();
         return ;
     }
+}
+
+//设定语言
+function SetLan(){
+    if ('' == $("input:last").val() || undefined == LANGUAGE_PACK[$("input:last").val()]){
+        AddMessageBox(eval(DEFAULT_LANGUAGE + "_LAN_SELECT"), "#00CCFF");
+        for (i in LANGUAGE_PACK){
+            AddMessageBox('[' + i + ']' + ' - ' + LANGUAGE_PACK[i]);
+        }
+        AddAnyCommandBox(eval(DEFAULT_LANGUAGE + "_LAN"), "SetLan");                 
+    } else {
+        DEFAULT_LANGUAGE = LANGUAGE_PACK[$("input:last").val()];
+        $.LS.set('vs_language', DEFAULT_LANGUAGE);
+        AddMessageBox(eval(DEFAULT_LANGUAGE + "_LAN_SUCCESS"), "red");
+    }
+    AddCommandBox();
 }

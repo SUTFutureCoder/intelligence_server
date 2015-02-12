@@ -21,7 +21,7 @@ $(function(){
             $("input").attr("disabled", "disabled");
             //记录命令历史
             if (logined){
-                if (undefined != $.LS.get("command_stack")){
+                if (undefined != $.LS.get("vs_command_stack")){
                     now_command = command_array.length;
                 }
                 if (now_command != -1){      
@@ -32,7 +32,7 @@ $(function(){
                     command_array[now_command] = $("input:last").val();
                 }
                 
-                $.LS.set("command_stack", JSON.stringify(command_array));               
+                $.LS.set("vs_command_stack", JSON.stringify(command_array));               
                 
             }
             
@@ -60,8 +60,8 @@ $(function(){
                 //未登录则无法绕过登录过程
                 $("#main").empty();
                 AddAnyCommandBox(eval(DEFAULT_LANGUAGE + "_COMMAND_LOGIN"), "UserName");
-                if (undefined != $.LS.get("user_name")) {
-                    $("input:last").val($.LS.get("user_name"));
+                if (undefined != $.LS.get("vs_user_name")) {
+                    $("input:last").val($.LS.get("vs_user_name"));
                 }                    
             } else {
                 AddCommandBox();

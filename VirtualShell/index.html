@@ -107,9 +107,9 @@
                 } else {
                     logined = 0;
                     AddMessageBox(result[2], "red");
-                    AddAnyCommandBox("Login:", "UserName");
-                    if (undefined != $.LS.get("user_name")) {
-                        $("input:last").val($.LS.get("user_name"));
+                    AddAnyCommandBox(eval(DEFAULT_LANGUAGE + "_COMMAND_LOGIN"), "UserName");
+                    if (undefined != $.LS.get("vs_user_name")) {
+                        $("input:last").val($.LS.get("vs_user_name"));
                     }
                     $("input:last").focus();
                 }
