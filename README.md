@@ -3,9 +3,9 @@
 
 ---
 
-预计包含三个项目：
-1. WSPDM2
-2. VirtualShel
+预计包含三个项目：  
+1. WSPDM2  
+2. VirtualShell  
 3. ？？？
 
 目前还处于alpha开发阶段，代码不断更新中……
