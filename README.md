@@ -4,8 +4,8 @@
 ---
 
 预计包含三个项目：  
-1. WSPDM2  
-2. VirtualShell2  
+1. [WSPDM2](https://github.com/SUTFutureCoder/intelligence_server/tree/master/WSPDM2)  
+2. [VirtualShell2](https://github.com/SUTFutureCoder/intelligence_server/tree/master/VirtualShell)  
 3. ？？？
 
 **运行前请务必开启[WebSocket引擎](https://github.com/SUTFutureCoder/WebSocket-Engine)**
