@@ -61,7 +61,20 @@
         </div>
         </div>    
     </body>
-    <script type="text/javascript" src="include/js/language.js"></script>
+    <script>
+        //初始化国际化语言包
+        var LANGUAGE_PACK = new Array();
+        
+        //选定语言
+        if (undefined == $.LS.get('vs_language')){
+            var DEFAULT_LANGUAGE = 'CHN';
+        } else {
+            var DEFAULT_LANGUAGE = $.LS.get('vs_language');
+        }
+    </script>
+    <script type="text/javascript" src="include/js/lan_chn.js"></script>
+    <script type="text/javascript" src="include/js/lan_eng.js"></script>
+    <script type="text/javascript" src="include/js/lan_jpn.js"></script>
     <script type="text/javascript" src="include/js/shell.js"></script>
     <script type="text/javascript" src="include/js/interface.js"></script>
     
@@ -73,7 +86,7 @@
     if (typeof console == "undefined") {    this.console = { log: function (msg) {  } };}
     WEB_SOCKET_SWF_LOCATION = "include/swf/WebSocketMain.swf";
     WEB_SOCKET_DEBUG = true;
-    var ws, ping, name = 'null', user_list={};
+    var ws, ping, name = 'null', user_list={};   
 
         // 创建websocket
         ws = new WebSocket("ws://"+document.domain+":8080/");

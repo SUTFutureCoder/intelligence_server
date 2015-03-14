@@ -3,10 +3,11 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/var/www/html/intelligence_server/websocket/applications/Chat/Event.php</file>
-            <file>file:/var/www/html/intelligence_server/websocket/applications/Chat/User/VirtualShell.php</file>
-            <file>file:/var/www/html/intelligence_server/VirtualShell/index.html</file>
-            <file>file:/var/www/html/intelligence_server/VirtualShell/include/js/shell.js</file>
+            <file>file:/var/www/html/intelligence_server/WSPDM2/application/controllers/ControlCenter.php</file>
+            <file>file:/var/www/html/intelligence_server/WSPDM2/application/config/database_raw.php</file>
+            <file>file:/var/www/html/intelligence_server/WSPDM2/application/libraries/Database.php</file>
+            <file>file:/var/www/html/intelligence_server/WSPDM2/application/controllers/BasicDbInfo.php</file>
+            <file>file:/var/www/html/intelligence_server/WSPDM2/application/config/database.php</file>
         </group>
     </open-files>
 </project-private>
