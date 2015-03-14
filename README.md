@@ -5,7 +5,7 @@
 
 预计包含三个项目：  
 1. WSPDM2  
-2. VirtualShell  
+2. VirtualShell2  
 3. ？？？
 
 **运行前请务必开启[WebSocket引擎](https://github.com/SUTFutureCoder/WebSocket-Engine)**
@@ -21,7 +21,6 @@
 > **R** 成功完成一个具有高实时性、通用性、轻量级、人性化界面设计等特性的数据库管理器，并且加深了对数据库语句的使用熟练度。     
 
 ###DEMO 示例
-
 
 ####登录界面
 ![登录界面](https://github.com/SUTFutureCoder/intelligence_server/blob/master/example-img/WSPDM2_01.png?raw=true)
@@ -62,6 +61,44 @@
 
 ---
 
-##WSPDM2
+##VirtualShell2
 ###STAR原则
+
+> **S** 服务器只开放80端口且不向外网提供SSH和VPN。  
+> **T** 使用WebSocket、进程操作、内存共享等技术
+> **A** 仿*nix命令行式操作方式，交互接口模仿操作系统，低耦合性语言包允许任意添加或删除。
+> **R** 此应用成功在假期远程管理校园服务器。
+
+###DEMO 示例
+
+####初始界面
+选定中文语言包
+![初始界面](https://github.com/SUTFutureCoder/intelligence_server/blob/master/example-img/VirtualShell2_01_3.png?raw=true)
+
+选定英文语言包
+![初始界面](https://github.com/SUTFutureCoder/intelligence_server/blob/master/example-img/VirtualShell2_01_2.png?raw=true)
+
+选定日文语言包
+![初始界面](https://github.com/SUTFutureCoder/intelligence_server/blob/master/example-img/VirtualShell2_01_1.png?raw=true)
+
+####语言包
+松耦合式语言包设计，允许开发者任意添加或删除语言包。
+![语言包设计](https://github.com/SUTFutureCoder/intelligence_server/blob/master/example-img/VirtualShell2_06.png?raw=true)
+
+####帮助命令
+展示**$vs:**系列内部命令。
+![帮助命令](https://github.com/SUTFutureCoder/intelligence_server/blob/master/example-img/VirtualShell2_02.png?raw=true)
+
+####开发成员信息
+感谢外语学院日文系**☆RYUU☆**提供日文版语言包
+![帮助命令](https://github.com/SUTFutureCoder/intelligence_server/blob/master/example-img/VirtualShell2_03.png?raw=true)
+
+####执行系统命令
+使用安全策略：在/home/key.php存放私钥，密码尾部根据日期和小时换算出，然后将其合并。
+![执行系统命令](https://github.com/SUTFutureCoder/intelligence_server/blob/master/example-img/VirtualShell2_04.png?raw=true)
+
+####用户交流
+![用户交流](https://github.com/SUTFutureCoder/intelligence_server/blob/master/example-img/VirtualShell2_05.png?raw=true)
+
+
 
