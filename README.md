@@ -20,4 +20,6 @@ STAR原则
 > **A** WebSocket引擎允许DBA之间进行同步协作，防止脏数据产生。使用PDO理论支持多达13种数据库本地或远程连接，动态构建通用SQL语句。使用SPL高效率创建备份和回滚数据，[ECharts](https://github.com/ecomfe/echarts)构建图表以便分析。  
 > **R** 成功完成一个具有高实时性、通用性、轻量级、人性化界面设计等特性的数据库管理器，并且加深了对数据库语句的使用熟练度。   
 
+DEMO 示例
 
+![登录界面](https://github.com/SUTFutureCoder/intelligence_server/blob/master/example-img/WSPDM2_01.png?raw=true)
