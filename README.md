@@ -56,6 +56,9 @@
 存放快照于/home/用户名/WSPDM2/数据库名/表名
 ![数据库快照](https://github.com/SUTFutureCoder/intelligence_server/blob/master/example-img/WSPDM2_07.png?raw=true)
 
+![生成的文件](https://github.com/SUTFutureCoder/intelligence_server/blob/master/example-img/WSPDM2_11.png?raw=true)
+
+
 ####即时修改数据
 ![即时修改数据](https://github.com/SUTFutureCoder/intelligence_server/blob/master/example-img/WSPDM2_09.png?raw=true)
 
