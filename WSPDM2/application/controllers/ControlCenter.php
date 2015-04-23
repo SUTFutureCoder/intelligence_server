@@ -18,8 +18,11 @@ class ControlCenter extends CI_Controller{
         parent::__construct();
     }
     
+    private $_nosql_list = array('MongoDB');
+
     public function index(){
         $this->load->library('session');
+        $this->load->library('nosqldatabase');
         $this->load->model('sql_lib');
         $data = array();
         
@@ -32,8 +35,12 @@ class ControlCenter extends CI_Controller{
 //        $conn = $this->database->connect();
 //        $db_list = $conn->query('SELECT SCHEMA_NAME FROM information_schema.SCHEMATA');        
         
-       
-        $db_table_list = $this->sql_lib->getDbTableList();
+        if (in_array($this->session->userdata('db_type'), $this->_nosql_list)){
+            $db_table_list = $this->sql_lib->getDbTableList();
+        } else {
+//            $db_table_list = $this->nosql_lib->get
+        }
+        
         foreach ($db_table_list['data'] as $db_id => $db_array){
             $data[$db_array['TABLE_SCHEMA']][] = $db_array['TABLE_NAME'];
         }

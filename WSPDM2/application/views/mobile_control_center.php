@@ -3,16 +3,12 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>WSPDM-基于PHPWebsocket的数据库管理器</title>
-<script src="http://libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
-<script src="http://libs.baidu.com/bootstrap/2.3.2/js/bootstrap.min.js"></script>
-<script type="text/javascript" src="<?= base_url('jq-ui/jquery.easyui.min.js')?>"></script>
+<script src="http://nws.oss-cn-qingdao.aliyuncs.com/jquery.min.js"></script>
+<script src="http://nws.oss-cn-qingdao.aliyuncs.com/bootstrap.min.js"></script>  
 <script type="text/javascript" src="<?= base_url('js/swfobject.js')?>"></script>
 <script type="text/javascript" src="<?= base_url('js/web_socket.js')?>"></script>
 <script type="text/javascript" src="<?= base_url('js/json.js')?>"></script>
-<link rel="stylesheet" type="text/css" href="<?= base_url('jq-ui/themes/cupertino/easyui.css')?>" id="swicth-style">
-<link rel="stylesheet" type="text/css" href="<?= base_url('jq-ui/style.css')?>" id="swicth-style">
-<link rel="stylesheet" type="text/css" href="http://libs.baidu.com/bootstrap/2.3.2/css/bootstrap.min.css">
-
+<link href="http://nws.oss-cn-qingdao.aliyuncs.com/bootstrap.min.css" rel="stylesheet">
 </head>
 <style>
     .modal{
@@ -67,17 +63,10 @@ var ws, ping, name = 'null', user_list={};
             if ($("iframe[src='" + location.href.slice(0, location.href.lastIndexOf("/")) + result[1] + "']")[0]){
                 $("iframe[src='" + location.href.slice(0, location.href.lastIndexOf("/")) + result[1] + "']")[0].contentWindow.MotherResultRec(result);
             } else {
-                //当src为index.php?a&b的情况
-                $("iframe[src='" + location.href.slice(0, location.href.lastIndexOf("/", location.href.lastIndexOf("/") - 1)) + result[1] + "']")[0].contentWindow.MotherResultRec(result);
+                //当src为index.php?a&b的情况                
+//                $("iframe[src='" + location.href.slice(0, location.href.lastIndexOf("/", location.href.lastIndexOf("/") - 1)) + result[1] + "']")[0].contentWindow.MotherResultRec(result);
+                $(".container iframe")[0].contentWindow.MotherResultRec(result);
             }
-            //当src为index.php?a&b的情况
-            //$("iframe[src='" + location.href.slice(0, location.href.lastIndexOf("/", location.href.lastIndexOf("/") - 1)) + result[1] + "']")[0].contentWindow.MotherResultRec(result);
-            //当src为index.php/a 的情况
-            //$("iframe[src='" + location.href.slice(0, location.href.lastIndexOf("/")) + result[1] + "']")[0].contentWindow.MotherResultRec(result);
-            /*if ($("iframe[src='" + result[1] + "']"))
-            {
-                alert($("iframe[src='" + result[1] + "']").attr('scrolling'));
-            }*/
             break;
         
         case 'rewind_snap':
@@ -86,8 +75,6 @@ var ws, ping, name = 'null', user_list={};
             for (i = 0; i < length; i++){
                 $("iframe[src^='" + result[1] + "']")[i].contentWindow.MotherResultRec(result);
             }
-            
-            
             break;
     }
 
@@ -114,11 +101,6 @@ function IframeSend(data, type) {
 function getping(){ 
     var date = new Date();
     ping = date.getTime(); 
-//    var test = {}; 
-//    test.type = "ping";
-//    string_test = '{"type":"ping"}';     
-//    ws.send(JSON.stringify(test));
-//alert(JSON.stringify({"type":"ping"}));
     ws.send('{"type":"ping"}');
 }    
 
@@ -139,52 +121,42 @@ function UpdateTableName(database, old_table_name, new_table_name){
     //强制刷新
     $("iframe[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=TableInfo&db=" + database + "&t=" + new_table_name + "\"]").attr("src", $("iframe[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=TableInfo&db=" + database + "&t=" + new_table_name + "\"]").attr('src'));
 }
+
+function updateIframe(drop_item){
+    $(".container iframe").attr('src', drop_item.attr('src'));
+    $(".navbar-collapse").animate({height:"1px"}, 'slow').addClass('collapse').removeClass('in');
+}
 </script>
-<body class="easyui-layout">
-
-<div region="north" border="false" class="cs-north" style="height:30px; overflow:hidden">
-    <div  style="height: 30px; top:5px; overflow: hidden; position: relative; left: 10px; float: left">
-        <a href="javascript:void(0);" src="<?= base_url('index.php/daily_me')?>" class="cs-navi-tab"></a>
-    </div>
-    <div class="cs-north-bg"style="top:0%" >                
-    <ul class="ui-skin-nav">	                    
-            <li class="li-skinitem"><a class="cs-navi-tab badge badge-info" href="javascript:void(0);" src="index.php/daily_message" id="ping">正在加载</a></li>
-            <li class="li-skinitem" title="gray"><span class="gray" rel="gray"></span></li>
-            <li class="li-skinitem" title="pepper-grinder"><span class="pepper-grinder" rel="pepper-grinder"></span></li>
-            <li class="li-skinitem" title="blue"><span class="blue" rel="blue"></span></li>
-            <li class="li-skinitem" title="cupertino"><span class="cupertino" rel="cupertino"></span></li>
-            <li class="li-skinitem" title="dark-hive"><span class="dark-hive" rel="dark-hive"></span></li>
-            <li class="li-skinitem" title="sunny"><span class="sunny" rel="sunny"></span></li>
-    </ul>	
-    </div>
-</div>
-<div region="west" border="true" split="true" title="索引" class="cs-west">
-        <div class="easyui-accordion" fit="false" border="false">
-            <?php foreach ($db_list as $database => $table): ?>
-                <div title="<?= $database?>">
+<body>
+<!-- Fixed navbar -->
+<nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">WSPDM2</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav navbar-right">
+                <?php foreach ($db_list as $database => $table): ?>
+                <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false" href="#"><?= $database ?><span class="glyphicon glyphicon-menu-down"></span></a>
+                    <ul class="dropdown-menu" role="menu">
                     <?php foreach ($table as $table_name): ?>
-                        <a href="javascript:void(0);"  src="<?= base_url() ?>index.php?c=TableInfo&db=<?= $database?>&t=<?= $table_name?>" class="cs-navi-tab"><?= $table_name?></a></p>
+                        <li><a src="<?= base_url() ?>index.php?c=TableInfo&db=<?= $database?>&t=<?= $table_name?>" onclick="updateIframe($(this))" href="#"><?= $table_name?></a></li>
                     <?php endforeach; ?>
-                </div>
-            <?php endforeach; ?>				
-        </div>
-</div>
-<div id="mainPanle" region="center" border="true" border="false">
-    <div id="tabs" class="easyui-tabs"  fit="true" border="false" >
-        <div title="总览">
-            <iframe src="<?= base_url('index.php/BasicDbInfo')?>" width="100%" height="100%" allowTransparency="true" frameBorder="0" scrolling="no">
-        </div>
+                    </ul>
+                </li>
+                <?php endforeach; ?>	
+            </ul>            
+        </div><!--/.nav-collapse -->
     </div>
-</div>
-
-<div region="south" border="false" class="cs-south">WSPDM2 ©沈阳工业大学ACM实验室 沈阳工业大学网络管理中心 百度 *Chen</div>
-
-<div id="mm" class="easyui-menu cs-tab-menu">
-        <div id="mm-tabupdate">刷新</div>
-        <div class="menu-sep"></div>
-        <div id="mm-tabclose">关闭</div>
-        <div id="mm-tabcloseother">关闭其他</div>
-        <div id="mm-tabcloseall">关闭全部</div>
-</div>        
+</nav>
+<div class="container">
+    <iframe src="<?= base_url('index.php/BasicDbInfo')?>" frameborder="0" style="position: absolute; height: 80%; top:40px; left:0; border: none;" width="100%">
+</div>  
 </body>
 </html>

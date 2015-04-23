@@ -33,7 +33,6 @@
             <li role="presentation"><a href="#backup" role="tab" data-toggle="tab">云备份</a></li>
             <li role="presentation"><a href="#operating" role="tab" data-toggle="tab">操作</a></li>
         </ul>
-
         <div class="tab-content">
             <div role="tabpanel" class="tab-pane fade in active" id="view">
                 <br/>

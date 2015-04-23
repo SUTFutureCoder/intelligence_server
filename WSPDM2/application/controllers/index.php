@@ -17,6 +17,9 @@ class Index extends CI_Controller{
         parent::__construct();
     }
     
+    private $_nosql_list = array('MongoDB');
+
+
     /**    
      *  @Purpose:    
      *  安装界面和登录界面的切换    
@@ -47,6 +50,7 @@ class Index extends CI_Controller{
     public function PassCheck(){
         $this->load->library('session');
         $this->load->library('database');
+        $this->load->library('nosqldatabase');
         
         $clean = array();
         if (!$this->input->post('db_username', TRUE)){
@@ -58,13 +62,13 @@ class Index extends CI_Controller{
         }
         
         
-        if (!$this->input->post('db_password', TRUE)){
-            echo json_encode(array(
-                '0' => -2,
-                '1' => '请填写数据库密码'
-            ));
-            exit();
-        }
+//        if (!$this->input->post('db_password', TRUE)){
+//            echo json_encode(array(
+//                '0' => -2,
+//                '1' => '请填写数据库密码'
+//            ));
+//            exit();
+//        }
         
         if (!$this->input->post('db_type', TRUE)){
             echo json_encode(array(
@@ -86,7 +90,12 @@ class Index extends CI_Controller{
             $clean['host'] = 'localhost';
         }
         
-        $conn_result = $this->database->connectInit(0, $this->input->post('db_type', TRUE), $this->input->post('db_username', TRUE), $this->input->post('db_password', TRUE), $clean['host'], $clean['port']);
+        if (!in_array($this->input->post('db_type', TRUE), $this->_nosql_list)){
+            $conn_result = $this->database->connectInit(0, $this->input->post('db_type', TRUE), $this->input->post('db_username', TRUE), $this->input->post('db_password', TRUE), $clean['host'], $clean['port']);
+        } else {
+            $conn_result = $this->nosqldatabase->connectInit(0, $this->input->post('db_type', TRUE), $this->input->post('db_username', TRUE), $this->input->post('db_password', TRUE), $clean['host'], $clean['port']);
+        }
+        
         if ($conn_result == 1){
             
             $this->session->set_userdata('db_username', $this->input->post('db_username', TRUE));
@@ -108,5 +117,4 @@ class Index extends CI_Controller{
         
         return 0;
     }
-
 }
