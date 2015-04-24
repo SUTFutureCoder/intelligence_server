@@ -666,7 +666,7 @@ class TableInfo extends CI_Controller{
                 if (!is_file('/home/' . get_current_user() . '/wspdm2/snapshot/' . $this->input->post('db_type', TRUE) . '/' . $this->input->post('database', TRUE) . '/' . $this->input->post('snap_name', TRUE))){
                     $this->data->Out('iframe', $this->input->post('src', TRUE), -6, '未找到快照文件');
                 } else {
-                    $snap_file = new SplFileObject('/home/' . get_current_user() . '/wspdm2/snapshot/' . $this->input->post('db_type', TRUE) . '/' . $this->input->post('database', TRUE) . '/' . $this->input->post('snap_name', TRUE), 'r');
+//                    $snap_file = new SplFileObject('/home/' . get_current_user() . '/wspdm2/snapshot/' . $this->input->post('db_type', TRUE) . '/' . $this->input->post('database', TRUE) . '/' . $this->input->post('snap_name', TRUE), 'r');
                     $data = $this->sql_lib->rewindSnap($this->input->post('database', TRUE),
                                                 $this->input->post('table', TRUE),
                                                 $this->input->post('db_type', TRUE),
@@ -674,7 +674,9 @@ class TableInfo extends CI_Controller{
                                                 $db['password'],
                                                 $this->input->post('db_host', TRUE),
                                                 $this->input->post('db_port', TRUE),
-                                                $snap_file->fread($snap_file->getSize()));
+                            //                  SPL SplFileObject::fread => PHP 5.5.11+
+//                                                $snap_file->fread($snap_file->getSize()));
+                                                file_get_contents('/home/' . get_current_user() . '/wspdm2/snapshot/' . $this->input->post('db_type', TRUE) . '/' . $this->input->post('database', TRUE) . '/' . $this->input->post('snap_name', TRUE)));
                     
                     if (is_string($data)){
                         $this->data->Out('iframe', $this->input->post('src', TRUE), 0, 'SQL语句出错,出错信息:' . $data);
