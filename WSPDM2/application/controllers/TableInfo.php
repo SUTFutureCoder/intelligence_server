@@ -26,7 +26,7 @@ class TableInfo extends CI_Controller{
         $data = array();
         
         $data['start'] = 0;
-        $data['end'] = 30;        
+        $data['limit'] = 30;        
         $data['table'] = htmlentities($this->input->get('t', TRUE), ENT_QUOTES);
         $data['database'] = htmlentities($this->input->get('db', TRUE), ENT_QUOTES);
         
@@ -35,7 +35,7 @@ class TableInfo extends CI_Controller{
         if (0 == ($data_temp = $this->sql_lib->getTableData($data['database'], 
                 $data['table'], 
                 $data['start'], 
-                $data['end']))){
+                $data['limit']))){
             echo '<script>alert("该表不存在");</script>';
             return 0;
         } else {
@@ -207,33 +207,33 @@ class TableInfo extends CI_Controller{
                 }
                 
                 
-                $sql_output = "-- WSPDM2 SQL Dump\n";
-                $sql_output .= "-- version 2.0\n";
-                $sql_output .= "-- https://github.com/SUTFutureCoder/intelligence_server/tree/master/WSPDM2\n";
-                $sql_output .= "-- \n";
-                $sql_output .= '-- 生成时间: ' . date("Y-m-d H:i:s") . "\n";
-                $sql_output .= "-- \n";
-                $sql_output .= "\n";
-                $sql_output .= "\n";
-                $sql_output .= "-- \n";
-                $sql_output .= '-- 数据库: `' . $this->input->post('database', TRUE) . "`\n";
-                $sql_output .= "-- \n";
-                $sql_output .= "\n";
-                $sql_output .= "-- --------------------------------------------------------\n";
+                $sql_output = '-- WSPDM2 SQL Dump' . PHP_EOL;
+                $sql_output .= '-- version 2.0' . PHP_EOL;
+                $sql_output .= '-- https://github.com/SUTFutureCoder/intelligence_server/tree/master/WSPDM2' . PHP_EOL;
+                $sql_output .= '-- ' . PHP_EOL;
+                $sql_output .= '-- 生成时间: ' . date("Y-m-d H:i:s") . PHP_EOL;
+                $sql_output .= '-- ' . PHP_EOL;
+                $sql_output .= PHP_EOL;
+                $sql_output .= PHP_EOL;
+                $sql_output .= '-- ' . PHP_EOL;
+                $sql_output .= '-- 数据库: `' . $this->input->post('database', TRUE) . '`' . PHP_EOL;
+                $sql_output .= '-- ' . PHP_EOL;
+                $sql_output .= PHP_EOL;
+                $sql_output .= '-- --------------------------------------------------------' . PHP_EOL;
                 
                 
                 //建表      
-                $sql_output .= "\n";
-                $sql_output .= "-- \n";
-                $sql_output .= "-- 表的结构 `" . $this->input->post('table', TRUE)  . "`\n";
-                $sql_output .= "-- \n";
-                $sql_output .= "\n";
-                $sql_output .= 'CREATE TABLE IF NOT EXISTS ' . $this->input->post('database', TRUE) . '.' . $this->input->post('table', TRUE) . " (\n";
+                $sql_output .= PHP_EOL;
+                $sql_output .= '-- ' . PHP_EOL;
+                $sql_output .= '-- 表的结构 `' . $this->input->post('table', TRUE)  . '`' . PHP_EOL;
+                $sql_output .= '-- ' . PHP_EOL;
+                $sql_output .= PHP_EOL;
+                $sql_output .= 'CREATE TABLE IF NOT EXISTS ' . $this->input->post('database', TRUE) . '.' . $this->input->post('table', TRUE) . ' (' . PHP_EOL;
                 
                 $i = 0;
                 foreach ($data['struct'] as $struct_key => $struct_value){
                     if (0 != $i){
-                        $sql_output .= ",\n";
+                        $sql_output .= ',' . PHP_EOL;
                     }
                     $sql_output .= '`' . $struct_value['COLUMN_NAME'] . '` ' . $struct_value['COLUMN_TYPE'];
                     if ('NO' == $struct_value['IS_NULLABLE']){
@@ -249,23 +249,23 @@ class TableInfo extends CI_Controller{
                     }
                     ++$i;
                 }
-                $sql_output .= ') ENGINE=' . $data['engine']['STORAGE_ENGINE'] . ' DEFAULT CHARSET=' . $data['engine']['CHARACTER_SET_SYSTEM'] . ";\n";
+                $sql_output .= ') ENGINE=' . $data['engine']['STORAGE_ENGINE'] . ' DEFAULT CHARSET=' . $data['engine']['CHARACTER_SET_SYSTEM'] . ';' . PHP_EOL;
                 
 
                 
                 if (isset($data['data'])){
                 //填充数据
-                    $sql_output .= "\n";
-                    $sql_output .= "--\n";
-                    $sql_output .= "-- 转存表中的数据`" . $this->input->post('table', TRUE) . "`\n";
-                    $sql_output .= "--\n";
-                    $sql_output .= "\n";
+                    $sql_output .= PHP_EOL;
+                    $sql_output .= '--' . PHP_EOL;
+                    $sql_output .= '-- 转存表中的数据`' . $this->input->post('table', TRUE) . '`' . PHP_EOL;
+                    $sql_output .= '--' . PHP_EOL;
+                    $sql_output .= PHP_EOL;
                     
-                    $sql_output .= "INSERT INTO " . $this->input->post('database', TRUE) . '.' . $this->input->post('table', TRUE) . " VALUES\n";
+                    $sql_output .= 'INSERT INTO ' . $this->input->post('database', TRUE) . '.' . $this->input->post('table', TRUE) . ' VALUES' . PHP_EOL;
                     $i_a = 0;
                     foreach ($data['data'] as $data_key => $data_value){
                         if (0 != $i_a){
-                            $sql_output .= "),\n";
+                            $sql_output .= '),' . PHP_EOL;
                         }
                         $sql_output .= '(';
                         $i_b = 0;
@@ -278,37 +278,37 @@ class TableInfo extends CI_Controller{
                         }
                         ++$i_a;
                     }
-                    $sql_output .= ");\n";
+                    $sql_output .= ');' . PHP_EOL;
                 }
                 
                 //额外的设定
-                $sql_output .= "\n";
-                $sql_output .= "--\n";
-                $sql_output .= "-- 额外的设定于表 `" . $this->input->post('table', TRUE) . "`\n";
-                $sql_output .= "--\n";
-                $sql_output .= "\n";
+                $sql_output .= PHP_EOL;
+                $sql_output .= '--' . PHP_EOL;
+                $sql_output .= '-- 额外的设定于表 `' . $this->input->post('table', TRUE) . '`' . PHP_EOL;
+                $sql_output .= '--' . PHP_EOL;
+                $sql_output .= PHP_EOL;
                 
                 
                 foreach ($data['struct'] as $struct_key => $struct_value){
                     if ('' != $struct_value['COLUMN_KEY']){
                         //UNI => UNIQUE() / PRI => PRIMARY KEY (..)
-                        $sql_output .= "ALTER TABLE " . $this->input->post('database', TRUE) . '.' . $this->input->post('table', TRUE) . "\n";
+                        $sql_output .= 'ALTER TABLE ' . $this->input->post('database', TRUE) . '.' . $this->input->post('table', TRUE) . PHP_EOL;
                         $flag = 0;
                         if ('UNI' == $struct_value['COLUMN_KEY']){                            
                             ++$flag;
-                            $sql_output .= "ADD UNIQUE (" . $struct_key . ")\n";
+                            $sql_output .= 'ADD UNIQUE (' . $struct_key . ')' . PHP_EOL;
                         }
                         
                         if ('PRI' == $struct_value['COLUMN_KEY']){
                             if ($flag){
                                 $sql_output .= ', ';
                             }
-                            $sql_output .= "ADD PRIMARY KEY (" . $struct_key . ")\n";
+                            $sql_output .= 'ADD PRIMARY KEY (' . $struct_key . ')' . PHP_EOL;
                         }
-                        $sql_output .= ";\n\n";
+                        $sql_output .= ';' . PHP_EOL . PHP_EOL;
                     }
                     if ('auto_increment' == $struct_value['EXTRA']){
-                        $sql_output .= 'ALTER TABLE ' . $this->input->post('database', TRUE) . '.' . $this->input->post('table', TRUE) . "\n";
+                        $sql_output .= 'ALTER TABLE ' . $this->input->post('database', TRUE) . '.' . $this->input->post('table', TRUE) . PHP_EOL;
                         $sql_output .= 'MODIFY `' . $struct_key . '` ' . $struct_value['COLUMN_TYPE'];                        
                         if ('NO' == $struct_value['IS_NULLABLE']){
                             $sql_output .= ' NOT NULL ';
@@ -317,14 +317,14 @@ class TableInfo extends CI_Controller{
                         if ('' != $struct_value['COLUMN_COMMENT']){
                             $sql_output .= " COMMENT '" . $struct_value['COLUMN_DEFAULT'] . "' ";
                         }
-                        $sql_output .= ";\n";
+                        $sql_output .= ';' . PHP_EOL;
                     }
                 }
-                $sql_output .= "\n";
-                $sql_output .= "--\n";
-                $sql_output .= "-- EOF -- 文件结束 --\n";
-                $sql_output .= "--\n";
-                $sql_output .= "\n";
+                $sql_output .= PHP_EOL;
+                $sql_output .= '--' . PHP_EOL;
+                $sql_output .= '-- EOF -- 文件结束 --' . PHP_EOL;
+                $sql_output .= '--' . PHP_EOL;
+                $sql_output .= PHP_EOL;
                 $output->fwrite($sql_output);
                 unset($output);                
                 break;
@@ -338,35 +338,35 @@ class TableInfo extends CI_Controller{
                     echo $ex->getMessage();
                 }
                 
-                $sql_output = "-- WSPDM2 SQL Dump\n";
-                $sql_output .= "-- version 2.0\n";
-                $sql_output .= "-- https://github.com/SUTFutureCoder/intelligence_server/tree/master/WSPDM2\n";
-                $sql_output .= "-- \n";
-                $sql_output .= '-- 生成时间: ' . date("Y-m-d H:i:s") . "\n";
-                $sql_output .= "-- \n";
-                $sql_output .= "\n";
-                $sql_output .= "\n";
-                $sql_output .= "-- \n";
-                $sql_output .= '-- 数据库: `' . $this->input->post('database', TRUE) . "`\n";
-                $sql_output .= "-- \n";
-                $sql_output .= "\n";
-                $sql_output .= 'CREATE DATABASE IF NOT EXISTS ' . $this->input->post('database', TRUE) . ' DEFAULT CHARSET ' . $data['engine']['CHARACTER_SET_SYSTEM'] . ";\n";
-                $sql_output .= "\n";
-                $sql_output .= "-- --------------------------------------------------------\n";
+                $sql_output = '-- WSPDM2 SQL Dump' . PHP_EOL;
+                $sql_output .= '-- version 2.0' . PHP_EOL;
+                $sql_output .= '-- https://github.com/SUTFutureCoder/intelligence_server/tree/master/WSPDM2' . PHP_EOL;
+                $sql_output .= '-- ' . PHP_EOL;
+                $sql_output .= '-- 生成时间: ' . date("Y-m-d H:i:s") . PHP_EOL;
+                $sql_output .= '-- ' . PHP_EOL;
+                $sql_output .= PHP_EOL;
+                $sql_output .= PHP_EOL;
+                $sql_output .= '-- ' . PHP_EOL;
+                $sql_output .= '-- 数据库: `' . $this->input->post('database', TRUE) . '`' . PHP_EOL;
+                $sql_output .= '-- ' . PHP_EOL;
+                $sql_output .= PHP_EOL;
+                $sql_output .= 'CREATE DATABASE IF NOT EXISTS ' . $this->input->post('database', TRUE) . ' DEFAULT CHARSET ' . $data['engine']['CHARACTER_SET_SYSTEM'] . ';' . PHP_EOL;
+                $sql_output .= PHP_EOL;
+                $sql_output .= '-- --------------------------------------------------------' . PHP_EOL;
                 
                 //建表
                 foreach ($data['struct'] as $struct_key => $struct_value){
-                    $sql_output .= "\n";
-                    $sql_output .= "-- \n";
-                    $sql_output .= "-- 表的结构 `" . $struct_key  . "`\n";
-                    $sql_output .= "-- \n";
-                    $sql_output .= "\n";
-                    $sql_output .= 'CREATE TABLE IF NOT EXISTS ' . $this->input->post('database', TRUE) . '.' . $struct_key . " (\n";
+                    $sql_output .= PHP_EOL;
+                    $sql_output .= '-- ' . PHP_EOL;
+                    $sql_output .= '-- 表的结构 `' . $struct_key  . '`' . PHP_EOL;
+                    $sql_output .= '-- ' . PHP_EOL;
+                    $sql_output .= PHP_EOL;
+                    $sql_output .= 'CREATE TABLE IF NOT EXISTS ' . $this->input->post('database', TRUE) . '.' . $struct_key . ' (' . PHP_EOL;
                     
                     $i = 0;
                     foreach ($struct_value as $struct_row){
                         if (0 != $i){
-                            $sql_output .= ",\n";
+                            $sql_output .= ',' . PHP_EOL;
                         }
                         $sql_output .= '`' . $struct_row['COLUMN_NAME'] . '` ' . $struct_row['COLUMN_TYPE'];
                         if ('NO' == $struct_row['IS_NULLABLE']){
@@ -382,22 +382,22 @@ class TableInfo extends CI_Controller{
                         }
                         ++$i;
                     }
-                    $sql_output .= ') ENGINE=' . $data['engine']['STORAGE_ENGINE'] . ' DEFAULT CHARSET=' . $data['engine']['CHARACTER_SET_SYSTEM'] . ";\n";
+                    $sql_output .= ') ENGINE=' . $data['engine']['STORAGE_ENGINE'] . ' DEFAULT CHARSET=' . $data['engine']['CHARACTER_SET_SYSTEM'] . ';' . PHP_EOL;
                     
                     
                     if (isset($data['data'][$struct_key])){
                         //填充数据
-                        $sql_output .= "\n";
-                        $sql_output .= "--\n";
-                        $sql_output .= "-- 转存表中的数据`" . $struct_key . "`\n";
-                        $sql_output .= "--\n";
-                        $sql_output .= "\n";
+                        $sql_output .= PHP_EOL;
+                        $sql_output .= '--' . PHP_EOL;
+                        $sql_output .= '-- 转存表中的数据`' . $struct_key . '`' . PHP_EOL;
+                        $sql_output .= '--' . PHP_EOL;
+                        $sql_output .= PHP_EOL;
 
-                        $sql_output .= "INSERT INTO " . $this->input->post('database', TRUE) . '.' . $struct_key .  " VALUES\n";
+                        $sql_output .= 'INSERT INTO ' . $this->input->post('database', TRUE) . '.' . $struct_key .  ' VALUES' . PHP_EOL;
                         $i_a = 0;
                         foreach ($data['data'][$struct_key] as $data_key => $data_value){                        
                             if (0 != $i_a){
-                                $sql_output .= "),\n";
+                                $sql_output .= '),' . PHP_EOL;
                             }
                             $sql_output .= '(';
                             $i_b = 0;
@@ -411,39 +411,39 @@ class TableInfo extends CI_Controller{
                             ++$i_a;
                         }
                         
-                        $sql_output .= ");\n";
+                        $sql_output .= ');' . PHP_EOL;
                     }
                     
                     
                     //额外的设定
-                    $sql_output .= "\n";
-                    $sql_output .= "--\n";
-                    $sql_output .= "-- 额外的设定于表 `" . $this->input->post('table', TRUE) . "`\n";
-                    $sql_output .= "--\n";
-                    $sql_output .= "\n";
+                    $sql_output .= PHP_EOL;
+                    $sql_output .= '--' . PHP_EOL;
+                    $sql_output .= '-- 额外的设定于表 `' . $this->input->post('table', TRUE) . '`' . PHP_EOL;
+                    $sql_output .= '--' . PHP_EOL;
+                    $sql_output .= PHP_EOL;
 
 
                     foreach ($struct_value as $struct_row){
                         if ('' != $struct_row['COLUMN_KEY']){
                             //UNI => UNIQUE() / PRI => PRIMARY KEY (..)
-                            $sql_output .= "ALTER TABLE " . $this->input->post('database', TRUE) . '.' . $struct_key . "\n";
+                            $sql_output .= 'ALTER TABLE ' . $this->input->post('database', TRUE) . '.' . $struct_key . PHP_EOL;
                             $flag = 0;
                             if ('UNI' == $struct_row['COLUMN_KEY']){                            
                                 ++$flag;
-                                $sql_output .= "ADD UNIQUE (" . $struct_row['COLUMN_NAME'] . ")\n";
+                                $sql_output .= 'ADD UNIQUE (' . $struct_row['COLUMN_NAME'] . ')' . PHP_EOL;
                             }
 
                             if ('PRI' == $struct_row['COLUMN_KEY']){
                                 if ($flag){
                                     $sql_output .= ', ';
                                 }
-                                $sql_output .= "ADD PRIMARY KEY (" . $struct_row['COLUMN_NAME'] . ")\n";
+                                $sql_output .= 'ADD PRIMARY KEY (' . $struct_row['COLUMN_NAME'] . ')' . PHP_EOL;
                             }
-                            $sql_output .= ";\n\n";
+                            $sql_output .= ';' . PHP_EOL . PHP_EOL;
                         }
                         
                         if ('auto_increment' == $struct_row['EXTRA']){
-                            $sql_output .= 'ALTER TABLE ' . $this->input->post('database', TRUE) . '.' . $struct_key . "\n";
+                            $sql_output .= 'ALTER TABLE ' . $this->input->post('database', TRUE) . '.' . $struct_key  . PHP_EOL;
                             $sql_output .= 'MODIFY `' . $struct_row['COLUMN_NAME'] . '` ' . $struct_row['COLUMN_TYPE'];                        
                             if ('NO' == $struct_row['IS_NULLABLE']){
                                 $sql_output .= ' NOT NULL ';
@@ -452,15 +452,15 @@ class TableInfo extends CI_Controller{
                             if ('' != $struct_row['COLUMN_COMMENT']){
                                 $sql_output .= " COMMENT '" . $struct_row['COLUMN_DEFAULT'] . "' ";
                             }
-                            $sql_output .= ";\n";
+                            $sql_output .= ';' . PHP_EOL;
                         }
                     }
                 }
-                $sql_output .= "\n";
-                $sql_output .= "--\n";
-                $sql_output .= "-- EOF -- 文件结束 --\n";
-                $sql_output .= "--\n";
-                $sql_output .= "\n";
+                $sql_output .= PHP_EOL;
+                $sql_output .= '--' . PHP_EOL;
+                $sql_output .= '-- EOF -- 文件结束 --' . PHP_EOL;
+                $sql_output .= '--' . PHP_EOL;
+                $sql_output .= PHP_EOL;
                 
                 $output->fwrite($sql_output);
                 unset($output);
@@ -471,7 +471,7 @@ class TableInfo extends CI_Controller{
         
         $time_potin_b = microtime(TRUE);
         $file['time'] = number_format($time_potin_b - $time_potin_a, '8');
-        $file['rows'] = substr_count($sql_output, "\n");
+        $file['rows'] = substr_count($sql_output, PHP_EOL);
         $file['sql'] = '输出能够创建数据库和还原表数据的文件至云服务器';
         //因为是纯文本文档，所以可直接算出大小
         $file['size'] = round(strlen($sql_output) / pow(1024, 1), 2) . "KB";
@@ -639,7 +639,7 @@ class TableInfo extends CI_Controller{
                 if (!is_file('/home/' . get_current_user() . '/wspdm2/snapshot/' . $this->input->post('db_type', TRUE) . '/' . $this->input->post('database', TRUE) . '/' . $this->input->post('table', TRUE) . '/' . $this->input->post('snap_name', TRUE))){
                     $this->data->Out('iframe', $this->input->post('src', TRUE), -6, '未找到快照文件');
                 } else {
-                    $snap_file = new SplFileObject('/home/' . get_current_user() . '/wspdm2/snapshot/' . $this->input->post('db_type', TRUE) . '/' . $this->input->post('database', TRUE) . '/' . $this->input->post('table', TRUE) . '/' . $this->input->post('snap_name', TRUE), 'r');
+//                    $snap_file = new SplFileObject('/home/' . get_current_user() . '/wspdm2/snapshot/' . $this->input->post('db_type', TRUE) . '/' . $this->input->post('database', TRUE) . '/' . $this->input->post('table', TRUE) . '/' . $this->input->post('snap_name', TRUE), 'r');
                     
                     $data = $this->sql_lib->rewindSnap($this->input->post('database', TRUE),
                                                 $this->input->post('table', TRUE),
@@ -648,7 +648,7 @@ class TableInfo extends CI_Controller{
                                                 $db['password'],
                                                 $this->input->post('db_host', TRUE),
                                                 $this->input->post('db_port', TRUE),
-                                                $snap_file->fread($snap_file->getSize()));
+                                               file_get_contents('/home/' . get_current_user() . '/wspdm2/snapshot/' . $this->input->post('db_type', TRUE) . '/' . $this->input->post('database', TRUE) . '/' . $this->input->post('table', TRUE) . '/' . $this->input->post('snap_name', TRUE)));
                     
                     if (is_string($data)){
                         $this->data->Out('iframe', $this->input->post('src', TRUE), 0, 'SQL语句出错,出错信息:' . $data);

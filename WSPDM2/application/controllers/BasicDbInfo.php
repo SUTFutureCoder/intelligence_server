@@ -23,6 +23,9 @@ class BasicDbInfo extends CI_Controller{
         $this->load->library('secure');
         $this->load->model('sql_lib');
         
+        $this->load->library('nosql');
+        $this->load->library('mongodatabase');
+        
         $data = array();
         $db_info = array();
         
@@ -32,21 +35,35 @@ class BasicDbInfo extends CI_Controller{
             echo '<script>window.location.href= \'' . base_url() . '\';</script>'; 
         }
         
-        $data = $this->sql_lib->getDbInfo();
-        foreach ($data['data'] as $row){
-            $db_info[$row['VARIABLE_NAME']] = $row['VARIABLE_VALUE'];
+        if (!$this->nosql->CheckNosql($this->session->userdata('db_type'))){
+            $data = $this->sql_lib->getDbInfo();
+            foreach ($data['data'] as $row){
+                $db_info[$row['VARIABLE_NAME']] = $row['VARIABLE_VALUE'];
+            }
+
+            unset($data);
+
+            $db_snap = $this->GetDbSnapShot($this->session->userdata('db_type'));
+            $this->load->view('BasicDbInfoView', array('db_info' => $db_info,
+                                                        'user_key' => $this->secure->CreateUserKey($this->session->userdata('db_username'), $this->session->userdata('db_password')),
+                                                        'user_name' => $this->session->userdata('db_username'),                                                    
+                                                        'host' => $this->session->userdata('db_host'),
+                                                        'port' => $this->session->userdata('db_port'),
+                                                        'type' => $this->session->userdata('db_type'),
+                                                        'db_snap' => $db_snap));
+        } else {
+            $data = $this->mongodatabase->getDbInfo();
+            $this->load->view('BasicMongoDbInfoView', array('db_info' => $data,
+                                                        'user_key' => $this->secure->CreateUserKey($this->session->userdata('db_username'), $this->session->userdata('db_password')),
+                                                        'user_name' => $this->session->userdata('db_username'),                                                    
+                                                        'host' => $this->session->userdata('db_host'),
+                                                        'port' => $this->session->userdata('db_port'),
+                                                        'type' => $this->session->userdata('db_type'),
+//                                                        'db_snap' => $db_snap
+                                                    ));
+            
         }
         
-        unset($data);
-        
-        $db_snap = $this->GetDbSnapShot($this->session->userdata('db_type'));
-        $this->load->view('BasicDbInfoView', array('db_info' => $db_info,
-                                                    'user_key' => $this->secure->CreateUserKey($this->session->userdata('db_username'), $this->session->userdata('db_password')),
-                                                    'user_name' => $this->session->userdata('db_username'),                                                    
-                                                    'host' => $this->session->userdata('db_host'),
-                                                    'port' => $this->session->userdata('db_port'),
-                                                    'type' => $this->session->userdata('db_type'),
-                                                    'db_snap' => $db_snap));
     }   
     
     /**    

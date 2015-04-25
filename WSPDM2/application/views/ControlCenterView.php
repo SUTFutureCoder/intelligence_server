@@ -124,20 +124,35 @@ function getping(){
 
 function DeleTable(database, table_name){
 //    alert();
+<?php if ($db_type == 'MongoDB'): ?>
+    $("a[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=MongoTableInfo&db=" + database + "&col=" + table_name + "\"]").remove();
+    $(".tabs-selected").remove();
+    $("iframe[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=MongoTableInfo&db=" + database + "&col=" + table_name + "\"]").remove();
+<?php else: ?>
     $("a[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=TableInfo&db=" + database + "&t=" + table_name + "\"]").remove();
     $(".tabs-selected").remove();
     $("iframe[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=TableInfo&db=" + database + "&t=" + table_name + "\"]").remove();
+<?php endif;?>
 }
 
 function UpdateTableName(database, old_table_name, new_table_name){
 //    alert();
 //alert("a[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=TableInfo&db=" + database + "&t=" + old_table_name + "\"]");
+<?php if ($db_type == 'MongoDB'): ?>
+    $("a[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=MongoTableInfo&db=" + database + "&col=" + old_table_name + "\"]").html(new_table_name);
+    $("a[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=MongoTableInfo&db=" + database + "&col=" + old_table_name + "\"]").attr("src", location.href.slice(0, location.href.lastIndexOf("/")) + "?c=MongoTableInfo&db=" + database + "&col=" + new_table_name);
+    $(".tabs-selected span.tabs-closable").html(new_table_name);
+    $("iframe[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=MongoTableInfo&db=" + database + "&col=" + old_table_name + "\"]").attr("src", location.href.slice(0, location.href.lastIndexOf("/")) + "?c=MongoTableInfo&db=" + database + "&col=" + new_table_name);
+    //强制刷新
+    $("iframe[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=MongoTableInfo&db=" + database + "&col=" + new_table_name + "\"]").attr("src", $("iframe[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=MongoTableInfo&db=" + database + "&col=" + new_table_name + "\"]").attr('src'));
+<?php else:?>
     $("a[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=TableInfo&db=" + database + "&t=" + old_table_name + "\"]").html(new_table_name);
     $("a[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=TableInfo&db=" + database + "&t=" + old_table_name + "\"]").attr("src", location.href.slice(0, location.href.lastIndexOf("/")) + "?c=TableInfo&db=" + database + "&t=" + new_table_name);
     $(".tabs-selected span.tabs-closable").html(new_table_name);
     $("iframe[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=TableInfo&db=" + database + "&t=" + old_table_name + "\"]").attr("src", location.href.slice(0, location.href.lastIndexOf("/")) + "?c=TableInfo&db=" + database + "&t=" + new_table_name);
     //强制刷新
     $("iframe[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=TableInfo&db=" + database + "&t=" + new_table_name + "\"]").attr("src", $("iframe[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=TableInfo&db=" + database + "&t=" + new_table_name + "\"]").attr('src'));
+<?php endif;?>
 }
 </script>
 <body class="easyui-layout">
@@ -163,7 +178,11 @@ function UpdateTableName(database, old_table_name, new_table_name){
             <?php foreach ($db_list as $database => $table): ?>
                 <div title="<?= $database?>">
                     <?php foreach ($table as $table_name): ?>
-                        <a href="javascript:void(0);"  src="<?= base_url() ?>index.php?c=TableInfo&db=<?= $database?>&t=<?= $table_name?>" class="cs-navi-tab"><?= $table_name?></a></p>
+                        <?php if ($db_type == 'MongoDB'):?>
+                            <a href="javascript:void(0);"  src="<?= base_url() ?>index.php?c=MongoTableInfo&db=<?= $database?>&col=<?= $table_name?>" class="cs-navi-tab"><?= $table_name?></a></p>
+                        <?php else:?>
+                            <a href="javascript:void(0);"  src="<?= base_url() ?>index.php?c=TableInfo&db=<?= $database?>&t=<?= $table_name?>" class="cs-navi-tab"><?= $table_name?></a></p>
+                        <?php endif;?>
                     <?php endforeach; ?>
                 </div>
             <?php endforeach; ?>				

@@ -115,7 +115,7 @@ class Database{
             self::$_ci =& get_instance();
             self::$_ci->load->library('session');
         }
-        if (NULL != self::$_ci->session->userdata('db_username')){
+        if (NULL != self::$_ci->session->userdata('db_username') && (NULL == $db_type && NULL == $user && NULL == $passwd)){
             $result = self::connectInit($PDO, self::$_ci->session->userdata('db_type'),
                                     self::$_ci->session->userdata('db_username'),
                                     self::$_ci->session->userdata('db_password'),
@@ -156,10 +156,10 @@ class Database{
         if ($memcache){
             if ($memcache_obj = @memcache_connect('127.0.0.1', 11211)){
                 $key = md5($sql);
-                $time_potin_a = microtime(TRUE);
+                $time_point_a = microtime(TRUE);
                 if ($data = $memcache_obj->get($key)){
-                    $time_potin_b = microtime(TRUE);
-                    $data['time'] = number_format($time_potin_b - $time_potin_a, '8') . '[memcache]';
+                    $time_point_b = microtime(TRUE);
+                    $data['time'] = number_format($time_point_b - $time_point_a, '8') . '[memcache]';
                     return $data;
                 }
             }
@@ -169,7 +169,7 @@ class Database{
             
             if ($record){
                 $data['sql'] = $sql;
-                $time_potin_a = microtime(TRUE);
+                $time_point_a = microtime(TRUE);
             }
             
             $result = self::$_db->query($sql);
@@ -189,8 +189,8 @@ class Database{
             if ($record){
                 //记录返回记录数
                 $data['rows'] = $result->rowCount();
-                $time_potin_b = microtime(TRUE);
-                $data['time'] = number_format($time_potin_b - $time_potin_a, '8');
+                $time_point_b = microtime(TRUE);
+                $data['time'] = number_format($time_point_b - $time_point_a, '8');
             }
             
             if (isset($memcache_obj) && is_object($memcache_obj)){
@@ -228,7 +228,7 @@ class Database{
         try {            
             if ($record){
                 $data['sql'] = $sql;
-                $time_potin_a = microtime(TRUE);
+                $time_point_a = microtime(TRUE);
             }
             
             
@@ -247,8 +247,8 @@ class Database{
             if ($record){
                 //记录返回记录数
                 $data['rows'] = $row;
-                $time_potin_b = microtime(TRUE);
-                $data['time'] = number_format($time_potin_b - $time_potin_a, '8');
+                $time_point_b = microtime(TRUE);
+                $data['time'] = number_format($time_point_b - $time_point_a, '8');
             }            
             return $data;        
         } catch (Exception $ex) {
@@ -284,7 +284,7 @@ class Database{
         $data['data'] = array();
         if ($record){
             $data['sql'] = "SELECT * FROM $db_name.$table_name";
-            $time_potin_a = microtime(TRUE);
+            $time_point_a = microtime(TRUE);
         }
             
         $stmt = self::$_db->prepare("SELECT * FROM $db_name.$table_name", array(PDO::ATTR_CURSOR => PDO::CURSOR_SCROLL));
@@ -296,8 +296,8 @@ class Database{
             if ($record){
                 //记录返回记录数
                 $data['rows'] = count($data['data']);
-                $time_potin_b = microtime(TRUE);
-                $data['time'] = number_format($time_potin_b - $time_potin_a, '8');
+                $time_point_b = microtime(TRUE);
+                $data['time'] = number_format($time_point_b - $time_point_a, '8');
             }            
             return $data;
         } else {

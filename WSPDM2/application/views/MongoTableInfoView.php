@@ -2,8 +2,6 @@
 <html>  
     <head>  
         <title></title>
-        <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
-        <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
         <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">   
         <script>
             //预定义全局变量用于图表显示，图表显示和执行SQL结果一致
@@ -20,13 +18,21 @@
         <?php else: ?>
         <div class="alert alert-success" role="alert" id="alert">
             <p>正在显示第<?= $data['start'] ?>-<?= $data['start'] + $data['limit'] ?>(共操作<?= $data['rows'] ?>行，操作消耗<?= $data['time'] ?>秒)</p>
-            <p><?= $data['sql']?></p>
+            <p><?= $data['command']?></p>
         </div>
         <?php endif; ?>
         <ul class="nav nav-tabs" role="tablist">
-            <li role="presentation" class="active"><a href="#view" role="tab" data-toggle="tab">浏览</a></li>
+            <li role="presentation" class="active"><a href="#view" role="tab" data-toggle="tab">浏览&nbsp;
+                <div class="btn-group  btn-group-xs" role="group" aria-label="...">
+                    <button type="button" class="btn btn-default" id="view_tab_button_array">Array</button>
+                    <button type="button" class="btn btn-default" id="view_tab_button_json">Json</button>
+                </div></a></li>
             <li role="presentation"><a href="#struct" role="tab" data-toggle="tab">结构</a></li>
-            <li role="presentation"><a href="#sql" id="sql_tab" role="tab" data-toggle="tab">SQL</a></li>
+            <li role="presentation"><a href="#js" id="sql_tab" role="tab" data-toggle="tab">JavaScript&nbsp;
+                <div class="btn-group  btn-group-xs" role="group" aria-label="...">
+                    <button type="button" class="btn btn-default" id="js_tab_button_array">Array</button>
+                    <button type="button" class="btn btn-default" id="js_tab_button_json">Json</button>
+                </div></a></li>
             <li role="presentation"><a href="#insert" role="tab" data-toggle="tab">插入</a></li>
             <li role="presentation"><a href="#search" role="tab" data-toggle="tab">搜索</a></li>
             <li role="presentation"><a href="#chart" id="chart_tab" role="tab" data-toggle="tab">分析</a></li>
@@ -34,33 +40,22 @@
             <li role="presentation"><a href="#operating" role="tab" data-toggle="tab">操作</a></li>
         </ul>
         <div class="tab-content">
-            <div role="tabpanel" class="tab-pane fade in active" id="view">
+            <div role="tabpanel" class="tab-pane fade in active col-lg-11 col-lg-offset-1" id="view">
                 <br/>
-                <table class="table table-hover table-bordered" id="data_view">
-                    <thead>
-                        <tr id="data_col_name">
-                            <th>#</th>
-                            <?php foreach ($data['cols'] as $col_name => $col_type):?>
-                            <th><?= $col_name ?></th>
-                            <?php endforeach; ?>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        
-                    <?php foreach($data['data'] as $key => $value): ?>                    
-                        <tr id="data_<?= $key ?>">
-                            <td><?= $key + 1 ?>
-                                <button type="button" class="btn btn-primary btn-xs" onclick="data_update_button(0, <?= $key ?>)">修改</button>
-                                <button type="button" class="btn btn-danger btn-xs" onclick="data_dele_button(0, <?= $key ?>)">删除</button>
-                            </td>
-                            <?php foreach($value as $table_name => $table_value): ?>   
-                                <td><?=$table_value?></td>                                
-                            <?php endforeach; ?>
-                        </tr>
-                    <?php endforeach; ?>
-                    </tbody>
-                </table>
-                
+                <br/>
+                <?php foreach($data['data'] as $value): ?>
+                <div class="panel panel-default" id="data_<?= $value['_id'] ?>">
+                    <div class="panel-heading"><?= $value['_id'] ?></div>
+                    <div class="panel-body">
+                        <pre class="view_value_array"><?= print_r($value, TRUE) ?></pre>
+                        <pre class="view_value_json"><?= print_r(json_encode($value, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT), TRUE) ?></pre>
+                    </div>
+                    <div class="panel-footer">
+                        <button type="button" class="btn btn-primary btn-xs" onclick="data_update_button(0, <?= $value['_id'] ?>)">修改</button>
+                        <button type="button" class="btn btn-danger btn-xs" onclick="data_dele_button(0, <?= $value['_id'] ?>)">删除</button>
+                    </div>
+                </div>
+                <?php endforeach; ?>
             </div>
             <div role="tabpanel" class="tab-pane fade" id="struct">
                 <br/>
@@ -70,63 +65,30 @@
                             <th>#</th>
                             <th>操作</th>
                             <th>名字</th>
-                            <th>类型长度</th>
-                            <th>字符集</th>
-                            <th>注释</th>
                         </tr>
                     </thead>
                     <tbody>                        
                     <?php $i = 0; ?>
-                    <?php foreach ($data['cols'] as $col_name => $col_type): ?>                    
+                    <?php foreach ($data['cols'] as $col_name): ?>                    
                         <tr id="struct_view_col_<?=$col_name?>">
                             <td><?= ++$i ?></td>
-                            <td><a onclick="dele_col_name('<?=$col_name?>')" style="color:red">删除</a></td>
-                            <td><?= $col_name ?>
-                            <?php if ('UNI' == $data['cols'][$col_name]['key']): ?>
-                                <span class="label label-primary">唯</span>
-                            <?php elseif ('PRI' == $data['cols'][$col_name]['key']): ?>
-                                <span class="label label-danger">主</span>
-                            <?php endif;?>
-                            <?php if ('auto_increment' == $data['cols'][$col_name]['auto']): ?>
-                                <span class="label label-success">增</span>
-                            <?php endif;?>
-                            <?php if ('YES' == $data['cols'][$col_name]['nullable']): ?>
-                                <span class="label label-default">空</span>
-                            <?php endif;?>
+                            <td>
+                            <?php if ($col_name != '_id'): ?>
+                            <a onclick="dele_col_name('<?=$col_name?>')" style="color:red">删除</a>
+                            <?php endif; ?>
                             </td>
-                            <td><?= $data['cols'][$col_name]['type_length']?></td>
-                            <td><?= $data['cols'][$col_name]['charset']?></td>
-                            <td><?= $data['cols'][$col_name]['comment']?></td>
+                            <td><?= $col_name ?>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                     </tbody>
                 </table>
             </div>
-            <div role="tabpanel" class="tab-pane fade" id="sql">
+            <div role="tabpanel" class="tab-pane fade" id="js">
                 <br/>
                 <div class="col-sm-8">
                     <textarea class="form-control" rows="5" id="sql_area"></textarea>
-                    <br/>
-                    <button type="button" class="btn btn-default" onclick="sql_button('SELECT ', 0)">SELECT</button>
-                    <button type="button" class="btn btn-default" onclick="sql_button('SELECT * FROM <?= $data['database']?>.<?= $data['table'] ?> WHERE ', 0)">SELECT *</button>
-                    <button type="button" class="btn btn-default" onclick="sql_button('UPDATE ', 0)">UPDATE</button>
-                    <button type="button" class="btn btn-default" onclick="sql_button('INSERT INTO <?= $data['database']?>.<?= $data['table'] ?> ', 0)">INSERT</button>
-                    <button type="button" class="btn btn-warning" onclick="sql_button('DELETE FROM <?= $data['database']?>.<?= $data['table'] ?> ', 0)">DELETE</button>
-                    <button type="button" class="btn btn-danger" onclick="sql_button('DROP ', 0)">DROP</button>
-                    <br/>
                     <br/>                    
-                    <button type="button" class="btn btn-default" onclick="sql_button(' FROM ', 1)">FROM</button>
-                    <button type="button" class="btn btn-danger" onclick="sql_button(' <?= $data['database']?>.<?= $data['table'] ?> ', 1)">DATABASE.TABLE</button>
-                    <button type="button" class="btn btn-default" onclick="sql_button(' WHERE ', 1)">WHERE</button>
-                    <button type="button" class="btn btn-default" onclick="sql_button(' SET ', 1)">SET</button>
-                    <button type="button" class="btn btn-default" onclick="sql_button(' VALUES ', 1)">VALUES</button>
-                    <button type="button" class="btn btn-default" onclick="sql_button(' AND ', 1)">AND</button>
-                    <button type="button" class="btn btn-default" onclick="sql_button(' OR ', 1)">OR</button>
-                    <br/>
-                    <br/> 
-                    <button type="button" class="btn btn-default" onclick="sql_button(' ORDER BY ', 1)">ORDER BY</button>
-                    <button type="button" class="btn btn-default" onclick="sql_button(' GROUP BY ', 1)">GROUP BY</button>
-                    <button type="button" class="btn btn-default" onclick="sql_button(' HAVING BY ', 1)">HAVING</button>
                     <div class="checkbox">
                         <label>
                             <input type="checkbox" id="memcache"> memcache缓存查询结果
@@ -137,9 +99,9 @@
                 <div class="col-sm-4">
                     <table class="table table-hover table-bordered" id="sql_table_list">                       
                         <tbody>                       
-                        <?php foreach ($data['cols'] as $col_name => $col_type): ?>                    
+                        <?php foreach ($data['cols'] as $col_name): ?>                    
                             <tr id="sql_col_name_<?= $col_name?>">
-                                <td onclick="sql_button(' <?= $col_name ?> ', 2)"><a><?= $col_name ?></a></td>
+                                <td onclick="sql_button(' <?= $col_name ?> ', 1)"><a><?= $col_name ?></a></td>
                             </tr>
                         <?php endforeach; ?>
                         </tbody>
@@ -154,35 +116,16 @@
                 <table class="table table-hover table-bordered" >                       
                     <tbody>  
                         <form role="form" id="insert_list">
-                        <?php foreach ($data['cols'] as $col_name => $col_type): ?>                         
+                        <?php foreach ($data['cols'] as $col_name): ?>  
+                            <?php if($col_name == '_id'): 
+                                continue;
+                            endif; ?>
                         <tr id="insert_<?= $col_name ?>">
                             <td><?= $col_name ?>
-                            <?php if ('UNI' == $data['cols'][$col_name]['key']): ?>
-                                <span class="label label-primary">唯</span>
-                            <?php elseif ('PRI' == $data['cols'][$col_name]['key']): ?>
-                                <span class="label label-danger">主</span>
-                            <?php endif;?>
-                            <?php if ('auto_increment' == $data['cols'][$col_name]['auto']): ?>
-                                <span class="label label-success">增</span>
-                            <?php endif;?>
-                            <?php if ('YES' == $data['cols'][$col_name]['nullable']): ?>
-                                <span class="label label-default">空</span>
-                            <?php endif;?>                                
-                            <?php if ($data['cols'][$col_name]['comment']): ?>
-                                [<?= $data['cols'][$col_name]['comment']?>]
-                            <?php endif;?>
-                            
                             </td>
-                            <td><?= $data['cols'][$col_name]['type_length'] ?></td>
                             <td>
-                                <div class="form-group">
-                                    <?php if ('tinyint' == $data['cols'][$col_name]['type'] || 'int(1)' == $data['cols'][$col_name]['type_length']): ?>
-                                        <input type="checkbox" name="<?= $col_name ?>" class="form-control cbx" id="insert_<?= $col_name ?>_val">
-                                    <?php elseif ('text' == $data['cols'][$col_name]['type'] || $data['cols'][$col_name]['length'] >= 25): ?>
-                                        <textarea class="form-control" name="<?= $col_name ?>" rows="3" id="insert_<?= $col_name ?>_val"></textarea>
-                                    <?php else: ?>
-                                        <input type="text" class="form-control" name="<?= $col_name ?>" id="insert_<?= $col_name ?>_val">
-                                    <?php endif; ?>
+                                <div class="form-group">                                    
+                                    <textarea class="form-control" name="<?= $col_name ?>" rows="2" id="insert_<?= $col_name ?>_val"></textarea>                                    
                                 </div>
                             </td>
                         </tr>
@@ -202,7 +145,7 @@
                         </tr>
                     </thead>
                     <tbody>                       
-                    <?php foreach ($data['cols'] as $col_name => $col_type): ?>                    
+                    <?php foreach ($data['cols'] as $col_name): ?>                    
                         <tr id="search_col_<?= $col_name ?>">
                             <td class="search_col_name"><?= $col_name ?></td>
                             <td><select class="form-control search-form-select">
@@ -262,13 +205,13 @@
                 <div class="panel panel-info">
                     <div class="panel-heading">创建快照</div>
                     <div class="panel-body">                        
-                        <button type="button" class="btn btn-lg btn-block btn-info"  onclick="set_snapshot(0)">创建表快照</button>
+                        <button type="button" class="btn btn-lg btn-block btn-info"  onclick="set_snapshot(0)">创建集合快照</button>
                         <br/>
                         <button type="button" class="btn btn-lg btn-block btn-info"  onclick="set_snapshot(1)">创建数据库快照</button>
                         <hr/>
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><a style="color:red"><?= $data['table'] ?></a>表快照</h3>
+                                <h3 class="panel-title"><a style="color:red"><?= $data['collection'] ?></a>集合快照</h3>
                             </div>
                             <table class="table table-condensed table-hover" id="table_snap">
                                 <?php if (isset($snapshot['table'])): ?>
@@ -396,6 +339,8 @@
             </div>
         </div>  
     </body>
+    <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+    <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
     <script>        
         //接收母窗口传来的值
         function MotherResultRec(data) {
@@ -528,7 +473,7 @@
                             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
                             data['group'] = 'WSPDM2';
                             data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/B_DeleTable';
-                            data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "table" : "<?= $data['table'] ?>", "database" : "<?= $data['database'] ?>"}';
+                            data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "table" : "<?= $data['collection'] ?>", "database" : "<?= $data['database'] ?>"}';
                             parent.IframeSend(data, 'group');    
                             break;
                             
@@ -539,7 +484,7 @@
                             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
                             data['group'] = 'WSPDM2';
                             data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/B_TruncateTable';
-                            data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "table" : "<?= $data['table'] ?>", "database" : "<?= $data['database'] ?>"}';
+                            data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "table" : "<?= $data['collection'] ?>", "database" : "<?= $data['database'] ?>"}';
                             parent.IframeSend(data, 'group');    
                             break;
                             
@@ -590,7 +535,7 @@
                             Rewind['src'] = location.href.slice((location.href.lastIndexOf("/")));
                             Rewind['group'] = 'WSPDM2';
                             Rewind['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/B_RewindSnapShot';
-                            Rewind['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "snap_type" : "' + data[4]['type'] + '", "database" : "' + data[4]['database'] + '", "table" : "<?= $data['table'] ?>"}';
+                            Rewind['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "snap_type" : "' + data[4]['type'] + '", "database" : "' + data[4]['database'] + '", "table" : "<?= $data['collection'] ?>"}';
                             parent.IframeSend(Rewind, 'group'); 
                             break;
                     }
@@ -666,7 +611,6 @@
              
         }       
         
-        
         //用于JQuery在光标位置插入内容
         //http://www.poluoluo.com/jzxy/201110/144708.html
         (function($){
@@ -698,26 +642,12 @@
             })
         })(jQuery);
         
-        
         //SQL输入框按钮
         //@param 
         //sql 准备执行的SQL语句
         //mode 插入到最前还是就地插入
         function sql_button(sql, mode){
-            switch (mode){
-                case 0:
-                    $("#sql_area").val(sql);
-                    break;
-                case 1:
-                    var old_sql = $("#sql_area").val();
-                    old_sql += sql;
-                    $("#sql_area").val(old_sql);
-                    break;
-                case 2:
-                    //在光标处插入
-                    $("#sql_area").insertAtCaret(sql);
-                    break;
-            }
+            $("#sql_area").insertAtCaret(sql);
             $("#sql_area").focus();
         }
         
@@ -745,7 +675,7 @@
             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
             data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/DeleCol';
             data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
-            data['data'] += '"col_name" : "' + col_name + '", "database" : "<?= $data['database'] ?>", "table" : "<?= $data['table']?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
+            data['data'] += '"col_name" : "' + col_name + '", "database" : "<?= $data['database'] ?>", "table" : "<?= $data['collection']?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
             parent.IframeSend(data);
         }
         
@@ -757,7 +687,7 @@
             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
             data['group'] = 'WSPDM2';
             data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/InsertData';
-            data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "database" : "<?= $data['database'] ?>", "table" : "<?= $data['table'] ?>", "data" : {';
+            data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "database" : "<?= $data['database'] ?>", "table" : "<?= $data['collection'] ?>", "data" : {';
             $.each(values, function(i, field){
                 if (0 != i){
                     data['data'] += ', ';
@@ -791,7 +721,7 @@
             var data = new Array();
             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
             data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/SearchData';
-            data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "database" : "<?= $data['database'] ?>", "table" : "<?= $data['table'] ?>", "data" : {';            
+            data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "database" : "<?= $data['database'] ?>", "table" : "<?= $data['collection'] ?>", "data" : {';            
             
             i = 0;
             n = 0;
@@ -828,7 +758,7 @@
             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
             data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/DeleTable';
             data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
-            data['data'] += '"table" : "<?= $data['table'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
+            data['data'] += '"table" : "<?= $data['collection'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
             parent.IframeSend(data);
         }
         
@@ -849,7 +779,7 @@
             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
             data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/TruncateTable';
             data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
-            data['data'] += '"table" : "<?= $data['table'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
+            data['data'] += '"table" : "<?= $data['collection'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
             parent.IframeSend(data);
         }
         
@@ -871,7 +801,7 @@
                 data['src'] = location.href.slice((location.href.lastIndexOf("/")));
                 data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/RenameTable';
                 data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
-                data['data'] += '"old_table_name" : "<?= $data['table'] ?>", "new_table_name" : "' + $("#new_table_name").val() + '", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
+                data['data'] += '"old_table_name" : "<?= $data['collection'] ?>", "new_table_name" : "' + $("#new_table_name").val() + '", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
                 parent.IframeSend(data);
             }
         }
@@ -879,6 +809,8 @@
     </script>
     <script src="<?= base_url('./echarts/dist/echarts-all.js') ?>"></script>
     <script>
+                                                                                            
+                                                                                            
     //直接在tab中无法使用echart，需要等待tab执行结束后再执行一遍
     $(function (){
         $('#chart_tab[data-toggle="tab"]').on('shown.bs.tab', function (e) {
@@ -890,7 +822,7 @@
             
             if (!chart_data['cols'].length){
                 alert('开始分析前请输入SQL命令,您可以直接点击“执行”按钮');
-                $("#sql_area").html("SELECT * FROM <?= $data['database']?>.<?= $data['table'] ?>");
+                $("#sql_area").html("SELECT * FROM <?= $data['database']?>.<?= $data['collection'] ?>");
                 $("#sql_tab").tab('show');
             } else {
                 setChart(chart_data['cols'][0]);
@@ -909,7 +841,7 @@
         var myChart = echarts.init(document.getElementById('chart_view')); 
         var option = {
             title : {
-                text: '<?= $data['database']?>.<?= $data['table']?>',
+                text: '<?= $data['database']?>.<?= $data['collection']?>',
                 subtext: '统计数据由SQL命令生成'
             },
             tooltip : {
@@ -1087,7 +1019,7 @@
         data['src'] = location.href.slice((location.href.lastIndexOf("/")));
         data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/UpdateData';
         data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
-        data['data'] += '"table" : "<?= $data['table'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>", "old_data" : {';
+        data['data'] += '"table" : "<?= $data['collection'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>", "old_data" : {';
         
         i = 0;
         while (null != (old_data = data_update_old_data.shift())){
@@ -1206,7 +1138,7 @@
         data['src'] = location.href.slice((location.href.lastIndexOf("/")));
         data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/DeleData';
         data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
-        data['data'] += '"table" : "<?= $data['table'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>", "old_data" : {';
+        data['data'] += '"table" : "<?= $data['collection'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>", "old_data" : {';
         
         for (i = 0; i < data_dele_length; i++){
             //获取style中display为style="display: table-row;"
@@ -1263,7 +1195,7 @@
         data['src'] = location.href.slice((location.href.lastIndexOf("/")));
         data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/SetSnapShot';
         data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
-        data['data'] += '"snap_type" : "' + snap_type + '", "table" : "<?= $data['table'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
+        data['data'] += '"snap_type" : "' + snap_type + '", "table" : "<?= $data['collection'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
         parent.IframeSend(data);
     }
     
@@ -1282,7 +1214,7 @@
         data['src'] = location.href.slice((location.href.lastIndexOf("/")));
         data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/DeleSnapshot';
         data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
-        data['data'] += '"snap_type" : "' + type + '", "table" : "<?= $data['table'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "snap_name" : "' + name + '"}';
+        data['data'] += '"snap_type" : "' + type + '", "table" : "<?= $data['collection'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "snap_name" : "' + name + '"}';
         parent.IframeSend(data);
     }
     
@@ -1301,8 +1233,10 @@
         data['src'] = location.href.slice((location.href.lastIndexOf("/")));
         data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/RewindSnapshot';
         data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
-        data['data'] += '"snap_type" : "' + type + '", "table" : "<?= $data['table'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "snap_name" : "' + name + '"}';
+        data['data'] += '"snap_type" : "' + type + '", "table" : "<?= $data['collection'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "snap_name" : "' + name + '"}';
         parent.IframeSend(data);
     }
+    
+    //
     </script>
 </html>
