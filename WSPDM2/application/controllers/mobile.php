@@ -33,6 +33,10 @@ class Mobile extends CI_Controller{
     public function MobileControlCenter(){
         $this->load->library('session');
         $this->load->model('sql_lib');
+        
+        $this->load->library('nosql');
+        $this->load->library('mongodatabase');
+        
         $data = array();
         
         if (!$this->session->userdata('db_username')){
@@ -41,11 +45,19 @@ class Mobile extends CI_Controller{
             echo '<script>window.location.href= \'' . base_url() . '\'index.php\'mobile;</script>'; 
         }
               
-        $db_table_list = $this->sql_lib->getDbTableList();
-        foreach ($db_table_list['data'] as $db_id => $db_array){
-            $data[$db_array['TABLE_SCHEMA']][] = $db_array['TABLE_NAME'];
+        if (!$this->nosql->CheckNosql($this->session->userdata('db_type'))){
+            //SQL
+            $db_table_list = $this->sql_lib->getDbTableList();
+            foreach ($db_table_list['data'] as $db_id => $db_array){
+                $data[$db_array['TABLE_SCHEMA']][] = $db_array['TABLE_NAME'];
+            }
+        } else {
+            //nosql
+            if ($this->session->userdata('db_type') == 'MongoDB'){
+                $data = $this->mongodatabase->getDbCollectionList();
+            }
         }
         
-        $this->load->view('mobile_control_center', array('db_list' => $data, 'db_username' => $this->session->userdata('db_username')));
+        $this->load->view('mobile_control_center', array('db_list' => $data, 'db_username' => $this->session->userdata('db_username'), 'db_type' => $this->session->userdata('db_type')));
     }
 }

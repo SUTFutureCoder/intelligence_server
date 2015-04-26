@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>WSPDM-基于PHPWebsocket的数据库管理器</title>
+<title>WSPDM2-基于PHPWebsocket的数据库管理器</title>
 <script src="http://nws.oss-cn-qingdao.aliyuncs.com/jquery.min.js"></script>
 <script src="http://nws.oss-cn-qingdao.aliyuncs.com/bootstrap.min.js"></script>  
 <script type="text/javascript" src="<?= base_url('js/swfobject.js')?>"></script>
@@ -28,8 +28,11 @@ var ws, ping, name = 'null', user_list={};
     
     // 当socket连接打开时，输入用户名
     ws.onopen = function() {  
-        
-        ws.send('{"type":"login","name":"<?= $db_username ?>", "group":"WSPDM2"}');
+        <?php if ($db_type == 'MongoDB'): ?>
+            ws.send('{"type":"login","name":"<?= $db_username ?>", "group":"WSPDM2_Mongo"}');
+        <?php else: ?>
+            ws.send('{"type":"login","name":"<?= $db_username ?>", "group":"WSPDM2"}');
+        <?php endif;?>
         setInterval("getping()",1000);
     };
 
@@ -107,20 +110,36 @@ function getping(){
 
 function DeleTable(database, table_name){
 //    alert();
-    $("a[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=TableInfo&db=" + database + "&t=" + table_name + "\"]").remove();
+<?php if ($db_type == 'MongoDB'): ?>
+    $("a[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=MongoTableInfo&db=" + database + "&col=" + table_name + "\"]").remove();
+    $(".tabs-selected").remove();
+    $("iframe[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=MongoTableInfo&db=" + database + "&col=" + table_name + "\"]").remove();
+<?php else: ?>
+    $("a[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=MongoTableInfo&db=" + database + "&col=" + table_name + "\"]").remove();
     $(".tabs-selected").remove();
     $("iframe[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=TableInfo&db=" + database + "&t=" + table_name + "\"]").remove();
+<?php endif;?>
 }
 
 function UpdateTableName(database, old_table_name, new_table_name){
 //    alert();
 //alert("a[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=TableInfo&db=" + database + "&t=" + old_table_name + "\"]");
-    $("a[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=TableInfo&db=" + database + "&t=" + old_table_name + "\"]").html(new_table_name);
-    $("a[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=TableInfo&db=" + database + "&t=" + old_table_name + "\"]").attr("src", location.href.slice(0, location.href.lastIndexOf("/")) + "?c=TableInfo&db=" + database + "&t=" + new_table_name);
-    $(".tabs-selected span.tabs-closable").html(new_table_name);
-    $("iframe[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=TableInfo&db=" + database + "&t=" + old_table_name + "\"]").attr("src", location.href.slice(0, location.href.lastIndexOf("/")) + "?c=TableInfo&db=" + database + "&t=" + new_table_name);
-    //强制刷新
-    $("iframe[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=TableInfo&db=" + database + "&t=" + new_table_name + "\"]").attr("src", $("iframe[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=TableInfo&db=" + database + "&t=" + new_table_name + "\"]").attr('src'));
+    <?php if ($db_type == 'MongoDB'): ?>
+        $("a[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=MongoTableInfo&db=" + database + "&col=" + old_table_name + "\"]").html(new_table_name);
+        $("a[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=MongoTableInfo&db=" + database + "&col=" + old_table_name + "\"]").attr("src", location.href.slice(0, location.href.lastIndexOf("/")) + "?c=MongoTableInfo&db=" + database + "&col=" + new_table_name);
+        $(".tabs-selected span.tabs-closable").html(new_table_name);
+        $("iframe[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=MongoTableInfo&db=" + database + "&col=" + old_table_name + "\"]").attr("src", location.href.slice(0, location.href.lastIndexOf("/")) + "?c=MongoTableInfo&db=" + database + "&col=" + new_table_name);
+        //强制刷新
+        $("iframe[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=MongoTableInfo&db=" + database + "&col=" + new_table_name + "\"]").attr("src", $("iframe[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=MongoTableInfo&db=" + database + "&col=" + new_table_name + "\"]").attr('src'));
+    
+    <?php else:?>     
+        $("a[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=TableInfo&db=" + database + "&t=" + old_table_name + "\"]").html(new_table_name);
+        $("a[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=TableInfo&db=" + database + "&t=" + old_table_name + "\"]").attr("src", location.href.slice(0, location.href.lastIndexOf("/")) + "?c=TableInfo&db=" + database + "&t=" + new_table_name);
+        $(".tabs-selected span.tabs-closable").html(new_table_name);
+        $("iframe[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=TableInfo&db=" + database + "&t=" + old_table_name + "\"]").attr("src", location.href.slice(0, location.href.lastIndexOf("/")) + "?c=TableInfo&db=" + database + "&t=" + new_table_name);
+        //强制刷新
+        $("iframe[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=TableInfo&db=" + database + "&t=" + new_table_name + "\"]").attr("src", $("iframe[src=\"" + location.href.slice(0, location.href.lastIndexOf("/")) + "?c=TableInfo&db=" + database + "&t=" + new_table_name + "\"]").attr('src'));
+    <?php endif;?>
 }
 
 function updateIframe(drop_item){
@@ -147,7 +166,11 @@ function updateIframe(drop_item){
                 <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false" href="#"><?= $database ?><span class="glyphicon glyphicon-menu-down"></span></a>
                     <ul class="dropdown-menu" role="menu">
                     <?php foreach ($table as $table_name): ?>
-                        <li><a src="<?= base_url() ?>index.php?c=TableInfo&db=<?= $database?>&t=<?= $table_name?>" onclick="updateIframe($(this))" href="#"><?= $table_name?></a></li>
+                        <?php if ($db_type == 'MongoDB'):?>
+                            <li><a src="<?= base_url() ?>index.php?c=MongoTableInfo&db=<?= $database?>&col=<?= $table_name?>" onclick="updateIframe($(this))" href="#"><?= $table_name?></a></li>
+                        <?php else:?>
+                            <li><a src="<?= base_url() ?>index.php?c=TableInfo&db=<?= $database?>&t=<?= $table_name?>" onclick="updateIframe($(this))" href="#"><?= $table_name?></a></li>
+                        <?php endif;?>
                     <?php endforeach; ?>
                     </ul>
                 </li>

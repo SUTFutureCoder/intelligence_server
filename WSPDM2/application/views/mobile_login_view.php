@@ -110,7 +110,7 @@
         <br/>
         <div class="form-group">            
             <input type="text" name="db_username" id="db_username" class="form-control" placeholder="数据库账号" disabled="disabled" required="" autofocus="">
-            <input type="password" name="db_password" id="db_password" class="form-control" placeholder="数据库密码" disabled="disabled" required="">            
+            <input type="password" name="db_password" id="db_password" class="form-control" placeholder="数据库密码" disabled="disabled">            
             <select class="form-control" name="db_type" id="db_type" disabled="disabled">
                 <option>MySQL</option>    
                 <option>MongoDB</option>    
