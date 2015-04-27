@@ -47,10 +47,10 @@
             </div>
         </div> 
         <?php endif; ?>
-        <div class="panel panel-info">
+        <div class="panel panel-info" id="backup">
             <div class="panel-heading">数据库快照</div>
             <div class="panel-body">
-                <?php if (count($db_snap)): ?>
+                <?php if (is_array($db_snap)): ?>
                 <?php foreach ($db_snap as $db_name => $db_snap_name):?>
                 <div class="panel panel-default">
                     <div class="panel-heading">
@@ -63,6 +63,7 @@
                             <td class="col-sm-2"><a><?= $db_snap_value?></a></td>
                             <td class="col-sm-1"><button type="button" class="btn btn-danger btn-sm" onclick="snap_dele(1, '<?= $db_name ?>', '<?= $db_snap_key?>')">删除快照</button></td>
                             <td class="col-sm-1"><button type="button" class="btn btn-success btn-sm" onclick="snap_rewind(1, '<?= $db_name ?>', '<?= $db_snap_key?>')">恢复</button></td>
+                            <td class="col-sm-1"><button type="button" class="btn btn-success btn-sm" onclick="snap_download(1, '<?= $db_name ?>', '<?= $db_snap_key?>')">下载</button></td>
                         </tr>
                         <?php endforeach; ?>
                     </table>
@@ -220,6 +221,16 @@
             data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
             data['data'] += '"snap_type" : "' + type + '", "db_type" : "<?= $type?>", "database" : "' + database + '", "snap_name" : "' + name + '"}';
             parent.IframeSend(data);
+        }
+        
+            
+        //下载快照
+        function snap_download(type, database, name){
+            if ($("#snap_download_iframe").length){
+                $("#snap_download_iframe").remove();
+            } else {
+                $("#backup").append("<iframe id='snap_download_iframe' hidden='hidden' src='" + location.href.slice(0, location.href.lastIndexOf("/")) + "/index.php?c=TableInfo&m=DownloadSnapshot&user_key=<?= $user_key ?>&user_name=<?= $user_name ?>&database=" + database + "&db_type=<?= $type?>&snap_type=" + type + "&snap_name=" + name + "'>");
+            }
         }
     </script>
 </html>

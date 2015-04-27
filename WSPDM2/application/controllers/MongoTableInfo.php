@@ -22,6 +22,13 @@ class MongoTableInfo extends CI_Controller{
         $this->load->library('secure');
         $this->load->library('mongodatabase');
         
+        if (!$this->session->userdata('db_username')){
+            header("Content-Type: text/html;charset=utf-8");
+            echo '<script>alert("您的会话已过期，请重新登录")</script>';
+            echo '<script>window.parent.location.href= \'' . base_url() . '\';</script>'; 
+            exit();
+        }
+        
         $data = array();
         $data['start'] = 0;
         $data['limit'] = 30;
@@ -40,6 +47,7 @@ class MongoTableInfo extends CI_Controller{
             $data = array_merge($data, $data_temp);
         }
         
+        $data['data_sum'] = $this->mongodatabase->getCollectionDataSum($data['database'], $data['collection']);
         unset($data_temp);
         
         $this->load->view('MongoTableInfoView', array(

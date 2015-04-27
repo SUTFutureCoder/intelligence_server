@@ -2,7 +2,7 @@
 <html lang="zh-cn">
 <head>
 	<meta charset="utf-8">
-	<title>欢迎使用WSPDM-基于PHP Websocket的数据库管理器</title>
+	<title>欢迎使用WSPDM2-基于PHP Websocket的数据库管理器</title>
         <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
         <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
         <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
@@ -168,7 +168,7 @@
     </div>
     <div class="footer">
       <div class="container">
-          <p class="text-muted">Ping:<a id="ping"></a><br/>WSPDM<br/>版权所有(C) 2014-<?= date('Y')?> 沈阳工业大学ACM实验室 沈阳工业大学网络管理中心 *Chen<br/>Released under the GPL V3.0 License</p>
+          <p class="text-muted">Ping:<a id="ping"></a><br/>Project WSPDM2<br/>版权所有(C) 2014-<?= date('Y')?> 沈阳工业大学ACM实验室 沈阳工业大学网络管理中心 *Chen<br/>Released under the GPL V3.0 License</p>
       </div>
     </div>
 </body>

@@ -278,6 +278,7 @@
                                         <td class="col-sm-2"><a><?= $table_snap_value['size']?></a></td>
                                         <td class="col-sm-1"><button type="button" class="btn btn-danger btn-sm" onclick="snap_dele(0, '<?= $table_snap_name?>')">删除快照</button></td>
                                         <td class="col-sm-1"><button type="button" class="btn btn-success btn-sm" onclick="snap_rewind(0, '<?= $table_snap_name?>')">恢复</button></td>
+                                        <td class="col-sm-1"><button type="button" class="btn btn-success btn-sm" onclick="snap_download(0, '<?= $table_snap_name?>')">下载</button></td>
                                     </tr>
                                 <?php endforeach; ?>  
                                 <?php endif; ?>
@@ -296,11 +297,13 @@
                                         <td class="col-sm-2"><a><?= $db_snap_value['size']?></a></td>
                                         <td class="col-sm-1"><button type="button" class="btn btn-danger btn-sm" onclick="snap_dele(1, '<?= $db_snap_name?>')">删除快照</button></td>
                                         <td class="col-sm-1"><button type="button" class="btn btn-success btn-sm" onclick="snap_rewind(1, '<?= $db_snap_name?>')">恢复</button></td>
+                                        <td class="col-sm-1"><button type="button" class="btn btn-success btn-sm" onclick="snap_download(1, '<?= $db_snap_name?>')">下载</button></td>
                                     </tr>
                                 <?php endforeach; ?>  
                                 <?php endif; ?>
                             </table>
-                        </div>                                
+                        </div>
+                        
                     </div>
                 </div>
             </div>
@@ -858,7 +861,7 @@
             $("#danger_confirm").removeAttr('disabled');
             $("#danger_confirm").html('确认');
             $("#danger_confirm_body").html('<h4><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>确认执行<a style="color:red">重命名表</a>操作吗？</h4>');
-            $("#danger_confirm").attr('onclick', 'dele_table_exec()');
+            $("#danger_confirm").attr('onclick', 'rename_table_exec()');
             $("#danger_confirm_modal").modal('show');
         }
         
@@ -1295,7 +1298,16 @@
         $("#danger_confirm_modal").modal('show');
     }
     
-    //执行删除快照
+    //下载快照
+    function snap_download(type, name){
+        if ($("#snap_download_iframe").length){
+            $("#snap_download_iframe").remove();
+        } else {
+            $("#backup").append("<iframe id='snap_download_iframe' hidden='hidden' src='" + location.href.slice(0, location.href.lastIndexOf("/")) + "/index.php?c=TableInfo&m=DownloadSnapshot&user_key=<?= $user_key ?>&user_name=<?= $user_name ?>&database=<?= $data['database'] ?>&db_type=<?= $db_type?>&snap_type=" + type + "&table=<?= $data['table'] ?>&snap_name=" + name + "'>");
+        }
+    }
+    
+    //执行回滚快照
     function snap_rewind_exec(type, name){
         var data = new Array();
         data['src'] = location.href.slice((location.href.lastIndexOf("/")));

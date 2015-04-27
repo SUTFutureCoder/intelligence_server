@@ -51,7 +51,7 @@ class ControlCenter extends CI_Controller{
             }
         }
         
-        $this->load->view('ControlCenterView', array('db_list' => $data, 'db_type' => $this->session->userdata('db_type')));
+        $this->load->view('ControlCenterView', array('db_list' => $data, 'db_type' => $this->session->userdata('db_type'), 'db_username' => $this->session->userdata('db_username')));
         
     }
 }

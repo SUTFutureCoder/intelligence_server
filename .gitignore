@@ -1,3 +1,5 @@
 nbproject/
 websocket/workerman/logs/
 WSPDM2/application/config/config.php
+WSPDM2/tmp/*
+*~

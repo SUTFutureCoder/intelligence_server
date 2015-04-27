@@ -46,6 +46,6 @@ class Mobile extends CI_Controller{
             $data[$db_array['TABLE_SCHEMA']][] = $db_array['TABLE_NAME'];
         }
         
-        $this->load->view('mobile_control_center', array('db_list' => $data));
+        $this->load->view('mobile_control_center', array('db_list' => $data, 'db_username' => $this->session->userdata('db_username')));
     }
 }

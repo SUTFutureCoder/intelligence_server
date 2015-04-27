@@ -113,6 +113,7 @@
             <input type="password" name="db_password" id="db_password" class="form-control" placeholder="数据库密码" disabled="disabled" required="">            
             <select class="form-control" name="db_type" id="db_type" disabled="disabled">
                 <option>MySQL</option>    
+                <option>MongoDB</option>    
                 <option>Oracle</option>    
                 <option>MS SQL Server</option>    
                 <option>MSSQL</option>    

@@ -241,6 +241,24 @@ class Mongodatabase{
         } else {
             return 0;
         }
+    }    
+    
+    /**    
+     *  @Purpose:    
+     *  获取数据库集合数据总数   
+     *  @Method Name:
+     *  getCollectionDataSum($db_name, $collection_name)
+     *  @Parameter: 
+     *  string $db_name 数据库名称
+     *  string $collection_name 集合名称
+     *  @Return: 
+     *  int $sum    总数
+    */   
+    public function getCollectionDataSum($db_name, $collection_name){
+        if (!self::$_db){
+            self::$_db = self::connect(1);
+        }
         
+        return self::$_db->$db_name->$collection_name->count();
     }    
 }

@@ -32,7 +32,8 @@ class BasicDbInfo extends CI_Controller{
         if (!$this->session->userdata('db_username')){
             header("Content-Type: text/html;charset=utf-8");
             echo '<script>alert("您的会话已过期，请重新登录")</script>';
-            echo '<script>window.location.href= \'' . base_url() . '\';</script>'; 
+            echo '<script>window.parent.location.href= \'' . base_url() . '\';</script>'; 
+            exit();
         }
         
         if (!$this->nosql->CheckNosql($this->session->userdata('db_type'))){
@@ -43,7 +44,7 @@ class BasicDbInfo extends CI_Controller{
 
             unset($data);
 
-            $db_snap = $this->GetDbSnapShot($this->session->userdata('db_type'));
+            $db_snap = $this->GetDbSnapShot($this->session->userdata('db_username'), $this->session->userdata('db_type'));
             $this->load->view('BasicDbInfoView', array('db_info' => $db_info,
                                                         'user_key' => $this->secure->CreateUserKey($this->session->userdata('db_username'), $this->session->userdata('db_password')),
                                                         'user_name' => $this->session->userdata('db_username'),                                                    
@@ -135,8 +136,9 @@ class BasicDbInfo extends CI_Controller{
      *  @Purpose:    
      *  便利获取数据库快照列表   
      *  @Method Name:
-     *  GetDbSnapShot()
+     *  GetDbSnapShot($user_name, $db_type)
      *  @Parameter: 
+     *  $user_name      用户名
      *  $db_type        数据库类型
      * 
      *  @Return: 
@@ -145,14 +147,14 @@ class BasicDbInfo extends CI_Controller{
      * 
      *  
     */ 
-    private function GetDbSnapShot($db_type){
+    private function GetDbSnapShot($user_name, $db_type){
         
         $data = array();
         //先获取数据库总体快照        
-        if (is_dir('/home/' . get_current_user() . '/wspdm2/snapshot/' . $db_type . '/')){
-            $i_db = new FilesystemIterator('/home/' . get_current_user() . '/wspdm2/snapshot/' . $db_type . '/');            
+        if (is_dir('/home/' . get_current_user() . '/wspdm2/' . $user_name . '/snapshot/' . $db_type . '/')){
+            $i_db = new FilesystemIterator('/home/' . get_current_user() . '/wspdm2/' . $user_name . '/snapshot/' . $db_type . '/');            
             foreach ($i_db as $db_snap){
-                $db_snap_file = new FilesystemIterator('/home/' . get_current_user() . '/wspdm2/snapshot/' . $db_type . '/' . $db_snap->getFilename() . '/');
+                $db_snap_file = new FilesystemIterator('/home/' . get_current_user() . '/wspdm2/' . $user_name . '/snapshot/' . $db_type . '/' . $db_snap->getFilename() . '/');
                 foreach ($db_snap_file as $db_snap_file_name){
                     if ($db_snap_file_name->isDir()){
                         continue;

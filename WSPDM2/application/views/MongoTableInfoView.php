@@ -35,8 +35,6 @@
                 </div></a></li>
             <li role="presentation"><a href="#insert" role="tab" data-toggle="tab">插入</a></li>
             <li role="presentation"><a href="#search" role="tab" data-toggle="tab">搜索</a></li>
-            <li role="presentation"><a href="#chart" id="chart_tab" role="tab" data-toggle="tab">分析</a></li>
-            <li role="presentation"><a href="#backup" role="tab" data-toggle="tab">云备份</a></li>
             <li role="presentation"><a href="#operating" role="tab" data-toggle="tab">操作</a></li>
         </ul>
         <div class="tab-content">
@@ -45,13 +43,13 @@
                 <br/>
                 <?php foreach($data['data'] as $value): ?>
                 <div class="panel panel-default" id="data_<?= $value['_id'] ?>">
-                    <div class="panel-heading"><?= $value['_id'] ?></div>
+                    <div class="panel-heading"><?= $data['data_sum']-- ?></div>
                     <div class="panel-body">
                         <pre class="view_value_array"><?= print_r($value, TRUE) ?></pre>
                         <pre class="view_value_json"><?= print_r(json_encode($value, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT), TRUE) ?></pre>
                     </div>
                     <div class="panel-footer">
-                        <button type="button" class="btn btn-primary btn-xs" onclick="data_update_button(0, <?= $value['_id'] ?>)">修改</button>
+                        <button type="button" class="btn btn-primary btn-xs" onclick="data_update_button(0, <?= $value['_id'] ?>)">更新</button>
                         <button type="button" class="btn btn-danger btn-xs" onclick="data_dele_button(0, <?= $value['_id'] ?>)">删除</button>
                     </div>
                 </div>
@@ -124,6 +122,9 @@
                             <td><?= $col_name ?>
                             </td>
                             <td>
+                                
+                            </td>
+                            <td>
                                 <div class="form-group">                                    
                                     <textarea class="form-control" name="<?= $col_name ?>" rows="2" id="insert_<?= $col_name ?>_val"></textarea>                                    
                                 </div>
@@ -178,75 +179,7 @@
                 <div id="search_result">
                     
                 </div>
-            </div>
-            <div role="tabpanel" class="tab-pane fade" id="chart">
-                <br/>    
-                <form class="form-horizontal" role="form">
-                    <div class="form-group">
-                        <label class="col-sm-1 control-label">横坐标</label>
-                        <div class="col-sm-4">
-                            <select class="form-control" id="chart_x_select">
-                            </select>
-                        </div>
-                        
-                        <div class="col-sm-4">
-                            <label>
-                                <input type="checkbox" id="chart_square_switch">面积图
-                            </label>
-                        </div>
-                    </div>                    
-                </form>                                
-                <div id="chart_view" style="height:400px">
-                    
-                </div>
-            </div>
-            <div role="tabpanel" class="tab-pane fade" id="backup">                
-                <br/>
-                <div class="panel panel-info">
-                    <div class="panel-heading">创建快照</div>
-                    <div class="panel-body">                        
-                        <button type="button" class="btn btn-lg btn-block btn-info"  onclick="set_snapshot(0)">创建集合快照</button>
-                        <br/>
-                        <button type="button" class="btn btn-lg btn-block btn-info"  onclick="set_snapshot(1)">创建数据库快照</button>
-                        <hr/>
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><a style="color:red"><?= $data['collection'] ?></a>集合快照</h3>
-                            </div>
-                            <table class="table table-condensed table-hover" id="table_snap">
-                                <?php if (isset($snapshot['table'])): ?>
-                                <?php foreach ($snapshot['table'] as $table_snap_name => $table_snap_value):?>
-                                    <tr file="snap_0_<?= $table_snap_name?>">
-                                        <td class="col-sm-8"><a><?= $table_snap_name?></a></td>
-                                        <td class="col-sm-2"><a><?= $table_snap_value['size']?></a></td>
-                                        <td class="col-sm-1"><button type="button" class="btn btn-danger btn-sm" onclick="snap_dele(0, '<?= $table_snap_name?>')">删除快照</button></td>
-                                        <td class="col-sm-1"><button type="button" class="btn btn-success btn-sm" onclick="snap_rewind(0, '<?= $table_snap_name?>')">恢复</button></td>
-                                    </tr>
-                                <?php endforeach; ?>  
-                                <?php endif; ?>
-                            </table>
-                        </div>
-                        <br/>   
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><a style="color:red"><?= $data['database'] ?></a>数据库快照</h3>
-                            </div>
-                            <table class="table table-condensed table-hover" id="db_snap">
-                                <?php if (isset($snapshot['db'])): ?>
-                                <?php foreach ($snapshot['db'] as $db_snap_name => $db_snap_value):?>
-                                    <tr file="snap_1_<?= $db_snap_name?>">
-                                        <td class="col-sm-8"><a><?= $db_snap_name?></a></td>
-                                        <td class="col-sm-2"><a><?= $db_snap_value['size']?></a></td>
-                                        <td class="col-sm-1"><button type="button" class="btn btn-danger btn-sm" onclick="snap_dele(1, '<?= $db_snap_name?>')">删除快照</button></td>
-                                        <td class="col-sm-1"><button type="button" class="btn btn-success btn-sm" onclick="snap_rewind(1, '<?= $db_snap_name?>')">恢复</button></td>
-                                    </tr>
-                                <?php endforeach; ?>  
-                                <?php endif; ?>
-                            </table>
-                        </div>                                
-                    </div>
-                </div>
-            </div>
+            </div>            
             <div role="tabpanel" class="tab-pane fade" id="operating">                
                 <br/>                
                 <div class="panel panel-warning">
@@ -279,38 +212,6 @@
                 <div class="modal-body" id="data_update_body">     
                     <form role="form" id="data_update_list">
                     <table class="table table-hover table-bordered">
-                    <?php foreach ($data['cols'] as $col_name => $col_type): ?>                                                 
-                        <tr id="data_update_<?= $col_name ?>" class="data_update_tr" >
-                            <td class="col-sm-2"><strong><?= $col_name ?></strong><br/>
-                            <?php if($data['cols'][$col_name]['comment']):?>
-                                <small class="primary">[<?= $data['cols'][$col_name]['comment'] ?>]</small><br/>
-                            <?php endif;?>
-                            <?php if ('UNI' == $data['cols'][$col_name]['key']): ?>
-                                <span class="label label-primary">唯</span>
-                            <?php elseif ('PRI' == $data['cols'][$col_name]['key']): ?>
-                                <span class="label label-danger">主</span>
-                            <?php endif;?>
-                            <?php if ('auto_increment' == $data['cols'][$col_name]['auto']): ?>
-                                <span class="label label-success">增</span>
-                            <?php endif;?>
-                            <?php if ('YES' == $data['cols'][$col_name]['nullable']): ?>
-                                <span class="label label-default">空</span>
-                            <?php endif;?>    
-                            </td>
-                            <td><?= $data['cols'][$col_name]['type_length'] ?></td>
-                            <td>
-                                <div class="form-group">
-                                    <?php if ('tinyint' == $data['cols'][$col_name]['type'] || 'int(1)' == $data['cols'][$col_name]['type_length']): ?>
-                                        <input type="checkbox" class="form-control cbx data_update_val">
-                                    <?php elseif ('text' == $data['cols'][$col_name]['type'] || $data['cols'][$col_name]['length'] >= 25): ?>
-                                        <textarea class="form-control data_update_val" rows="3"></textarea>
-                                    <?php else: ?>
-                                        <input type="text" class="form-control data_update_val">
-                                    <?php endif; ?>
-                                </div>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
                     </table>
                     </form>
                 </div>
@@ -341,6 +242,7 @@
     </body>
     <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
     <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+    <script src="<?= base_url('js/localstorage.js') ?>"></script>
     <script>        
         //接收母窗口传来的值
         function MotherResultRec(data) {
@@ -367,7 +269,7 @@
                                 var data = new Array();
                                 data['src'] = location.href.slice((location.href.lastIndexOf("/")));
                                 data['group'] = 'WSPDM2';
-                                data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/B_ReFreshTable';
+                                data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/B_ReFreshTable';
                                 data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "sql" : "' + sql + '", "col" : "' + col + '"}';
                                 parent.IframeSend(data, 'group');    
                                 break;
@@ -416,7 +318,7 @@
                             var data = new Array();
                             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
                             data['group'] = 'WSPDM2';
-                            data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/B_DeleCol';
+                            data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/B_DeleCol';
                             data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "col_name" : "' + col_name + '"}';
                             parent.IframeSend(data, 'group');                      
 
@@ -472,7 +374,7 @@
                             var data = new Array();
                             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
                             data['group'] = 'WSPDM2';
-                            data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/B_DeleTable';
+                            data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/B_DeleTable';
                             data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "table" : "<?= $data['collection'] ?>", "database" : "<?= $data['database'] ?>"}';
                             parent.IframeSend(data, 'group');    
                             break;
@@ -483,7 +385,7 @@
                             var data = new Array();
                             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
                             data['group'] = 'WSPDM2';
-                            data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/B_TruncateTable';
+                            data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/B_TruncateTable';
                             data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "table" : "<?= $data['collection'] ?>", "database" : "<?= $data['database'] ?>"}';
                             parent.IframeSend(data, 'group');    
                             break;
@@ -494,7 +396,7 @@
                             var data_rename = new Array();
                             data_rename['src'] = location.href.slice((location.href.lastIndexOf("/")));
                             data_rename['group'] = 'WSPDM2';
-                            data_rename['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/B_RenameTable';
+                            data_rename['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/B_RenameTable';
                             data_rename['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "database" : "<?= $data['database'] ?>", "old_table_name" : "' + data[4]['old_table_name'] + '", "new_table_name" : "' + data[4]['new_table_name'] + '"}';
                             parent.IframeSend(data_rename, 'group');    
                             break;
@@ -513,7 +415,7 @@
                             var snapshot = new Array();
                             snapshot['src'] = location.href.slice((location.href.lastIndexOf("/")));
                             snapshot['group'] = 'WSPDM2';
-                            snapshot['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/B_SnapShot';
+                            snapshot['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/B_SnapShot';
                             snapshot['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "snap_type" : "' + data[4]['type'] + '", "snap_name" : "' + data[4]['name'] + '", "snap_size" : "' + data[4]['size'] + '"}';
                             parent.IframeSend(snapshot, 'group');  
                             break;
@@ -523,7 +425,7 @@
                             var delesnapshot = new Array();
                             delesnapshot['src'] = location.href.slice((location.href.lastIndexOf("/")));
                             delesnapshot['group'] = 'WSPDM2';
-                            delesnapshot['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/B_DeleSnapShot';
+                            delesnapshot['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/B_DeleSnapShot';
                             delesnapshot['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "snap_type" : "' + data[4]['type'] + '", "snap_name" : "' + data[4]['name'] + '"}';
                             parent.IframeSend(delesnapshot, 'group');  
                             break;
@@ -534,7 +436,7 @@
                             var Rewind = new Array();
                             Rewind['src'] = location.href.slice((location.href.lastIndexOf("/")));
                             Rewind['group'] = 'WSPDM2';
-                            Rewind['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/B_RewindSnapShot';
+                            Rewind['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/B_RewindSnapShot';
                             Rewind['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "snap_type" : "' + data[4]['type'] + '", "database" : "' + data[4]['database'] + '", "table" : "<?= $data['collection'] ?>"}';
                             parent.IframeSend(Rewind, 'group'); 
                             break;
@@ -611,6 +513,39 @@
              
         }       
         
+        
+        //切换显示方式
+        $(function(){
+            //LocalStorage
+            var view = ''
+            if (view = $.LS.get('WSPDM2_mongo_view')){
+                if (view == 'array'){
+                    $(".view_value_array").removeAttr('hidden');
+                    $(".view_value_json").attr('hidden', 'hidden');
+                } else if (view == 'json'){
+                    $(".view_value_json").removeAttr('hidden');
+                    $(".view_value_array").attr('hidden', 'hidden');
+                }
+            } else {
+                $.LS.set('WSPDM2_mongo_view', 'array');
+                $(".view_value_array").removeAttr('hidden');
+                $(".view_value_json").attr('hidden', 'hidden');
+            }
+            
+            //用户选择方式
+            $("#view_tab_button_array").click(function(){
+                $.LS.set('WSPDM2_mongo_view', 'array');
+                $(".view_value_array").removeAttr('hidden');
+                $(".view_value_json").attr('hidden', 'hidden');
+            });
+            
+            $("#view_tab_button_json").click(function(){
+                $.LS.set('WSPDM2_mongo_view', 'json');
+                $(".view_value_json").removeAttr('hidden');
+                $(".view_value_array").attr('hidden', 'hidden');
+            });
+        });
+        
         //用于JQuery在光标位置插入内容
         //http://www.poluoluo.com/jzxy/201110/144708.html
         (function($){
@@ -663,7 +598,7 @@
             }
             var data = new Array();
             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
-            data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/ExecSQL';
+            data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/ExecSQL';
             data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
             data['data'] += '"sql" : "' + $("#sql_area").val() + '", "memcache" : "' + memcache + '", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
             parent.IframeSend(data);
@@ -673,7 +608,7 @@
         function dele_col_name(col_name){
             var data = new Array();
             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
-            data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/DeleCol';
+            data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/DeleCol';
             data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
             data['data'] += '"col_name" : "' + col_name + '", "database" : "<?= $data['database'] ?>", "table" : "<?= $data['collection']?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
             parent.IframeSend(data);
@@ -686,7 +621,7 @@
             var data = new Array();
             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
             data['group'] = 'WSPDM2';
-            data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/InsertData';
+            data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/InsertData';
             data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "database" : "<?= $data['database'] ?>", "table" : "<?= $data['collection'] ?>", "data" : {';
             $.each(values, function(i, field){
                 if (0 != i){
@@ -720,7 +655,7 @@
                         
             var data = new Array();
             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
-            data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/SearchData';
+            data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/SearchData';
             data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "database" : "<?= $data['database'] ?>", "table" : "<?= $data['collection'] ?>", "data" : {';            
             
             i = 0;
@@ -756,7 +691,7 @@
             $("#danger_confirm").attr('disabled', 'disabled');
             var data = new Array();
             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
-            data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/DeleTable';
+            data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/DeleTable';
             data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
             data['data'] += '"table" : "<?= $data['collection'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
             parent.IframeSend(data);
@@ -777,7 +712,7 @@
             $("#danger_confirm").attr('disabled', 'disabled');
             var data = new Array();
             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
-            data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/TruncateTable';
+            data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/TruncateTable';
             data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
             data['data'] += '"table" : "<?= $data['collection'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
             parent.IframeSend(data);
@@ -799,7 +734,7 @@
             if ($("#new_table_name").val() != ''){
                 var data = new Array();
                 data['src'] = location.href.slice((location.href.lastIndexOf("/")));
-                data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/RenameTable';
+                data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/RenameTable';
                 data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
                 data['data'] += '"old_table_name" : "<?= $data['collection'] ?>", "new_table_name" : "' + $("#new_table_name").val() + '", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
                 parent.IframeSend(data);
@@ -1017,7 +952,7 @@
         //source来源：0为data_view 1为SQL查询页  
         var data = new Array();
         data['src'] = location.href.slice((location.href.lastIndexOf("/")));
-        data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/UpdateData';
+        data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/UpdateData';
         data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
         data['data'] += '"table" : "<?= $data['collection'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>", "old_data" : {';
         
@@ -1136,7 +1071,7 @@
         //source来源：0为data_view 1为SQL查询页  
         var data = new Array();
         data['src'] = location.href.slice((location.href.lastIndexOf("/")));
-        data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/DeleData';
+        data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/DeleData';
         data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
         data['data'] += '"table" : "<?= $data['collection'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>", "old_data" : {';
         
@@ -1193,7 +1128,7 @@
     function set_snapshot(snap_type){
         var data = new Array();
         data['src'] = location.href.slice((location.href.lastIndexOf("/")));
-        data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/SetSnapShot';
+        data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/SetSnapShot';
         data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
         data['data'] += '"snap_type" : "' + snap_type + '", "table" : "<?= $data['collection'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
         parent.IframeSend(data);
@@ -1212,7 +1147,7 @@
     function snap_dele_exec(type, name){
         var data = new Array();
         data['src'] = location.href.slice((location.href.lastIndexOf("/")));
-        data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/DeleSnapshot';
+        data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/DeleSnapshot';
         data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
         data['data'] += '"snap_type" : "' + type + '", "table" : "<?= $data['collection'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "snap_name" : "' + name + '"}';
         parent.IframeSend(data);
@@ -1231,7 +1166,7 @@
     function snap_rewind_exec(type, name){
         var data = new Array();
         data['src'] = location.href.slice((location.href.lastIndexOf("/")));
-        data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/RewindSnapshot';
+        data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/RewindSnapshot';
         data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
         data['data'] += '"snap_type" : "' + type + '", "table" : "<?= $data['collection'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "snap_name" : "' + name + '"}';
         parent.IframeSend(data);

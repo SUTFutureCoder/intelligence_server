@@ -32,7 +32,11 @@ var ws, ping, name = 'null', user_list={};
     
     // 当socket连接打开时，输入用户名
     ws.onopen = function() {         
-        ws.send('{"type":"login","name":"DBA", "group":"WSPDM2"}');
+        <?php if ($db_type == 'MongoDB'): ?>
+            ws.send('{"type":"login","name":"<?= $db_username ?>", "group":"WSPDM2_Mongo"}');
+        <?php else: ?>
+            ws.send('{"type":"login","name":"<?= $db_username ?>", "group":"WSPDM2"}');
+        <?php endif;?>
         setInterval("getping()",1000);
     };
 
@@ -156,10 +160,9 @@ function UpdateTableName(database, old_table_name, new_table_name){
 }
 </script>
 <body class="easyui-layout">
-
 <div region="north" border="false" class="cs-north" style="height:30px; overflow:hidden">
     <div  style="height: 30px; top:5px; overflow: hidden; position: relative; left: 10px; float: left">
-        <a href="javascript:void(0);" src="<?= base_url('index.php/daily_me')?>" class="cs-navi-tab"></a>
+        <a href="javascript:void(0);" class="cs-navi-tab">您好，尊敬的&nbsp;<?= $db_username ?></a>
     </div>
     <div class="cs-north-bg"style="top:0%" >                
     <ul class="ui-skin-nav">	                    

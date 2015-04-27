@@ -27,8 +27,9 @@ var ws, ping, name = 'null', user_list={};
     ws = new WebSocket("ws://"+document.domain+":8080/");
     
     // 当socket连接打开时，输入用户名
-    ws.onopen = function() {         
-        ws.send('{"type":"login","name":"DBA", "group":"WSPDM2"}');
+    ws.onopen = function() {  
+        
+        ws.send('{"type":"login","name":"<?= $db_username ?>", "group":"WSPDM2"}');
         setInterval("getping()",1000);
     };
 
@@ -156,7 +157,7 @@ function updateIframe(drop_item){
     </div>
 </nav>
 <div class="container">
-    <iframe src="<?= base_url('index.php/BasicDbInfo')?>" frameborder="0" style="position: absolute; height: 80%; top:40px; left:0; border: none;" width="100%">
+    <iframe src="<?= base_url('index.php/BasicDbInfo')?>" frameborder="0" style="position: absolute; height: 92%; top:8%; left:0; border: none;" width="100%">
 </div>  
 </body>
 </html>
