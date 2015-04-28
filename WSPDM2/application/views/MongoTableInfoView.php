@@ -183,21 +183,21 @@
             <div role="tabpanel" class="tab-pane fade" id="operating">                
                 <br/>                
                 <div class="panel panel-warning">
-                    <div class="panel-heading">修改表名</div>
+                    <div class="panel-heading">修改集合名</div>
                     <div class="panel-body">
                         <form role="form">
                             <div class="form-group">
                               <input type="text" id="new_table_name" class="form-control">
                             </div>                            
                         </form>
-                        <button type="button" class="btn btn-info"  onclick="rename_table()">修改表名</button>
+                        <button type="button" class="btn btn-info"  onclick="rename_table()">修改集合名</button>
                     </div>
                 </div>
                 <div class="panel panel-danger">
                     <div class="panel-heading">危险地带</div>
                     <div class="panel-body">
-                        <button type="button" class="btn btn-warning col-sm-offset-5"  onclick="truncate_table()">清除表</button>
-                        <button type="button" class="btn btn-danger col-sm-offset-11"  onclick="dele_table()">删除表</button>
+                        <button type="button" class="btn btn-warning col-sm-offset-5"  onclick="truncate_table()">清除集合</button>
+                        <button type="button" class="btn btn-danger col-sm-offset-11"  onclick="dele_table()">删除集合</button>
                     </div>
                 </div>  
             </div>
@@ -268,7 +268,7 @@
 
                                 var data = new Array();
                                 data['src'] = location.href.slice((location.href.lastIndexOf("/")));
-                                data['group'] = 'WSPDM2';
+                                data['group'] = 'WSPDM2_Mongo';
                                 data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/B_ReFreshTable';
                                 data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "sql" : "' + sql + '", "col" : "' + col + '"}';
                                 parent.IframeSend(data, 'group');    
@@ -317,7 +317,7 @@
 
                             var data = new Array();
                             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
-                            data['group'] = 'WSPDM2';
+                            data['group'] = 'WSPDM2_Mongo';
                             data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/B_DeleCol';
                             data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "col_name" : "' + col_name + '"}';
                             parent.IframeSend(data, 'group');                      
@@ -373,9 +373,9 @@
                             alert('删除成功');
                             var data = new Array();
                             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
-                            data['group'] = 'WSPDM2';
+                            data['group'] = 'WSPDM2_Mongo';
                             data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/B_DeleTable';
-                            data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "table" : "<?= $data['collection'] ?>", "database" : "<?= $data['database'] ?>"}';
+                            data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "collection" : "<?= $data['collection'] ?>", "database" : "<?= $data['database'] ?>"}';
                             parent.IframeSend(data, 'group');    
                             break;
                             
@@ -384,7 +384,7 @@
                             alert('清除成功');
                             var data = new Array();
                             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
-                            data['group'] = 'WSPDM2';
+                            data['group'] = 'WSPDM2_Mongo';
                             data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/B_TruncateTable';
                             data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "table" : "<?= $data['collection'] ?>", "database" : "<?= $data['database'] ?>"}';
                             parent.IframeSend(data, 'group');    
@@ -395,7 +395,7 @@
                             alert('修改成功');
                             var data_rename = new Array();
                             data_rename['src'] = location.href.slice((location.href.lastIndexOf("/")));
-                            data_rename['group'] = 'WSPDM2';
+                            data_rename['group'] = 'WSPDM2_Mongo';
                             data_rename['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/B_RenameTable';
                             data_rename['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "database" : "<?= $data['database'] ?>", "old_table_name" : "' + data[4]['old_table_name'] + '", "new_table_name" : "' + data[4]['new_table_name'] + '"}';
                             parent.IframeSend(data_rename, 'group');    
@@ -414,7 +414,7 @@
                         case 'SnapShot':
                             var snapshot = new Array();
                             snapshot['src'] = location.href.slice((location.href.lastIndexOf("/")));
-                            snapshot['group'] = 'WSPDM2';
+                            snapshot['group'] = 'WSPDM2_Mongo';
                             snapshot['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/B_SnapShot';
                             snapshot['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "snap_type" : "' + data[4]['type'] + '", "snap_name" : "' + data[4]['name'] + '", "snap_size" : "' + data[4]['size'] + '"}';
                             parent.IframeSend(snapshot, 'group');  
@@ -424,7 +424,7 @@
                             $("#danger_confirm_modal").modal('hide');  
                             var delesnapshot = new Array();
                             delesnapshot['src'] = location.href.slice((location.href.lastIndexOf("/")));
-                            delesnapshot['group'] = 'WSPDM2';
+                            delesnapshot['group'] = 'WSPDM2_Mongo';
                             delesnapshot['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/B_DeleSnapShot';
                             delesnapshot['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "snap_type" : "' + data[4]['type'] + '", "snap_name" : "' + data[4]['name'] + '"}';
                             parent.IframeSend(delesnapshot, 'group');  
@@ -435,7 +435,7 @@
                             alert('回滚成功，请结束其他未执行的操作并刷新页面以进行深度重载');                            
                             var Rewind = new Array();
                             Rewind['src'] = location.href.slice((location.href.lastIndexOf("/")));
-                            Rewind['group'] = 'WSPDM2';
+                            Rewind['group'] = 'WSPDM2_Mongo';
                             Rewind['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/B_RewindSnapShot';
                             Rewind['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "snap_type" : "' + data[4]['type'] + '", "database" : "' + data[4]['database'] + '", "table" : "<?= $data['collection'] ?>"}';
                             parent.IframeSend(Rewind, 'group'); 
@@ -620,7 +620,7 @@
             var values = $("#insert_list").serializeArray();
             var data = new Array();
             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
-            data['group'] = 'WSPDM2';
+            data['group'] = 'WSPDM2_Mongo';
             data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/InsertData';
             data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "database" : "<?= $data['database'] ?>", "table" : "<?= $data['collection'] ?>", "data" : {';
             $.each(values, function(i, field){
@@ -680,7 +680,7 @@
         function dele_table(){
             $("#danger_confirm").removeAttr('disabled');
             $("#danger_confirm").html('确认');
-            $("#danger_confirm_body").html('<h4><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>确认执行<a style="color:red">删除表</a>操作吗？</h4>');
+            $("#danger_confirm_body").html('<h4><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>确认执行<a style="color:red">删除集合</a>操作吗？</h4>');
             $("#danger_confirm").attr('onclick', 'dele_table_exec()');
             $("#danger_confirm_modal").modal('show');
         }
@@ -693,7 +693,7 @@
             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
             data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/DeleTable';
             data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
-            data['data'] += '"table" : "<?= $data['collection'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
+            data['data'] += '"collection" : "<?= $data['collection'] ?>", "database" : "<?= $data['database'] ?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
             parent.IframeSend(data);
         }
         

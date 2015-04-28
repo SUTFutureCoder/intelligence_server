@@ -111,7 +111,7 @@ class Mongodatabase{
                                     self::$_ci->session->userdata('db_password'),
                                     self::$_ci->session->userdata('db_host'),
                                     self::$_ci->session->userdata('db_port'));
-        } elseif (NULL != $user && NULL != $passwd){
+        } elseif (NULL != $user){
             $result = self::connectInit($Mongo, $user, $passwd, $host, $port);
         } else {
             return 0;
@@ -260,5 +260,37 @@ class Mongodatabase{
         }
         
         return self::$_db->$db_name->$collection_name->count();
+    }    
+    
+    /**    
+     *  @Purpose:    
+     *  删除集合   
+     *  @Method Name:
+     *  deleCollection($database, $collection, $db_username, $db_password, $db_host, $db_port)
+     *  @Parameter: 
+     *  string $database 数据库名称
+     *  string $collection_name 集合名称
+     *  string $db_username 数据库用户名
+     *  string $db_password 数据库密码
+     *  string $db_host 数据库地址
+     *  string $db_port 数据库端口
+     *  @Return: 
+    */   
+    public function deleCollection($database, $collection_name, $db_username, $db_password, $db_host, $db_port){
+        if (!self::$_db){
+            self::$_db = self::connect(1, $db_username, $db_password, $db_host, $db_port);
+        }
+        
+        $time_point_a = microtime(TRUE);
+        try{
+            $result = self::$_db->$database->$collection_name->drop();
+        } catch (Exception $ex) {
+            return $ex->getMessage();
+        }
+        $time_point_b = microtime(TRUE);
+        $result['time'] = number_format($time_point_b - $time_point_a, '8');
+        $result['sql'] = 'use ' . $database . '<br/>' . 'db.' . $collection_name . '.drop()';                
+        
+        return $result;
     }    
 }
