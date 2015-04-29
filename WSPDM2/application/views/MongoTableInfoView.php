@@ -28,11 +28,7 @@
                     <button type="button" class="btn btn-default" id="view_tab_button_json">Json</button>
                 </div></a></li>
             <li role="presentation"><a href="#struct" role="tab" data-toggle="tab">结构</a></li>
-            <li role="presentation"><a href="#js" id="sql_tab" role="tab" data-toggle="tab">JavaScript&nbsp;
-                <div class="btn-group  btn-group-xs" role="group" aria-label="...">
-                    <button type="button" class="btn btn-default" id="js_tab_button_array">Array</button>
-                    <button type="button" class="btn btn-default" id="js_tab_button_json">Json</button>
-                </div></a></li>
+            <li role="presentation"><a href="#js" id="sql_tab" role="tab" data-toggle="tab">Json</a></li>
             <li role="presentation"><a href="#insert" role="tab" data-toggle="tab">插入</a></li>
             <li role="presentation"><a href="#search" role="tab" data-toggle="tab">搜索</a></li>
             <li role="presentation"><a href="#operating" role="tab" data-toggle="tab">操作</a></li>
@@ -42,15 +38,15 @@
                 <br/>
                 <br/>
                 <?php foreach($data['data'] as $value): ?>
-                <div class="panel panel-default" id="data_<?= $value['_id'] ?>">
+                <div class="panel panel-default view_panel" id="data_<?= $value['_id'] ?>">
                     <div class="panel-heading"><?= $data['data_sum']-- ?></div>
                     <div class="panel-body">
                         <pre class="view_value_array"><?= print_r($value, TRUE) ?></pre>
                         <pre class="view_value_json"><?= print_r(json_encode($value, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT), TRUE) ?></pre>
                     </div>
                     <div class="panel-footer">
-                        <button type="button" class="btn btn-primary btn-xs" onclick="data_update_button(0, <?= $value['_id'] ?>)">更新</button>
-                        <button type="button" class="btn btn-danger btn-xs" onclick="data_dele_button(0, <?= $value['_id'] ?>)">删除</button>
+                        <button type="button" class="btn btn-primary btn-xs" onclick="data_update_button('<?= $value['_id'] ?>')">更新</button>
+                        <button type="button" class="btn btn-danger btn-xs" onclick="data_dele_button('<?= $value['_id'] ?>')">删除</button>
                     </div>
                 </div>
                 <?php endforeach; ?>
@@ -61,20 +57,14 @@
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>操作</th>
                             <th>名字</th>
                         </tr>
                     </thead>
                     <tbody>                        
                     <?php $i = 0; ?>
                     <?php foreach ($data['cols'] as $col_name): ?>                    
-                        <tr id="struct_view_col_<?=$col_name?>">
+                        <tr class="struct_view_col" id="struct_view_col_<?=$col_name?>">
                             <td><?= ++$i ?></td>
-                            <td>
-                            <?php if ($col_name != '_id'): ?>
-                            <a onclick="dele_col_name('<?=$col_name?>')" style="color:red">删除</a>
-                            <?php endif; ?>
-                            </td>
                             <td><?= $col_name ?>
                             </td>
                         </tr>
@@ -85,8 +75,49 @@
             <div role="tabpanel" class="tab-pane fade" id="js">
                 <br/>
                 <div class="col-sm-8">
-                    <textarea class="form-control" rows="5" id="sql_area"></textarea>
+                    <textarea class="form-control" rows="5" id="sql_area">{
+    
+}</textarea>
+                    <br/>
+                    <div class="btn-group js_drop">
+                            <button type="button" class="btn btn-default dropdown-toggle" id="js_drop_button" drop-type="find" data-toggle="dropdown" aria-expanded="false">
+                                查询 <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu " role="menu">
+                                <li><a onclick="change_js_drop('find')">查询</a></li>
+                                <li><a onclick="change_js_drop('update')">修改</a></li>
+                                <li class="divider"></li>
+                                <li><a onclick="change_js_drop('dele')">删除</a></li>
+                            </ul>
+                    </div>
+                    <button type="button" class="btn btn-default" onclick="sql_button('    ', 2)">tab</button>
+                    <button type="button" class="btn btn-default" onclick="sql_button(' : {$gt : ', 2)">></button>
+                    <button type="button" class="btn btn-default" onclick="sql_button(' : {$gte : ', 2)">>=</button>
+                    <button type="button" class="btn btn-default" onclick="sql_button(' : {$lt : ', 2)"><</button>
+                    <button type="button" class="btn btn-default" onclick="sql_button(' : {$lte : ', 2)"><=</button>
+                    <button type="button" class="btn btn-default" onclick="sql_button(' } ', 2)">}</button>
+                    <button type="button" class="btn btn-default" onclick="sql_button(', ', 2)">,</button>
+                    <br/>
                     <br/>                    
+                    <button type="button" class="btn btn-default" onclick="sql_button(' : {$ne : ', 1)">!=</button>
+                    <button type="button" class="btn btn-default" onclick="sql_button(' : {$in : ', 1)">in</button>
+                    <button type="button" class="btn btn-default" onclick="sql_button(' : {$nin : ', 1)">not in</button>
+                    <button type="button" class="btn btn-default" onclick="sql_button(' : {$not : ', 1)">not</button>
+                    <button type="button" class="btn btn-default" onclick="sql_button(' : {$mod : ', 1)">%</button>
+                    <button type="button" class="btn btn-default" onclick="sql_button(' : {$all : [', 1)">all</button>
+                    <button type="button" class="btn btn-default" onclick="sql_button(' : {$size : ', 1)">size</button>
+                    <button type="button" class="btn btn-default" onclick="sql_button(' : {$exists : ', 1)">exists</button>
+                    <br/>
+                    <br/> 
+                    <button type="button" class="btn btn-default js_update_button" disabled="disabled" onclick="sql_button('$set : {', 1)">set</button>
+                    <button type="button" class="btn btn-default js_update_button" disabled="disabled" onclick="sql_button('$inc : {', 1)">inc</button>
+                    <button type="button" class="btn btn-danger js_update_button" disabled="disabled" onclick="sql_button('$unset : {', 1)">unset</button>     
+                    <button type="button" class="btn btn-danger js_update_button" disabled="disabled" onclick="sql_button('$pop : {', 1)">pop</button>     
+                    <button type="button" class="btn btn-danger js_update_button" disabled="disabled" onclick="sql_button('$pull : {', 1)">pull</button>     
+                    <button type="button" class="btn btn-danger js_update_button" disabled="disabled" onclick="sql_button('$pullAll : {', 1)">pullAll</button>     
+                    <button type="button" class="btn btn-default js_update_button" disabled="disabled" onclick="sql_button('$push : {', 1)">push</button>
+                    <button type="button" class="btn btn-default js_update_button" disabled="disabled" onclick="sql_button('$pushAll : {', 1)">pushAll</button>
+                    <button type="button" class="btn btn-default js_update_button" disabled="disabled" onclick="sql_button('$addToSet : {', 1)">addToSet</button>
                     <div class="checkbox">
                         <label>
                             <input type="checkbox" id="memcache"> memcache缓存查询结果
@@ -114,6 +145,11 @@
                 <table class="table table-hover table-bordered" >                       
                     <tbody>  
                         <form role="form" id="insert_list">
+                        <tr>
+                            <td>字段名</td>
+                            <td>使用字段</td>
+                            <td>值</td>
+                        </tr>
                         <?php foreach ($data['cols'] as $col_name): ?>  
                             <?php if($col_name == '_id'): 
                                 continue;
@@ -122,7 +158,11 @@
                             <td><?= $col_name ?>
                             </td>
                             <td>
-                                
+                                <div class="checkbox">
+                                    <label>
+                                        <input type="checkbox" checked="checked">
+                                    </label>
+                                </div>
                             </td>
                             <td>
                                 <div class="form-group">                                    
@@ -182,7 +222,7 @@
             </div>            
             <div role="tabpanel" class="tab-pane fade" id="operating">                
                 <br/>                
-                <div class="panel panel-warning">
+                <!-- <div class="panel panel-warning">
                     <div class="panel-heading">修改集合名</div>
                     <div class="panel-body">
                         <form role="form">
@@ -192,7 +232,7 @@
                         </form>
                         <button type="button" class="btn btn-info"  onclick="rename_table()">修改集合名</button>
                     </div>
-                </div>
+                </div> -->
                 <div class="panel panel-danger">
                     <div class="panel-heading">危险地带</div>
                     <div class="panel-body">
@@ -209,11 +249,8 @@
                     <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
                     <h4 class="modal-title" id="data_update_title"></h4>
                 </div>        
-                <div class="modal-body" id="data_update_body">     
-                    <form role="form" id="data_update_list">
-                    <table class="table table-hover table-bordered">
-                    </table>
-                    </form>
+                <div class="modal-body" id="data_update_body">   
+                    <textarea rows="15" class="form-control" id="data_update_area"></textarea>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>            
@@ -243,7 +280,11 @@
     <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
     <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
     <script src="<?= base_url('js/localstorage.js') ?>"></script>
-    <script>        
+    <script src="<?= base_url('js/base64.js') ?>"></script>
+    <script>  
+        //更新数据指示器
+        var updateDataIndicator = 0;
+        var deleDataIndicator = 0;
         //接收母窗口传来的值
         function MotherResultRec(data) {
             if (1 == data[2]) {
@@ -298,31 +339,7 @@
                                 chart_data['cols'] = data[4]['cols'];
                                 chart_data['data'] = data[4]['data'];
                             }
-                            break;    
-
-                        case 'DeleCol':
-                            var col_id = $("#struct_view_col_" + data[4]['col_name']).prevAll().length;
-                            var col_name = data[4]['col_name'];
-                            $("#struct_view_col_" + col_name).remove();
-
-                            //从1开始计
-                            $("#data_view tr td:nth-of-type(" + (2 + col_id) + ")").remove();
-
-                            $("#insert_" + col_name).remove();
-
-                            $("#sql_col_name_" + col_name).remove();
-
-                            $("#search_col_" + col_name).remove();
-                            //开始广播
-
-                            var data = new Array();
-                            data['src'] = location.href.slice((location.href.lastIndexOf("/")));
-                            data['group'] = 'WSPDM2_Mongo';
-                            data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/B_DeleCol';
-                            data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "col_name" : "' + col_name + '"}';
-                            parent.IframeSend(data, 'group');                      
-
-                            break;
+                            break;   
                             
                         case 'InsertData':
                             
@@ -386,7 +403,7 @@
                             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
                             data['group'] = 'WSPDM2_Mongo';
                             data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/B_TruncateTable';
-                            data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "table" : "<?= $data['collection'] ?>", "database" : "<?= $data['database'] ?>"}';
+                            data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "collection" : "<?= $data['collection'] ?>", "database" : "<?= $data['database'] ?>"}';
                             parent.IframeSend(data, 'group');    
                             break;
                             
@@ -402,13 +419,35 @@
                             break;
                             
                         case 'UpdateData':
-                            $("#data_update_modal").modal('hide');   
-                            update_data_display();
+                            $("#data_update_modal").modal('hide'); 
+                            updateDataIndicator = 1
+                            if (data[4]['rows']){
+                                var data_update = new Array();
+                                data_update['src'] = location.href.slice((location.href.lastIndexOf("/")));
+                                data_update['group'] = 'WSPDM2_Mongo';
+                                data_update['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/B_UpdataData';
+                                data_update['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
+                                data_update['data'] += '"key" : "' + data[4]['key'] + '", "sql" : "' + BASE64.encoder(data[4]['sql']) + '", "col" : "' + data[4]['rows'] + '", "new_data" : "';
+                                data_update['data'] += BASE64.encoder($("#data_update_area").val());
+                                data_update['data'] += '"}';
+                                parent.IframeSend(data_update, 'group');    
+                            }
+                            
                             break;
                             
                         case 'DeleData':
                             $("#danger_confirm_modal").modal('hide');
-                            dele_data_display();
+                            deleDataIndicator = 1;
+                            if (data[4]['rows']){
+                                var data_dele = new Array();
+                                data_dele['src'] = location.href.slice((location.href.lastIndexOf("/")));
+                                data_dele['group'] = 'WSPDM2_Mongo';
+                                data_dele['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/B_DeleData';
+                                data_dele['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
+                                data_dele['data'] += '"key" : "' + data[4]['key'] + '", "sql" : "' + BASE64.encoder(data[4]['sql']) + '", "col" : "' + data[4]['rows'] + '"}';
+                                parent.IframeSend(data_dele, 'group');    
+                            }
+                            
                             break;
                             
                         case 'SnapShot':
@@ -452,7 +491,23 @@
                     $("#alert").append("<br/>警告！数据因回滚快照而发生更改！<br/><br/><button type=\"button\" class=\"btn btn-success\" onclick=\" window.location.href='" + location.href + "'\">重新加载以消除脏数据</button>");
                 } else {
                 //广播接收
-                    switch (data[3]){  
+                    switch (data[3]){ 
+                        case 'B_UpdateData':
+                            $("#data_" + data[4]['id'] + " .panel-body .view_value_json").html(data[4]['new_data']);
+                            if (!updateDataIndicator){
+                                $("#alert").removeClass("alert-success");
+                                $("#alert").addClass("alert-danger");
+                                $("#alert").html("数据发生更改<br/>修改_id:" + data[4]['id'] + "<br/>使用nosql语句<br/>" + data[4]['sql'] + "<br/>影响行数" + data[4]['col']);
+                            }
+                            break;
+                        case 'B_DeleData':
+                            $("#data_" + data[4]['id']).remove();
+                            if (!deleDataIndicator){
+                                $("#alert").removeClass("alert-success");
+                                $("#alert").addClass("alert-danger");
+                                $("#alert").html("数据发生删除<br/>删除_id:" + data[4]['id'] + "<br/>使用nosql语句<br/>" + data[4]['sql'] + "<br/>影响行数" + data[4]['col']);
+                            }
+                            break;
                         case 'B_ReFreshTable':
                             if ('<?= $user_name ?>' != data[4]['user_name']){
                                 $("#alert").removeClass("alert-success");
@@ -461,25 +516,13 @@
                             }
                             break;
                             
-                        case 'B_DeleCol':
-                            if ($("#struct_view_col_" + data[4]).length){
-                                var col_id = $("#struct_view_col_" + data[4]).prevAll().length;
-                                $("#struct_view_col_" + data[4]).remove();
-
-                                //从1开始计
-                                $("#data_view tr td:nth-of-type(" + (2 + col_id) + ")").remove();
-                                $("#insert_" + data[4]).remove();
-                                $("#sql_col_name_" + data[4]).remove();
-                                $("#search_col_" + data[4]).remove();
-                            }
-                            break;        
-                            
                         case 'B_DeleTable':
                             parent.DeleTable(data[4]['database'], data[4]['table']);
                             break;
                         
                         case 'B_TruncateTable':
-                            $("#data_view tbody").empty();
+                            $(".view_panel").remove();
+                            $(".struct_view_col").remove();
                             break;
                             
                         case 'B_RenameTable':
@@ -586,6 +629,35 @@
             $("#sql_area").focus();
         }
         
+        //选择下拉选择框
+        function change_js_drop(command){
+            switch (command){
+                case 'find':
+                    $("#js_drop_button").html('查询 <span class="caret"></span>').attr('drop-type', 'find');
+                    $(".js_update_button").attr("disabled", "disabled");
+                    $("#sql_area").html("{\n\
+    \n\
+}");   
+                    break;
+                case 'update':
+                    $("#js_drop_button").html('修改 <span class="caret"></span>').attr('drop-type', 'update');
+                    $(".js_update_button").removeAttr("disabled");
+                    $("#sql_area").html("{\n\
+    \n\
+},{\n\
+    \n\
+}");    
+                    break;
+                case 'dele':
+                    $("#js_drop_button").html('删除 <span class="caret"></span>').attr('drop-type', 'dele');
+                    $(".js_update_button").attr("disabled", "disabled");
+                    $("#sql_area").html("{\n\
+    \n\
+}");   
+                    break;
+            }
+        }
+        
         //执行SQL语句
         function launch_sql(){
             switch ($("#memcache").prop('checked')){
@@ -600,17 +672,7 @@
             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
             data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/ExecSQL';
             data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
-            data['data'] += '"sql" : "' + $("#sql_area").val() + '", "memcache" : "' + memcache + '", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
-            parent.IframeSend(data);
-        }
-        
-        //删除字段
-        function dele_col_name(col_name){
-            var data = new Array();
-            data['src'] = location.href.slice((location.href.lastIndexOf("/")));
-            data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/DeleCol';
-            data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
-            data['data'] += '"col_name" : "' + col_name + '", "database" : "<?= $data['database'] ?>", "table" : "<?= $data['collection']?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
+            data['data'] += '"nosql_type" : "' + $("#js_drop_button").attr('drop-type') + '", "nosql" : "' + $("#sql_area").val() + '", "memcache" : "' + memcache + '", "database" : "<?= $data['database'] ?>", "collection" : "<?= $data['collection'] ?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
             parent.IframeSend(data);
         }
         
@@ -629,7 +691,7 @@
                 }
                 data['data'] += '"' + field.name + '":"' + field.value + '"';
             })
-            data['data'] += '}, "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
+            data['data'] += '}, "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
             parent.IframeSend(data, 'group');
         }
         
@@ -670,7 +732,7 @@
                 }
                 n++;
             })                     
-            data['data'] += '},"db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
+            data['data'] += '}, "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
             parent.IframeSend(data);
             
             col_name = form_data = select =  null;
@@ -714,7 +776,7 @@
             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
             data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/TruncateTable';
             data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
-            data['data'] += '"table" : "<?= $data['collection'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
+            data['data'] += '"collection" : "<?= $data['collection'] ?>", "database" : "<?= $data['database'] ?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
             parent.IframeSend(data);
         }
         
@@ -736,78 +798,28 @@
                 data['src'] = location.href.slice((location.href.lastIndexOf("/")));
                 data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/RenameTable';
                 data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
-                data['data'] += '"old_table_name" : "<?= $data['collection'] ?>", "new_table_name" : "' + $("#new_table_name").val() + '", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
+                data['data'] += '"old_table_name" : "<?= $data['collection'] ?>", "new_table_name" : "' + $("#new_table_name").val() + '", "database" : "<?= $data['database'] ?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
                 parent.IframeSend(data);
             }
         }
         
     </script>
     <script>
-    //数据修改
-    var data_update_length = 0;
-    var data_update_col_name = new Array();
-    var data_update_old_data = new Array();   
-    var data_update_new_data = new Array();
-    var data_update_source = 0;
-    var data_update_key = 0;
     //显示修改窗口
-    function data_update_button(source, key){
-    //防止执行失败导致重复push
-        data_update_length = 0;
-        data_update_col_name = [];
-        data_update_old_data = [];   
-        data_update_new_data = [];
-        data_update_source = 0;
-        data_update_key = 0;
-        
+    function data_update_button(key){
         $("#data_update_confirm").html('确认');        
         $("#data_update_confirm").removeAttr('disabled');   
     //source来源：0为data_view 1为SQL查询页 
-        if (!source){
-            $("#data_update_title").html('修改第' + (key + 1) + '行数据');
-        } else {
-            $("#data_update_title").html('修改第' + (key + 1) + '行数据' + "<br/><br/><a style='color:red'>注意：未选取主键将会导致多行数据修改</a>");
-        }
+        $("#data_update_title").html('修改_id为' + (key) + '的数据');
         
-        $("#data_update_confirm").attr("onclick", "data_update_confirm(" + source + "," + key + ")");  
+        $("#data_update_confirm").attr("onclick", "data_update_confirm('" + key + "')");  
         
-        if (!source){
-            data_update_length = $("#data_view tbody #data_" + key + " td").length - 1;
-            for (var i = 1; i <= data_update_length; i++){    
-                data_update_col_name.push($("#data_col_name th:eq(" + i + ")").html());      
-                data_update_old_data.push($("#data_view tbody #data_" + key + " td:eq(" + i + ")").html());
-                if ("checkbox" == $(".data_update_val:eq(" + (i - 1) + ")").attr("type")){
-                    if (data_update_old_data[data_update_old_data.length - 1] == 1){
-                        $(".data_update_val:eq(" + (i - 1) + ")").attr("checked", "checked");
-                    }
-                } else {
-                    $(".data_update_val:eq(" + (i - 1) + ")").val(data_update_old_data[data_update_old_data.length - 1]);
-                }
-            }
-            $("#data_update_modal").modal('show');
-        } else {
-            $(".data_update_tr").hide();            
-            for (i in chart_data['cols']){
-                $("#data_update_" + chart_data['cols'][i]).show();
-            }
-            
-            data_update_length = $("#sql_data_view tbody #sql_exec_" + key + " td").length - 1;
-            for (var i = 1; i <= data_update_length; i++){    
-                data_update_old_data.push($("#sql_data_view tbody #sql_exec_" + key + " td:eq(" + i + ")").html());
-                if ("checkbox" == $(".data_update_val:eq(" + (i - 1) + ")").attr("type")){
-                    if (data_update_old_data[data_update_old_data.length - 1] == 1){
-                        $(".data_update_val:eq(" + (i - 1) + ")").attr("checked", "checked");
-                    }
-                } else {
-                    $(".data_update_val:eq(" + (i - 1) + ")").val(data_update_old_data[data_update_old_data.length - 1]);
-                }
-            }
-        }
+        $("#data_update_area").val($("#data_" + key + " .view_value_json").html());
         $("#data_update_modal").modal('show');
     }
     
     //执行修改过程
-    function data_update_confirm(source, update_key){
+    function data_update_confirm(update_key){
         
         $("#data_update_confirm").html('<span class="glyphicon glyphicon-flash" aria-hidden="true"></span>正在处理中，请稍候...');
         $("#data_update_confirm").attr('disabled', 'disabled');
@@ -816,65 +828,11 @@
         data['src'] = location.href.slice((location.href.lastIndexOf("/")));
         data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/UpdateData';
         data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
-        data['data'] += '"table" : "<?= $data['collection'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>", "old_data" : {';
-        
-        i = 0;
-        while (null != (old_data = data_update_old_data.shift())){
-            //获取style中display为style="display: table-row;"
-            if (i != 0){
-                data['data'] += ', ';
-            }
-            data['data'] += '"' + i  + '" : "' + old_data + '"';
-            i++;
-        }
-        
-        data['data'] += '}, "col_name" : {';
-        
-        if (!source){
-            i = 0;
-            while (null != (col_name = data_update_col_name.shift())){                
-                if (i != 0){
-                    data['data'] += ', ';
-                }
-                data['data'] += '"' + i  + '" : "' + col_name + '"';
-                i++;
-            }
-        } else {
-            i = 0;
-            for (key in chart_data['cols']){
-                if (i != 0){
-                    data['data'] += ', ';
-                }
-                data['data'] += '"' + i  + '" : "' + chart_data['cols'][key] + '"';
-                i++;
-            }
-        }
-        
-        data['data'] += '}, "new_data" : {';
-        
-        for (i = 0; i < data_update_length; i++){
-            if (i != 0){
-                data['data'] += ', ';
-            }
-            
-            if ("checkbox" == $(".data_update_tr:visible .data_update_val:eq(" + i + ")").attr('type')){                
-                if (true == $(".data_update_tr:visible .data_update_val:eq(" + i + ")").prop('checked')){   
-                    data_update_new_data.push("1");
-                    data['data'] += '"' + i  + '" : "1"';
-                } else {                    
-                    data_update_new_data.push("0");
-                    data['data'] += '"' + i  + '" : "0"';
-                }
-            } else {
-                data_update_new_data.push($(".data_update_tr:visible .data_update_val:eq(" + i + ")").val());
-                data['data'] += '"' + i  + '" : "' + data_update_new_data[data_update_new_data.length - 1] + '"';
-            }
-        }
-        data['data'] += '}}';
+        data['data'] += '"collection" : "<?= $data['collection'] ?>", "database" : "<?= $data['database'] ?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>", "key" : "' + update_key + '", "new_data" : "';
+        data['data'] += BASE64.encoder($("#data_update_area").val());
+        data['data'] += '"}';
+//        console.log(data['data']);
         parent.IframeSend(data);
-        
-        data_update_source = source;
-        data_update_key = update_key;
     }
     
     //更新显示数据
@@ -889,91 +847,25 @@
             }
         }
         
-        //回收内存
-        delete data_update_length;
-        delete data_update_col_name;
-        delete data_update_old_data;   
-        delete data_update_new_data;
-        delete data_update_source;
-        delete data_update_key;
     }
     
     //显示删除窗口
-    function data_dele_button(source, key){
+    function data_dele_button(key){
         $("#danger_confirm").html('确认');
         $("#danger_confirm").removeAttr('disabled');
-        if (!source){
-            $("#danger_confirm_body").html('<h4><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>确认执行<a style="color:red">删除行</a>操作吗？<br/><br/><a style="color:red">*[如未指定主键将会删除多行数据]</a></h4>');
-        } else {
-            $("#danger_confirm_body").html('<h4><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>确认执行<a style="color:red">删除表</a>操作吗？<br/><br/><a style="color:red">*[如未选定主键将会删除多行数据]</a></h4>');
-        }
-
-        $("#danger_confirm").attr('onclick', 'dele_data_exec(' + source + ', ' + key + ')');
+        $("#danger_confirm_body").html('<h4><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>确认执行<a style="color:red">删除数据</a>操作吗？<br/></h4>');
+        $("#danger_confirm").attr('onclick', 'dele_data_exec("' + key + '")');
         $("#danger_confirm_modal").modal('show');
     }
     
     //执行删除    
-    var data_dele_source = 0;
-    var data_dele_key = 0;
-    var data_dele_col_name = new Array();
-    function dele_data_exec(source, dele_key){
-    //防止重复push
-        data_dele_source = 0;
-        data_dele_key = 0;
-        data_dele_col_name = [];
-        if (!source){
-            data_dele_length = $("#data_view tbody #data_" + dele_key + " td").length - 1;
-            for (var i = 1; i <= data_update_length; i++){    
-                data_dele_col_name.push($("#data_col_name th:eq(" + i + ")").html());      
-            }            
-        } else {
-            data_dele_length = $("#sql_data_view tbody #sql_exec_" + dele_key + " td").length - 1;
-        }
-        
-        //source来源：0为data_view 1为SQL查询页  
+    function dele_data_exec(dele_key){
         var data = new Array();
         data['src'] = location.href.slice((location.href.lastIndexOf("/")));
         data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/DeleData';
         data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
-        data['data'] += '"table" : "<?= $data['collection'] ?>", "database" : "<?= $data['database'] ?>", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>", "old_data" : {';
-        
-        for (i = 0; i < data_dele_length; i++){
-            //获取style中display为style="display: table-row;"
-            if (i != 0){
-                data['data'] += ', ';
-            }
-            if (!source){
-                data['data'] += '"' + i  + '" : "' + $("#data_view tbody #data_" + dele_key + " td:eq(" + (i + 1) + ")").html() + '"';
-            } else {
-                data['data'] += '"' + i  + '" : "' + $("#sql_data_view tbody #sql_exec_" + dele_key + " td:eq(" + (i + 1) + ")").html() + '"';
-            }
-        }
-        
-        data['data'] += '}, "col_name" : {';        
-        
-        if (!source){
-            for(i = 0; i < data_dele_length; i++){                
-                if (i != 0){
-                    data['data'] += ', ';
-                }
-                data['data'] += '"' + i  + '" : "' + $("#data_col_name th:eq(" + (i + 1) + ")").html() + '"';
-            }
-        } else {
-            i = 0;
-            for (key in chart_data['cols']){
-                if (i != 0){
-                    data['data'] += ', ';
-                }
-                data['data'] += '"' + i  + '" : "' + chart_data['cols'][key] + '"';
-                i++;
-            }
-        }
-        
-        data['data'] += '}}';
+        data['data'] += '"collection" : "<?= $data['collection'] ?>", "database" : "<?= $data['database'] ?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>", "key" : "' + dele_key + '"}';
         parent.IframeSend(data);
-        
-        data_dele_source = source;
-        data_dele_key = dele_key;
     }
     
     
@@ -985,5 +877,7 @@
             $("#sql_exec_" + data_dele_key).remove();
         }
     }    
+    
+    
     </script>
 </html>

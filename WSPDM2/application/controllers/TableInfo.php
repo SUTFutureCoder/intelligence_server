@@ -872,7 +872,7 @@ class TableInfo extends CI_Controller{
             $this->data->Out('iframe', $this->input->post('src', TRUE), -2, '未检测到密钥');
         }
         
-        if (!$sql = trim($this->input->post('sql'), TRUE)){
+        if (!$sql = trim($this->input->post('sql', TRUE))){
             $this->data->Out('iframe', $this->input->post('src', TRUE), -3, 'SQL命令不能为空', 'sql_area');
         }
         

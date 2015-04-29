@@ -293,4 +293,142 @@ class Mongodatabase{
         
         return $result;
     }    
+    
+    /**    
+     *  @Purpose:    
+     *  清除集合   
+     *  @Method Name:
+     *  truncateTable($database, $collection, $db_username, $db_password, $db_host, $db_port)
+     *  @Parameter: 
+     *  string $database 数据库名称
+     *  string $collection_name 集合名称
+     *  string $db_username 数据库用户名
+     *  string $db_password 数据库密码
+     *  string $db_host 数据库地址
+     *  string $db_port 数据库端口
+     *  @Return: 
+    */   
+    public function truncateTable($database, $collection_name, $db_username, $db_password, $db_host, $db_port){
+        if (!self::$_db){
+            self::$_db = self::connect(1, $db_username, $db_password, $db_host, $db_port);
+        }
+        
+        $time_point_a = microtime(TRUE);
+        try{
+            $result = self::$_db->$database->$collection_name->remove();
+        } catch (Exception $ex) {
+            return $ex->getMessage();
+        }
+        $time_point_b = microtime(TRUE);
+        $result['rows'] = $result['n'];
+        $result['time'] = number_format($time_point_b - $time_point_a, '8');
+        $result['sql'] = 'use ' . $database . '<br/>' . 'db.' . $collection_name . '.remove({})';                
+        
+        return $result;
+    }    
+    
+    /**    
+     *  @Purpose:    
+     *  修改数据   
+     *  @Method Name:
+     *  updateData($database, $collection, $db_username, $db_password, $db_host, $db_port, $key, $new_data)
+     *  @Parameter: 
+     *  string $database 数据库名称
+     *  string $collection_name 集合名称
+     *  string $db_username 数据库用户名
+     *  string $db_password 数据库密码
+     *  string $db_host 数据库地址
+     *  string $db_port 数据库端口
+     *  string $id     目标数据_id
+     *  array  $new_data新数据
+     *  @Return: 
+    */   
+    public function updateData($database, $collection_name, $db_username, $db_password, $db_host, $db_port, $id, $new_data){
+        if (!self::$_db){
+            self::$_db = self::connect(1, $db_username, $db_password, $db_host, $db_port);
+        }
+        $new_data = base64_decode($new_data);
+        $new_data_array = json_decode($new_data, TRUE);
+        unset($new_data_array['_id']);
+//        $new_data = str_replace('\"', '"', $new_data);
+        $mongoId = new MongoId($id);
+//        echo 'db.' . $collection_name . '.update({"_id":"' . $id . '"}, {$set:' . $new_data . '})';
+        $time_point_a = microtime(TRUE);
+        try{
+            $result = self::$_db->$database->$collection_name->update(array('_id' => $mongoId), array('$set' => $new_data_array));
+        } catch (Exception $ex) {
+            return $ex->getMessage();
+        }
+        $time_point_b = microtime(TRUE);
+
+        $result['key'] = $id;
+        
+        $result['rows'] = $result['n'];
+        $result['time'] = number_format($time_point_b - $time_point_a, '8');
+        $result['sql'] = 'use ' . $database . '<br/>' . 'db.' . $collection_name . '.update({"_id":"' . $id . '"}, {$set:' . $new_data . '})';                
+        
+        return $result;
+    }    
+    
+    /**    
+     *  @Purpose:    
+     *  删除数据   
+     *  @Method Name:
+     *  deleData($database, $collection, $db_username, $db_password, $db_host, $db_port, $key, $new_data)
+     *  @Parameter: 
+     *  string $database 数据库名称
+     *  string $collection_name 集合名称
+     *  string $db_username 数据库用户名
+     *  string $db_password 数据库密码
+     *  string $db_host 数据库地址
+     *  string $db_port 数据库端口
+     *  string $id     目标数据_id
+     *  @Return: 
+    */   
+    public function deleData($database, $collection_name, $db_username, $db_password, $db_host, $db_port, $id){
+        if (!self::$_db){
+            self::$_db = self::connect(1, $db_username, $db_password, $db_host, $db_port);
+        }
+        
+        $mongoId = new MongoId($id);
+//        echo 'db.' . $collection_name . '.update({"_id":"' . $id . '"}, {$set:' . $new_data . '})';
+        
+        $time_point_a = microtime(TRUE);
+        try{
+            $result = self::$_db->$database->$collection_name->remove(array('_id' => $mongoId));
+        } catch (Exception $ex) {
+            return $ex->getMessage();
+        }
+        $time_point_b = microtime(TRUE);
+
+        $result['key'] = $id;
+        $result['rows'] = $result['n'];
+        $result['time'] = number_format($time_point_b - $time_point_a, '8');
+        $result['sql'] = 'use ' . $database . '<br/>' . 'db.' . $collection_name . '.remove({"_id":"' . $id . '"})';                
+        
+        return $result;
+    }    
+    
+    //执行命令
+    public function execSQL($nosql_type, $nosql, $db_username, $db_password, $db_host, $db_port, $database, $collection, $memcache = 0){
+        if (!self::$_db){
+            self::$_db = self::connect(1,$db_username, $db_password, $db_host, $db_port);
+        }
+        try{
+            switch ($nosql_type){
+                case 'find':
+                    $result = self::$_db->$database->execute('db.' . $collection_name . '.find(' . $nosql . ')');
+                    break;
+                case 'update':
+                    $result = self::$_db->$database->execute('db.' . $collection_name . '.update(' . $nosql . ')');
+                    break;
+                case 'dele':
+                    $result = self::$_db->$database->execute('db.' . $collection_name . '.remove(' . $nosql . ')');
+                    break;
+            }
+        } catch (Exception $ex) {
+            
+        }
+        
+    }
 }
