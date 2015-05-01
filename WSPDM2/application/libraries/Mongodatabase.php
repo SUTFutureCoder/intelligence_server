@@ -410,7 +410,7 @@ class Mongodatabase{
     }    
     
     //执行命令
-    public function execSQL($nosql_type, $nosql, $db_username, $db_password, $db_host, $db_port, $database, $collection, $memcache = 0){
+    public function execSQL($nosql_type, $nosql, $limit, $skip, $upsert, $multi, $db_username, $db_password, $db_host, $db_port, $database, $collection, $memcache = 0){
         if (!self::$_db){
             self::$_db = self::connect(1,$db_username, $db_password, $db_host, $db_port);
         }
@@ -443,7 +443,16 @@ class Mongodatabase{
                         }
                     }
                     
-                    $result_cursor = self::$_db->$database->$collection->find($nosql_array);
+                    if ($limit && $skip){
+                        $result_cursor = self::$_db->$database->$collection->find($nosql_array)->limit($limit)->skip($skip);
+                    } else if ($limit){
+                        $result_cursor = self::$_db->$database->$collection->find($nosql_array)->limit($limit);
+                    } else if ($skip){
+                        $result_cursor = self::$_db->$database->$collection->find($nosql_array)->skip($skip);
+                    } else {
+                        $result_cursor = self::$_db->$database->$collection->find($nosql_array);
+                    }
+                    
                     foreach ($result_cursor as $value){
                         $result['json'][] = print_r(json_encode($value, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT), TRUE);
                         $temp_id = '$id';
@@ -465,8 +474,8 @@ class Mongodatabase{
                 case 'update':
                     $time_point_a = microtime(TRUE);
                     
+                    $nosql = 'db.' . $collection . '.update(' . $nosql . ', ' . $upsert . ', ' . $multi . ');';
                     
-                    $nosql = 'db.' . $collection . '.update(' . $nosql . ');';
                     $result = self::$_db->$database->execute($nosql);
                     
                     $time_point_b = microtime(TRUE);
@@ -483,9 +492,6 @@ class Mongodatabase{
                     
                     $time_point_b = microtime(TRUE);
                     
-                    if ($result['ok']){
-                        $result['rows'] = 1;
-                    }
                     $result['nosql_type'] = 'insert';
                     $result['sql'] = $nosql;
                     $result['time'] = number_format($time_point_b - $time_point_a, '8');
@@ -496,6 +502,7 @@ class Mongodatabase{
                     
                     $nosql = 'db.' . $collection . '.remove(' . $nosql . ');';
                     $result = self::$_db->$database->execute($nosql);
+                    
                     $time_point_b = microtime(TRUE);
                     $result['nosql_type'] = 'dele';
                     $result['sql'] = $nosql;
@@ -506,5 +513,31 @@ class Mongodatabase{
             return $ex->getMessage();
         }
         return $result;        
+    }
+    
+    //增加数据
+    public function insertData($database, $collection, $post_data, $db_username, $db_password, $db_host, $db_port){
+        if (!self::$_db){
+            self::$_db = self::connect(1,$db_username, $db_password, $db_host, $db_port);
+        }
+
+        $time_point_a = microtime(TRUE);
+        
+        $result = self::$_db->$database->$collection->insert($post_data);
+
+        $time_point_b = microtime(TRUE);
+
+        if ($result['ok']){
+            $result['rows'] = 1;
+        }
+        
+        $temp_id = '$id';
+        $result['id'] = $post_data['_id']->$temp_id;
+        $result['data']['array'] = print_r($post_data, TRUE);
+        $result['data']['json'] = print_r(json_encode($post_data, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT), TRUE);
+        $result['sql'] = 'db.' . $collection . '.insert(' . json_encode($post_data) . ');';;
+        $result['time'] = number_format($time_point_b - $time_point_a, '8');
+        
+        return $result;
     }
 }

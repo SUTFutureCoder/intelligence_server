@@ -381,6 +381,10 @@ class MongoTableInfo extends CI_Controller{
             case 'insert':
                 $data = $this->mongodatabase->execSQL($this->input->post('nosql_type', TRUE), 
                         base64_decode($this->input->post('nosql', TRUE)), 
+                        $this->input->post('sql_limit', TRUE),
+                        $this->input->post('sql_skip', TRUE),
+                        $this->input->post('sql_upsert', TRUE),
+                        $this->input->post('sql_multi', TRUE),
                         $db['user_name'], 
                         $db['password'], 
                         $this->input->post('db_host', TRUE),
@@ -555,6 +559,67 @@ class MongoTableInfo extends CI_Controller{
         $data['user_name'] = $db['user_name'];
         
         $this->data->Out('group', $this->input->post('src', TRUE), 1, 'B_ReFreshTable' ,  $data);
+    }
+    
+       
+    /**    
+     *  @Purpose:    
+     *  插入数据   
+     *  @Method Name:
+     *  InsertData()
+     *  @Parameter: 
+     *  POST user_name 数据库用户名
+     *  POST user_key 用户密钥
+     *  POST src      目标地址
+     *  POST database 操作数据库
+     *  POST table      表名
+     *  POST array data 插入数据（key => value）
+     *  POST db_type  数据库类型
+     *  POST db_host  数据库地址
+     *  POST db_port  数据库端口
+     * 
+     *  @Return: 
+     *  状态码|说明
+     *      data
+     * 
+     *  
+    */ 
+    public function InsertData(){
+        $this->load->library('secure');
+        $this->load->library('data');
+        $this->load->library('mongodatabase');
+        
+        $db = array();
+        if ($this->input->post('user_name', TRUE) && $this->input->post('user_key', TRUE)){
+            $db = $this->secure->CheckUserKey($this->input->post('user_key', TRUE));
+            if ($this->input->post('user_name', TRUE) != $db['user_name']){
+                $this->data->Out('iframe', $this->input->post('src', TRUE), -1, '密钥无法通过安检');
+            }
+        } else {
+            $this->data->Out('iframe', $this->input->post('src', TRUE), -2, '未检测到密钥');
+        }        
+        
+        if (!$db['user_name'] || 
+                null == $this->input->post('database', TRUE) || 
+                null == $this->input->post('collection', TRUE) ||
+                null == $this->input->post('data', TRUE)){
+            $this->data->Out('iframe', $this->input->post('src', TRUE), -3, '数据库信息缺失，请重新登录');
+        }
+        
+        $data = $this->mongodatabase->insertData($this->input->post('database', TRUE), 
+                $this->input->post('collection', TRUE),
+                $this->input->post('data', TRUE),
+                $db['user_name'],
+                $db['password'],
+                $this->input->post('db_host', TRUE),
+                $this->input->post('db_port', TRUE));
+        
+        if (is_string($data)){
+            $this->data->Out('iframe', $this->input->post('src', TRUE), 0, 'nosql语句出错,出错信息:' . $data);
+        }
+        
+        $this->data->Out('group', $this->input->post('src', TRUE), 1, 'B_InsertData', $data);
+               
     }
     
 }

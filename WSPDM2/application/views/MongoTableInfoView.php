@@ -9,6 +9,7 @@
             var chart_data = new Array();
             chart_data['cols'] = new Array();
             chart_data['data'] = new Array();
+            var data_sum = <?= $data['data_sum'] ?>;
         </script>
     </head>
     <body>
@@ -101,29 +102,49 @@
                     <button type="button" class="btn btn-default" onclick='sql_button(" } ", 2)'>}</button>
                     <button type="button" class="btn btn-default" onclick='sql_button(", ", 2)'>,</button>
                     <br/>
+                    <br/>
+                    <form class="form-inline">
+                        <div class="form-group">
+                            <input type="text" class="form-control col-lg-1 js_find_control_button" id="sql_limit" placeholder="数据量">
+                        </div>
+                        <div class="form-group">
+                            <input type="email" class="form-control col-lg-1 js_find_control_button" id="sql_skip" placeholder="偏移量">
+                        </div>
+                    </form>
                     <br/>                    
                     <button type="button" class="btn btn-default" onclick='sql_button(" : {\"$ne\" : \"", 1)'>!=</button>
-                    <button type="button" class="btn btn-default" onclick='sql_button(" : {\"$in\" : \"", 1)'>in</button>
-                    <button type="button" class="btn btn-default" onclick='sql_button(" : {\"$nin\" : \"", 1)'>not in</button>
-                    <button type="button" class="btn btn-default" onclick='sql_button(" : {\"$not\" : \"", 1)'>not</button>
+                    <button type="button" class="btn btn-default" onclick='sql_button(" : {\"$in\" : [\"", 1)'>in</button>
+                    <button type="button" class="btn btn-default" onclick='sql_button(" : {\"$nin\" : [\"", 1)'>not in</button>
+                    <button type="button" class="btn btn-default" onclick='sql_button(" : {\"$not\" : {\"", 1)'>not</button>
                     <button type="button" class="btn btn-default" onclick='sql_button(" : {\"$mod\" : \"", 1)'>%</button>
                     <button type="button" class="btn btn-default" onclick='sql_button(" : {\"$all\" : [\"", 1)'>all</button>
                     <button type="button" class="btn btn-default" onclick='sql_button(" : {\"$size\" : \"", 1)'>size</button>
                     <button type="button" class="btn btn-default" onclick='sql_button(" : {\"$exists\" : \"", 1)'>exists</button>
                     <br/>
                     <br/> 
-                    <button type="button" class="btn btn-default js_update_button" disabled="disabled" onclick='sql_button("$set\" : { ", 1)'>set</button>
-                    <button type="button" class="btn btn-default js_update_button" disabled="disabled" onclick='sql_button("$inc\" : { ", 1)'>inc</button>
-                    <button type="button" class="btn btn-danger js_update_button" disabled="disabled" onclick='sql_button("$unset\" : { ", 1)'>unset</button>     
-                    <button type="button" class="btn btn-danger js_update_button" disabled="disabled" onclick='sql_button("$pop\" : { ", 1)'>pop</button>     
-                    <button type="button" class="btn btn-danger js_update_button" disabled="disabled" onclick='sql_button("$pull\" : { ", 1)'>pull</button>     
-                    <button type="button" class="btn btn-danger js_update_button" disabled="disabled" onclick='sql_button("$pullAll\" : { ", 1)'>pullAll</button>     
-                    <button type="button" class="btn btn-default js_update_button" disabled="disabled" onclick='sql_button("$push\" : { ", 1)'>push</button>
-                    <button type="button" class="btn btn-default js_update_button" disabled="disabled" onclick='sql_button("$pushAll\" : { ", 1)'>pushAll</button>
-                    <button type="button" class="btn btn-default js_update_button" disabled="disabled" onclick='sql_button("$addToSet\" : { ", 1)'>addToSet</button>
+                    <button type="button" class="btn btn-default js_update_button" disabled="disabled" onclick='sql_button("$set : { ", 1)'>set</button>
+                    <button type="button" class="btn btn-default js_update_button" disabled="disabled" onclick='sql_button("$inc : { ", 1)'>inc</button>
+                    <button type="button" class="btn btn-danger js_update_button" disabled="disabled" onclick='sql_button("$unset : { ", 1)'>unset</button>     
+                    <button type="button" class="btn btn-danger js_update_button" disabled="disabled" onclick='sql_button("$pop : { ", 1)'>pop</button>     
+                    <button type="button" class="btn btn-danger js_update_button" disabled="disabled" onclick='sql_button("$pull : { ", 1)'>pull</button>     
+                    <button type="button" class="btn btn-danger js_update_button" disabled="disabled" onclick='sql_button("$pullAll : { ", 1)'>pullAll</button>     
+                    <button type="button" class="btn btn-default js_update_button" disabled="disabled" onclick='sql_button("$push : { ", 1)'>push</button>
+                    <button type="button" class="btn btn-default js_update_button" disabled="disabled" onclick='sql_button("$pushAll : { ", 1)'>pushAll</button>
+                    <button type="button" class="btn btn-default js_update_button" disabled="disabled" onclick='sql_button("$addToSet : { ", 1)'>addToSet</button>
+                    <br/> 
                     <div class="checkbox">
                         <label>
-                            <input type="checkbox" id="memcache"> memcache缓存查询结果
+                            <input type="checkbox" class="js_find_control_button" id="memcache"> memcache缓存查询结果
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" class="js_update_button" disabled="disabled" id="sql_upsert">upsert
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" class="js_update_button" disabled="disabled" id="sql_multi">multi
                         </label>
                     </div>
                     <button type="button" class="btn btn-primary btn-lg btn-block" onclick="launch_sql()">执行</button>
@@ -133,7 +154,7 @@
                         <tbody>                       
                         <?php foreach ($data['cols'] as $col_name): ?>                    
                             <tr id="sql_col_name_<?= $col_name?>">
-                                <td onclick='sql_button(" \"<?= $col_name ?>\" : \"", 1)'><a><?= $col_name ?></a></td>
+                                <td onclick='sql_button(" \"<?= $col_name ?>\" ", 1)'><a><?= $col_name ?></a></td>
                             </tr>
                         <?php endforeach; ?>
                         </tbody>
@@ -160,19 +181,19 @@
                             <?php if($col_name == '_id'): 
                                 continue;
                             endif; ?>
-                        <tr id="insert_<?= $col_name ?>">
-                            <td><?= $col_name ?>
+                        <tr class="insert_field" id="insert_<?= $col_name ?>">
+                            <td class="insert_field_colname" colname="<?= $col_name ?>"><?= $col_name ?>
                             </td>
                             <td>
                                 <div class="checkbox">
                                     <label>
-                                        <input type="checkbox" checked="checked">
+                                        <input class="insert_field_checkbox" type="checkbox" checked="checked">
                                     </label>
                                 </div>
                             </td>
                             <td>
                                 <div class="form-group">                                    
-                                    <textarea class="form-control" name="<?= $col_name ?>" rows="2" id="insert_<?= $col_name ?>_val"></textarea>                                    
+                                    <textarea class="form-control insert_field_val"  rows="2" id="insert_<?= $col_name ?>_val"></textarea>                                    
                                 </div>
                             </td>
                         </tr>
@@ -196,10 +217,10 @@
                         <tr id="search_col_<?= $col_name ?>">
                             <td class="search_col_name"><?= $col_name ?></td>
                             <td><select class="form-control search-form-select">
-                                    <option value="LIKE">LIKE</option>
-                                    <option value="LIKE %...%">LIKE %...%</option>
-                                    <option value="NOT LIKE">NOT LIKE</option>
                                     <option value="=">=</option>
+                                    <option value="!=">!=</option>
+                                    <option value=">">></option>
+                                    <option value=""><</option>
                                     <option value="!=">!=</option>
                                     <option value="= ''">= ''</option>
                                     <option value="!= ''">!= ''</option>
@@ -292,6 +313,7 @@
         var updateDataIndicator = 0;
         var deleDataIndicator = 0;
         var refreshDataIndicator = 0;
+        var insertDataIndicator = 0;
         //接收母窗口传来的值
         function MotherResultRec(data) {
             if (1 == data[2]) {
@@ -501,6 +523,7 @@
                             }
                             updateDataIndicator = 0;
                             break;
+                            
                         case 'B_DeleData':
                             $("#data_" + data[4]['id']).remove();
                             $("#sql_result #sql_result_" + data[4]['id']).remove();
@@ -510,6 +533,25 @@
                                 $("#alert").html("数据发生删除<br/>删除_id:" + data[4]['id'] + "<br/>使用nosql语句<br/>" + data[4]['sql'] + "<br/>影响行数" + data[4]['col']);
                             }
                             deleDataIndicator = 0;
+                            break;
+                            
+                        case 'B_InsertData':
+                            if (!insertDataIndicator){
+                                $("#alert").removeClass("alert-success");
+                                $("#alert").addClass("alert-danger");
+                                $("#alert").html("数据发生增添<br/>新增_id:" + data[4]['id'] + "<br/>使用nosql语句<br/>" + data[4]['sql'] + "<br/>影响行数" + data[4]['rows']);
+                            } else {
+                                $("#alert").removeClass("alert-danger");
+                                    $("#alert").addClass("alert-success");
+                                    if (undefined != data[4]['rows']){
+                                        $("#alert").html("<p>共操作" + data[4]['rows'] + "行，操作消耗" + data[4]['time'] + "秒<p>" + "<p>" + data[4]['sql'] + "<p>");
+                                    } else {
+                                        $("#alert").html("<p>操作消耗" + data[4]['time'] + "秒<p>" + "<p>" + data[4]['sql'] + "<p>");
+                                    }
+                            }
+                            $(".view_panel:first").before('<div class="panel panel-default view_panel" id="data_' + data['4']['id'] + '"></div>');
+                            $("#data_" + data[4]['id']).append('<div class="panel-heading">' + ++data_sum + '</div><div class="panel-body"><pre class="view_value_array">' + data[4]['data']['array'] + '</pre><pre class="view_value_json">' + data[4]['data']['json'] + '</pre></div><div class="panel-footer"><button type="button" class="btn btn-primary btn-xs" onclick="data_update_button(0, \'' + data[4]['id'] + '\')">更新</button><button type="button" class="btn btn-danger btn-xs" onclick="data_dele_button(\'' + data[4]['id'] + '\')">删除</button></div>');
+                            insertDataIndicator = 0;
                             break;
                         case 'B_ReFreshTable':
                             if (!refreshDataIndicator){
@@ -638,6 +680,7 @@
             switch (command){
                 case 'find':
                     $("#js_drop_button").html('查询 <span class="caret"></span>').attr('drop-type', 'find');
+                    $('.js_find_control_button').removeAttr("disabled");
                     $(".js_update_button").attr("disabled", "disabled");
                     $("#sql_area").html("{\n\
     \n\
@@ -645,6 +688,7 @@
                     break;
                 case 'update':
                     $("#js_drop_button").html('修改 <span class="caret"></span>').attr('drop-type', 'update');
+                    $('.js_find_control_button').attr("disabled", "disabled");
                     $(".js_update_button").removeAttr("disabled");
                     $("#sql_area").html("{\n\
     \n\
@@ -654,6 +698,7 @@
                     break;
                 case 'insert':
                     $("#js_drop_button").html('插入 <span class="caret"></span>').attr('drop-type', 'insert');
+                    $('.js_find_control_button').attr("disabled", "disabled");
                     $(".js_update_button").attr("disabled", "disabled");
                     $("#sql_area").html("{\n\
     \n\
@@ -661,6 +706,7 @@
                     break;
                 case 'dele':
                     $("#js_drop_button").html('删除 <span class="caret"></span>').attr('drop-type', 'dele');
+                    $('.js_find_control_button').attr("disabled", "disabled");
                     $(".js_update_button").attr("disabled", "disabled");
                     $("#sql_area").html("{\n\
     \n\
@@ -683,27 +729,34 @@
             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
             data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/ExecSQL';
             data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
-            data['data'] += '"nosql_type" : "' + $("#js_drop_button").attr('drop-type') + '", "nosql" : "' + BASE64.encoder($("#sql_area").val()) + '", "memcache" : "' + memcache + '", "database" : "<?= $data['database'] ?>", "collection" : "<?= $data['collection'] ?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
-            parent.IframeSend(data);
+            data['data'] += '"nosql_type" : "' + $("#js_drop_button").attr('drop-type') + '", "sql_limit" : "' + $("#sql_limit").val() + '", "sql_skip" : "' + $("#sql_skip").val() + '", "sql_upsert" : "' + $("#sql_upsert").prop('checked') + '", "sql_multi" : "' + $("#sql_multi").prop('checked') + '", "nosql" : "' + BASE64.encoder($("#sql_area").val()) + '", "memcache" : "' + memcache + '", "database" : "<?= $data['database'] ?>", "collection" : "<?= $data['collection'] ?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
+            parent.IframeSend(data); 
         }
         
         //添加数据
         function insert(){
             //序列化表单
-            var values = $("#insert_list").serializeArray();
+            var insert_values = $(".insert_field");
             var data = new Array();
             data['src'] = location.href.slice((location.href.lastIndexOf("/")));
             data['group'] = 'WSPDM2_Mongo';
             data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/InsertData';
-            data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "database" : "<?= $data['database'] ?>", "table" : "<?= $data['collection'] ?>", "data" : {';
-            $.each(values, function(i, field){
+            data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "database" : "<?= $data['database'] ?>", "collection" : "<?= $data['collection'] ?>", "data" : {';
+            var i = 0;
+            insert_values.each(function(){
+                if ($(this).find('.insert_field_checkbox').prop('checked') == false){
+                    return true;
+                }
+                
                 if (0 != i){
                     data['data'] += ', ';
                 }
-                data['data'] += '"' + field.name + '":"' + field.value + '"';
-            })
+                data['data'] += '"' + $(this).find('.insert_field_colname').attr('colname') + '":"' + $(this).find('.insert_field_val').val() + '"';
+                i++;
+            });
             data['data'] += '}, "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
             parent.IframeSend(data, 'group');
+            insertDataIndicator = 1;
         }
         
         //搜索
