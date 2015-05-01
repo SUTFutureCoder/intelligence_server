@@ -414,21 +414,97 @@ class Mongodatabase{
         if (!self::$_db){
             self::$_db = self::connect(1,$db_username, $db_password, $db_host, $db_port);
         }
+        $result = array();
+        if ($nosql_type != 'update'){
+            //修改串不同于普通json
+            $nosql_array = array();
+            $nosql_array = json_decode($nosql, TRUE);
+            if (!$nosql_array){
+                return 'JSON串格式不正确';
+            }
+        }
+        
         try{
             switch ($nosql_type){
                 case 'find':
-                    $result = self::$_db->$database->execute('db.' . $collection_name . '.find(' . $nosql . ')');
+                    $time_point_a = microtime(TRUE);
+                     if ($memcache){
+                        if ($memcache_obj = @memcache_connect('127.0.0.1', 11211)){
+                            $key = md5($nosql);
+                            $time_point_a = microtime(TRUE);
+                            if ($data = $memcache_obj->get($key)){
+                                $time_point_b = microtime(TRUE);
+                                $data['rows'] = count($data['json']);
+                                $data['nosql_type'] = 'find';
+                                $data['sql'] = $nosql;
+                                $data['time'] = number_format($time_point_b - $time_point_a, '8') . '[memcache]';
+                                return $data;
+                            }
+                        }
+                    }
+                    
+                    $result_cursor = self::$_db->$database->$collection->find($nosql_array);
+                    foreach ($result_cursor as $value){
+                        $result['json'][] = print_r(json_encode($value, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT), TRUE);
+                        $temp_id = '$id';
+                        $result['id'][] = $value['_id']->$temp_id;
+                    }
+                    $time_point_b = microtime(TRUE);
+                    
+                    if (isset($memcache_obj) && is_object($memcache_obj)){
+                        $memcache_obj->add($key, $result, MEMCACHE_COMPRESSED, 3600);
+                    }
+                    
+                    $result['rows'] = count($result['id']);
+                    $result['nosql_type'] = 'find';
+                    $result['sql'] = $nosql;
+                    $result['time'] = number_format($time_point_b - $time_point_a, '8');
+                    
                     break;
+                    
                 case 'update':
-                    $result = self::$_db->$database->execute('db.' . $collection_name . '.update(' . $nosql . ')');
+                    $time_point_a = microtime(TRUE);
+                    
+                    
+                    $nosql = 'db.' . $collection . '.update(' . $nosql . ');';
+                    $result = self::$_db->$database->execute($nosql);
+                    
+                    $time_point_b = microtime(TRUE);
+                    $result['nosql_type'] = 'update';
+                    $result['sql'] = $nosql;
+                    $result['time'] = number_format($time_point_b - $time_point_a, '8');
                     break;
+                
+                case 'insert':
+                    $time_point_a = microtime(TRUE);
+                    
+                    $nosql = 'db.' . $collection . '.insert(' . $nosql . ');';
+                    $result = self::$_db->$database->execute($nosql);
+                    
+                    $time_point_b = microtime(TRUE);
+                    
+                    if ($result['ok']){
+                        $result['rows'] = 1;
+                    }
+                    $result['nosql_type'] = 'insert';
+                    $result['sql'] = $nosql;
+                    $result['time'] = number_format($time_point_b - $time_point_a, '8');
+                    break;
+                
                 case 'dele':
-                    $result = self::$_db->$database->execute('db.' . $collection_name . '.remove(' . $nosql . ')');
+                    $time_point_a = microtime(TRUE);
+                    
+                    $nosql = 'db.' . $collection . '.remove(' . $nosql . ');';
+                    $result = self::$_db->$database->execute($nosql);
+                    $time_point_b = microtime(TRUE);
+                    $result['nosql_type'] = 'dele';
+                    $result['sql'] = $nosql;
+                    $result['time'] = number_format($time_point_b - $time_point_a, '8');
                     break;
             }
         } catch (Exception $ex) {
-            
+            return $ex->getMessage();
         }
-        
+        return $result;        
     }
 }

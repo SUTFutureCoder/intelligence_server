@@ -378,6 +378,7 @@ class MongoTableInfo extends CI_Controller{
             case 'find':
             case 'update':
             case 'dele':
+            case 'insert':
                 $data = $this->mongodatabase->execSQL($this->input->post('nosql_type', TRUE), 
                         base64_decode($this->input->post('nosql', TRUE)), 
                         $db['user_name'], 
@@ -390,9 +391,7 @@ class MongoTableInfo extends CI_Controller{
                 break;
                 
             default :
-                if (is_string($data)){
-                    $this->data->Out('iframe', $this->input->post('src', TRUE), 0, 'nosql操作类型出错');
-                }
+                $this->data->Out('iframe', $this->input->post('src', TRUE), 0, 'nosql操作类型出错');
                 break;
         } 
             
@@ -515,6 +514,47 @@ class MongoTableInfo extends CI_Controller{
         $data['col'] = $this->input->post('col');
         
         $this->data->Out('group', $this->input->post('src', TRUE), 1, 'B_DeleData', $data);
+    }
+    
+    
+    /**    
+     *  @Purpose:    
+     *  广播刷新表（表数据已被更改）   
+     *  @Method Name:
+     *  B_ReFreshTable()
+     *  @Parameter: 
+     *  POST user_name 数据库用户名
+     *  POST user_key 用户密钥
+     *  POST src      目标地址
+     *  POST sql      其他用户执行的nosql指令
+     *  POST col      其他用户执行的sql指令影响的行数
+     * 
+     *  @Return: 
+     *  状态码|说明
+     *      data
+     * 
+     *  
+    */ 
+    public function B_ReFreshTable(){
+        $this->load->library('secure');
+        $this->load->library('data');
+        
+        $db = array();
+        if ($this->input->post('user_name', TRUE) && $this->input->post('user_key', TRUE)){
+            $db = $this->secure->CheckUserKey($this->input->post('user_key', TRUE));
+            if ($this->input->post('user_name', TRUE) != $db['user_name']){
+                return 0;
+            }
+        } else {
+            return 0;
+        }
+        
+        $data = array();
+        $data['sql'] = base64_decode($this->input->post('sql', TRUE));
+        $data['col'] = $this->input->post('col', TRUE);
+        $data['user_name'] = $db['user_name'];
+        
+        $this->data->Out('group', $this->input->post('src', TRUE), 1, 'B_ReFreshTable' ,  $data);
     }
     
 }

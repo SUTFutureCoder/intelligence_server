@@ -399,7 +399,11 @@
             </div>
         </div>  
     </body>
-    <script>        
+    <script>    
+        //更新数据指示器
+        var updateDataIndicator = 0;
+        var deleDataIndicator = 0;
+        var refreshDataIndicator = 0;    
         //接收母窗口传来的值
         function MotherResultRec(data) {
             if (1 == data[2]) {
@@ -419,6 +423,7 @@
                             $("#sql_data_view").append("<thead><tr id=\"sql_exec_col_name\"><th>#</th>");
                             
                             if (data[4]['sql'].substr(0, 6) != 'SELECT' && data[4]['sql'].substr(0, 6) != 'select'){
+                                refreshDataIndicator = 1;
                                 sql = data[4]['sql'];
                                 col = data[4]['rows'];
 
@@ -610,11 +615,12 @@
                 //广播接收
                     switch (data[3]){  
                         case 'B_ReFreshTable':
-                            if ('<?= $user_name ?>' != data[4]['user_name']){
+                            if (!refreshDataIndicator){
                                 $("#alert").removeClass("alert-success");
                                 $("#alert").addClass("alert-danger");
                                 $("#alert").append("<br/>警告！数据由其他用户发生更改！<br/>使用SQL语句" + data[4]['sql'] + "<br/>影响行数" + data[4]['col'] + "<br/><br/><button type=\"button\" class=\"btn btn-success\" onclick=\" window.location.href='" + location.href + "'\">重新加载以消除脏数据</button>");
                             }
+                            refreshDataIndicator = 0;
                             break;
                             
                         case 'B_DeleCol':
