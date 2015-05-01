@@ -188,7 +188,11 @@ function UpdateTableName(database, old_table_name, new_table_name){
                         <?php endif;?>
                     <?php endforeach; ?>
                 </div>
-            <?php endforeach; ?>				
+            <?php endforeach; ?>
+            <div title="数据库教程">
+                <a href="javascript:void(0);"  src="http://www.w3school.com.cn/sql/index.asp" class="cs-navi-tab">SQL教程</a></p>
+                <a href="javascript:void(0);"  src="http://www.w3cschool.cc/mongodb/mongodb-tutorial.html" class="cs-navi-tab">Mongodb教程</a></p>
+            </div>
         </div>
 </div>
 <div id="mainPanle" region="center" border="true" border="false">

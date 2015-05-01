@@ -31,7 +31,7 @@
             <li role="presentation"><a href="#struct" role="tab" data-toggle="tab">结构</a></li>
             <li role="presentation"><a href="#js" id="sql_tab" role="tab" data-toggle="tab">Json</a></li>
             <li role="presentation"><a href="#insert" role="tab" data-toggle="tab">插入</a></li>
-            <li role="presentation"><a href="#search" role="tab" data-toggle="tab">搜索</a></li>
+            <!-- <li role="presentation"><a href="#search" role="tab" data-toggle="tab">搜索</a></li> -->
             <li role="presentation"><a href="#operating" role="tab" data-toggle="tab">操作</a></li>
         </ul>
         <div class="tab-content">
@@ -201,8 +201,9 @@
                         </form>
                     </tbody>
                 </table>
-                <button type="button" class="btn btn-primary btn-lg btn-block" onclick="insert()">插入</button>
+                <button type="button" class="btn btn-primary btn-lg btn-block" onclick="insert()">添加</button>
             </div>
+            <!--
             <div role="tabpanel" class="tab-pane fade" id="search">
                 <table class="table table-hover table-bordered" id="search_panel"> 
                     <thead>
@@ -246,7 +247,8 @@
                 <div id="search_result">
                     
                 </div>
-            </div>            
+            </div>          
+            -->
             <div role="tabpanel" class="tab-pane fade" id="operating">                
                 <br/>                
                 <!-- <div class="panel panel-warning">
@@ -697,7 +699,7 @@
 }");    
                     break;
                 case 'insert':
-                    $("#js_drop_button").html('插入 <span class="caret"></span>').attr('drop-type', 'insert');
+                    $("#js_drop_button").html('添加 <span class="caret"></span>').attr('drop-type', 'insert');
                     $('.js_find_control_button').attr("disabled", "disabled");
                     $(".js_update_button").attr("disabled", "disabled");
                     $("#sql_area").html("{\n\
