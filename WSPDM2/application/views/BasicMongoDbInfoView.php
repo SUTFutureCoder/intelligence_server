@@ -15,7 +15,6 @@
                 <p>用户：<?= $this->session->userdata('db_username')?></p>
                 <p>系统用户：<?= $db_info['host']?></p>
                 <p>配置文件：<?= $db_info['retval']['argv'][0] . '  ' . $db_info['retval']['argv'][1] . '  ' . $db_info['retval']['argv'][2] ?></p>
-                <p>Host：<?= $db_info['retval']['parsed']['bind_ip'] ?></p>
                 <p>数据存储位置：<?= $db_info['retval']['parsed']['dbpath'] ?></p>
                 <p>日志文件位置：<?= $db_info['retval']['parsed']['logpath'] ?></p>
             </div>

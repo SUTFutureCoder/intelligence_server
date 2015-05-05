@@ -113,6 +113,7 @@
                     <button type="button" class="btn btn-default" onclick="sql_button('INSERT INTO <?= $data['database']?>.<?= $data['table'] ?> ', 0)">INSERT</button>
                     <button type="button" class="btn btn-warning" onclick="sql_button('DELETE FROM <?= $data['database']?>.<?= $data['table'] ?> ', 0)">DELETE</button>
                     <button type="button" class="btn btn-danger" onclick="sql_button('DROP ', 0)">DROP</button>
+                    <button type="button" class="btn btn-default" onclick="sql_button(', ', 2)">,</button>
                     <br/>
                     <br/>                    
                     <button type="button" class="btn btn-default" onclick="sql_button(' FROM ', 1)">FROM</button>
@@ -565,11 +566,23 @@
                         case 'UpdateData':
                             $("#data_update_modal").modal('hide');   
                             update_data_display();
+                            var data_rename = new Array();
+                            data_rename['src'] = location.href.slice((location.href.lastIndexOf("/")));
+                            data_rename['group'] = 'WSPDM2';
+                            data_rename['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/B_RenameTable';
+                            data_rename['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "database" : "<?= $data['database'] ?>", "old_table_name" : "' + data[4]['old_table_name'] + '", "new_table_name" : "' + data[4]['new_table_name'] + '"}';
+                            parent.IframeSend(data_rename, 'group');  
                             break;
                             
                         case 'DeleData':
                             $("#danger_confirm_modal").modal('hide');
                             dele_data_display();
+                            var data_rename = new Array();
+                            data_rename['src'] = location.href.slice((location.href.lastIndexOf("/")));
+                            data_rename['group'] = 'WSPDM2';
+                            data_rename['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/B_RenameTable';
+                            data_rename['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "database" : "<?= $data['database'] ?>", "old_table_name" : "' + data[4]['old_table_name'] + '", "new_table_name" : "' + data[4]['new_table_name'] + '"}';
+                            parent.IframeSend(data_rename, 'group');  
                             break;
                             
                         case 'SnapShot':

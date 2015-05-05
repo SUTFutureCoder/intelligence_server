@@ -40,6 +40,12 @@ class Mongodatabase{
                 if ($user && $passwd){
                     $server .= $user . ':' . $passwd . '@' . $host;
                 } else {
+                    //不允许空密码
+                    $result = array(
+                    'code' => -1,
+                    'message' => '不允许空密码'
+                    );
+                    return $result;
                     $server .= $host;
                 }
                 

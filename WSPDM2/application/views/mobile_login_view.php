@@ -2,7 +2,7 @@
 <html lang="zh-cn">
 <head>
 	<meta charset="utf-8">
-	<title>欢迎使用WSPDM-基于PHP Websocket的数据库管理器</title>
+	<title>欢迎使用WSPDM2-基于PHP Websocket的数据库管理器</title>
         <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
         <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
         <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">

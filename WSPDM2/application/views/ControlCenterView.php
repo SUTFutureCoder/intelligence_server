@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>WSPDM-基于PHPWebsocket的数据库管理器</title>
+<title>WSPDM2-基于PHPWebsocket的数据库管理器</title>
 <script src="http://libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
 <script src="http://libs.baidu.com/bootstrap/2.3.2/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="<?= base_url('jq-ui/jquery.easyui.min.js')?>"></script>
@@ -191,7 +191,7 @@ function UpdateTableName(database, old_table_name, new_table_name){
             <?php endforeach; ?>
             <div title="数据库教程">
                 <a href="javascript:void(0);"  src="http://www.w3school.com.cn/sql/index.asp" class="cs-navi-tab">SQL教程</a></p>
-                <a href="javascript:void(0);"  src="http://www.w3cschool.cc/mongodb/mongodb-tutorial.html" class="cs-navi-tab">Mongodb教程</a></p>
+                <a href="javascript:void(0);"  src="http://www.yiibai.com/mongodb/mongodb_query_document.html" class="cs-navi-tab">Mongodb教程</a></p>
             </div>
         </div>
 </div>
@@ -203,7 +203,7 @@ function UpdateTableName(database, old_table_name, new_table_name){
     </div>
 </div>
 
-<div region="south" border="false" class="cs-south">WSPDM2 ©沈阳工业大学ACM实验室 沈阳工业大学网络管理中心 百度 *Chen</div>
+<div region="south" border="false" class="cs-south">WSPDM2 ©沈阳工业大学ACM实验室 沈阳工业大学网络管理中心 *Chen</div>
 
 <div id="mm" class="easyui-menu cs-tab-menu">
         <div id="mm-tabupdate">刷新</div>
