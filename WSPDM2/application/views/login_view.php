@@ -164,6 +164,7 @@
         </div>
         <br/>
         <button type="submit" disabled="disabled"  class="btn btn-lg btn-primary btn-block">登录数据库</button>
+        <p style="color:red">演示数据库：MySQL、MongoDB，演示用户名：wspdm，演示密码：jsjds2015</p>
         </form>
     </div>
     <div class="footer">

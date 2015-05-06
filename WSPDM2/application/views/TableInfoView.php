@@ -424,7 +424,6 @@
                             $("#sql_data_view").append("<thead><tr id=\"sql_exec_col_name\"><th>#</th>");
                             
                             if (data[4]['sql'].substr(0, 6) != 'SELECT' && data[4]['sql'].substr(0, 6) != 'select'){
-                                refreshDataIndicator = 1;
                                 sql = data[4]['sql'];
                                 col = data[4]['rows'];
 
@@ -483,27 +482,28 @@
                             data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/B_DeleCol';
                             data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "col_name" : "' + col_name + '"}';
                             parent.IframeSend(data, 'group');                      
-
                             break;
                             
                         case 'InsertData':
-                            
+                            var last_id = 0;
                             if ($("#data_view tbody tr").length){
                                 last_id = $("#data_view tbody tr:last-child td:nth-of-type(" + (1) + ")").html();
-                            } else {
-                                last_id = 0;
                             }
                             
-                            $("#data_view tbody").append("<tr><td>" + (++last_id) + "</td></tr>");
+                            last_id = parseInt(last_id);
+                            $("#data_view tbody").append("<tr id='data_" + (++last_id) + "'><td>" + (last_id) + "<button type='button' class='btn btn-primary btn-xs' onclick='data_update_button(0, " + last_id + ")'>修改</button><button type='button' class='btn btn-danger btn-xs' onclick='data_dele_button(0, " + last_id + ")'>删除</button></td></tr>");
                             
                             td_num = $("#data_view thead tr th").length - 1;
                             
                             for (i = 0; i < td_num; i++){
                                 $("#data_view tbody tr:last-child").append("<td></td>");
                             }
+                            
+                            var i = 2;
                             $.each(data[4]['data']['data'][0], function(col_name, value){
                                 col_num = $("#data_view_" + col_name).prevAll().length;
-                                $("#data_view tbody tr:last-child td:nth-of-type(" + (1 + col_num) + ")").html(value);
+                                $("#data_view tbody tr:last-child td:nth-of-type(" + (i + col_num) + ")").html(value);
+                                i++
                             });  
                             
                             $("#insert_list")[0].reset();
@@ -569,8 +569,8 @@
                             var data_rename = new Array();
                             data_rename['src'] = location.href.slice((location.href.lastIndexOf("/")));
                             data_rename['group'] = 'WSPDM2';
-                            data_rename['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/B_RenameTable';
-                            data_rename['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "database" : "<?= $data['database'] ?>", "old_table_name" : "' + data[4]['old_table_name'] + '", "new_table_name" : "' + data[4]['new_table_name'] + '"}';
+                            data_rename['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/B_ReFreshTable';
+                            data_rename['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "sql" : "' + data[4]['sql'] + '", "col" : "' + data[4]['rows'] + '"}';
                             parent.IframeSend(data_rename, 'group');  
                             break;
                             
@@ -580,8 +580,8 @@
                             var data_rename = new Array();
                             data_rename['src'] = location.href.slice((location.href.lastIndexOf("/")));
                             data_rename['group'] = 'WSPDM2';
-                            data_rename['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/B_RenameTable';
-                            data_rename['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "database" : "<?= $data['database'] ?>", "old_table_name" : "' + data[4]['old_table_name'] + '", "new_table_name" : "' + data[4]['new_table_name'] + '"}';
+                            data_rename['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/TableInfo/B_ReFreshTable';
+                            data_rename['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>", "sql" : "' + data[4]['sql'] + '", "col" : "' + data[4]['rows'] + '"}';
                             parent.IframeSend(data_rename, 'group');  
                             break;
                             
@@ -759,6 +759,10 @@
             data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
             data['data'] += '"sql" : "' + $("#sql_area").val() + '", "memcache" : "' + memcache + '", "db_type" : "<?= $db_type?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';
             parent.IframeSend(data);
+            
+            if ($("#sql_area").val().substr(0, 6) != 'SELECT' && $("#sql_area").val().substr(0, 6) != 'select'){
+                refreshDataIndicator = 1;
+            }
         }
         
         //删除字段
@@ -1101,7 +1105,7 @@
     
     //执行修改过程
     function data_update_confirm(source, update_key){
-        
+        refreshDataIndicator = 1;
         $("#data_update_confirm").html('<span class="glyphicon glyphicon-flash" aria-hidden="true"></span>正在处理中，请稍候...');
         $("#data_update_confirm").attr('disabled', 'disabled');
         //source来源：0为data_view 1为SQL查询页  
