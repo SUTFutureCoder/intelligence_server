@@ -2,6 +2,18 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group/>
+        <group>
+            <file>file:/var/www/html/intelligence_server/WSPDM2/application/views/TableInfoView.php</file>
+            <file>file:/var/www/html/intelligence_server/WSPDM2/application/views/chat_view.php</file>
+            <file>file:/var/www/html/intelligence_server/VirtualShell/include/js/shell.js</file>
+            <file>file:/var/www/html/intelligence_server/WSPDM2/application/views/ControlCenterView.php</file>
+            <file>file:/var/www/html/intelligence_server/WSPDM2/application/controllers/index.php</file>
+            <file>file:/var/www/html/intelligence_server/WSPDM2/application/controllers/chat.php</file>
+            <file>file:/var/www/html/intelligence_server/WSPDM2/application/views/BasicMongoDbInfoView.php</file>
+            <file>file:/var/www/html/intelligence_server/VirtualShell/index.html</file>
+            <file>file:/var/www/html/intelligence_server/WSPDM2/application/controllers/TableInfo.php</file>
+            <file>file:/var/www/html/intelligence_server/WSPDM2/application/views/MongoTableInfoView.php</file>
+            <file>file:/var/www/html/intelligence_server/websocket/applications/Chat/Event.php</file>
+        </group>
     </open-files>
 </project-private>

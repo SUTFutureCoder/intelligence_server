@@ -37,7 +37,8 @@ class Mongodatabase{
             try{
                 $server = 'mongodb://';
                 
-                if ($user && $passwd){
+//                if ($user && $passwd){
+                if ($user){
                     $server .= $user . ':' . $passwd . '@' . $host;
                 } else {
                     //不允许空密码

@@ -728,7 +728,7 @@
                     break;
             }
             var data = new Array();
-            data['src'] = location.href.slice((location.href.lastIndexOf("/")));
+            data['src'] = location.href.slice(location.href.lastIndexOf("/"));
             data['api'] = location.href.slice(0, location.href.lastIndexOf("/")) + '/index.php/MongoTableInfo/ExecSQL';
             data['data'] = '{"user_key" : "<?= $user_key ?>", "user_name" : "<?= $user_name ?>",';
             data['data'] += '"nosql_type" : "' + $("#js_drop_button").attr('drop-type') + '", "sql_limit" : "' + $("#sql_limit").val() + '", "sql_skip" : "' + $("#sql_skip").val() + '", "sql_upsert" : "' + $("#sql_upsert").prop('checked') + '", "sql_multi" : "' + $("#sql_multi").prop('checked') + '", "nosql" : "' + BASE64.encoder($("#sql_area").val()) + '", "memcache" : "' + memcache + '", "database" : "<?= $data['database'] ?>", "collection" : "<?= $data['collection'] ?>", "db_host" : "<?= $db_host?>", "db_port" : "<?= $db_port?>"}';

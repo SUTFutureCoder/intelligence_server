@@ -64,7 +64,8 @@ var ws, ping, name = 'null', user_list={};
             //alert(date.getTime());
             $("#ping").html("ping:" + ping + "ms");
             break;
-                
+        
+        case 'say':
         case "iframe":
         case "group":     
             //当src为index.php/a 的情况location.href.slice(0, location.href.lastIndexOf("/"))
@@ -114,6 +115,11 @@ function IframeSend(data, type) {
         ws.send('{"type":"' + type + '","api":"' + data['api'] + '","src":"' + data['src'] + '","data":' + data['data'] + ',"group":"' + data['group'] + '"}');
     }
     
+}
+
+//交流协作
+function IframeSay(data){
+    ws.send('{"type":"say","name":"' + data['user_name'] + '","src":"' + data['src'] + '","group":"WSPDM2","content":"' + data['content'] + '"}');
 }
 function getping(){ 
     var date = new Date();
@@ -189,7 +195,8 @@ function UpdateTableName(database, old_table_name, new_table_name){
                     <?php endforeach; ?>
                 </div>
             <?php endforeach; ?>
-            <div title="数据库教程">
+            <div title="协作&教程">
+                <a href="javascript:void(0);"  src="<?= base_url() ?>index.php?c=chat" class="cs-navi-tab">协作</a></p>
                 <a href="javascript:void(0);"  src="http://www.w3school.com.cn/sql/index.asp" class="cs-navi-tab">SQL教程</a></p>
                 <a href="javascript:void(0);"  src="http://www.yiibai.com/mongodb/mongodb_query_document.html" class="cs-navi-tab">Mongodb教程</a></p>
             </div>
@@ -212,5 +219,10 @@ function UpdateTableName(database, old_table_name, new_table_name){
         <div id="mm-tabcloseother">关闭其他</div>
         <div id="mm-tabcloseall">关闭全部</div>
 </div>        
+<script>
+    $(function(){
+        $(".layout-split-proxy-h").css('left', '200px');
+    })
+</script>
 </body>
 </html>

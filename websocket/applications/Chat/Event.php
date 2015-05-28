@@ -172,15 +172,24 @@ class Event
 //                    return Gateway::sendToUid($message_data['to_uid'], WebSocket::encode(json_encode($new_message)));
 //                }
                 // 向大家说
-               
-                $new_message = array(
-                    '0' => 'say', 
-                    '1' => htmlspecialchars($message_data['name']),
-                    '2' => nl2br(htmlspecialchars($message_data['content'])),
-                    '3' => date('Y-m-d H:i:s'),
-                );
+                if (isset($message_data['src'])){
+                    $new_message = array(
+                        '0' => 'say', 
+                        '1' => $message_data['src'],
+                        '2' => htmlspecialchars($message_data['name']),
+                        '3' => base64_decode($message_data['content']),
+                        '4' => date('Y-m-d H:i:s'),
+                    );                    
+                } else {
+                    $new_message = array(
+                        '0' => 'say', 
+                        '1' => htmlspecialchars($message_data['name']),
+                        '2' => nl2br(htmlspecialchars($message_data['content'])),
+                        '3' => date('Y-m-d H:i:s'),
+                    );
+                }
+                
                 $new_message_encode = json_encode($new_message);
-                var_dump(self::getGroupUserList());
                 
                 foreach (self::getGroupUserList() as $key => $value){   
                     

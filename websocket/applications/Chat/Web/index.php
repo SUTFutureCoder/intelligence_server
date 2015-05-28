@@ -4,17 +4,17 @@
   <script type="text/javascript">
   //WebSocket = null;
   </script>
-  <link href="/css/bootstrap.min.css" rel="stylesheet">
-  <link href="/css/style.css" rel="stylesheet">
+  <link href="./css/bootstrap.min.css" rel="stylesheet">
+  <link href="./css/style.css" rel="stylesheet">
   <!-- Include these three JS files: -->
-  <script type="text/javascript" src="/js/swfobject.js"></script>
-  <script type="text/javascript" src="/js/web_socket.js"></script>
-  <script type="text/javascript" src="/js/jquery.min.js"></script>
-  <script type="text/javascript" src="/js/json.js"></script>
+  <script type="text/javascript" src="./js/swfobject.js"></script>
+  <script type="text/javascript" src="./js/web_socket.js"></script>
+  <script type="text/javascript" src="./js/jquery.min.js"></script>
+  <script type="text/javascript" src="./js/json.js"></script>
 
   <script type="text/javascript">
     if (typeof console == "undefined") {    this.console = { log: function (msg) {  } };}
-    WEB_SOCKET_SWF_LOCATION = "/swf/WebSocketMain.swf";
+    WEB_SOCKET_SWF_LOCATION = "./swf/WebSocketMain.swf";
     WEB_SOCKET_DEBUG = true;
     var ws, name, user_list={};
     function init() {
@@ -153,7 +153,7 @@
 	           <div class="thumbnail">
                    <div class="caption" id="userlist"></div>
                </div>
-               <a href="http://workerman.net:8383" target="_blank"><img style="width:252px;margin-left:5px;" src="/img/workerman-todpole.png"></a>
+               <a href="http://workerman.net:8383" target="_blank"><img style="width:252px;margin-left:5px;" src="./img/workerman-todpole.png"></a>
 	        </div>
 	    </div>
     </div>
