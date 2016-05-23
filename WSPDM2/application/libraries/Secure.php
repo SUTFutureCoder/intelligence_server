@@ -103,6 +103,8 @@ class Secure{
         $CI =& get_instance();       
         $CI->load->library('encrypt');
         $CI->load->library('basic');
+        //替換空格爲加號
+        $encrypted_key  = str_replace(' ', '+', $encrypted_key);
         $encrypted_time = substr($CI->encrypt->decode($encrypted_key), 0, strlen(time()));
         //过期的密钥
         if (time() - $encrypted_time >= $CI->basic->user_key_life){

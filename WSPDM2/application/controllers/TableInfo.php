@@ -784,7 +784,6 @@ class TableInfo extends CI_Controller{
                 
                 $file_name = $this->input->get('snap_name', TRUE);
                 $file_dir = '/home/' . get_current_user() . '/wspdm2/' . $this->session->userdata('db_username') . '/snapshot/' . $this->input->get('db_type', TRUE) . '/' . $this->input->get('database', TRUE) . '/' . $this->input->get('table', TRUE) . '/';
-                
                 if (!is_file($file_dir . $file_name)){
                     echo '<script>alert("未找到快照文件");</script>';
                     exit();
